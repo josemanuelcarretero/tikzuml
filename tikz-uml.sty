@@ -1,0 +1,215 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Start of tikz-uml.sty
+%
+% Some macros for UML Diagrams.
+% Home page of project: 
+% Author: Nicolas Kielbasiewicz
+% Style from: 
+% Fixed by Nicolas Kielbasiewicz (nicolas.kielbasiewicz@ensta-paristech.fr) in dec 2010 to compile with pgf 2.00
+
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]%
+\ProvidesPackage{tikz-uml}[2011/01/26]%
+
+\RequirePackage{ifthen}%
+\RequirePackage{tikz}%
+\RequirePackage{calc}%
+\RequirePackage{pgfopts}%
+\usetikzlibrary{arrows,shapes,fit,shadows}%
+
+\def\tikzumlPackageLayersNum{2}
+\pgfkeys{/tikzuml/options/.cd, packageLayers/.initial=3}%
+\pgfkeys{/tikzuml/options/.cd, packageLayers/.store in=\tikzumlPackageLayersNum}%
+\def\tikzumlStateLayersNum{2}
+\pgfkeys{/tikzuml/options/.cd, stateLayers/.initial=3}%
+\pgfkeys{/tikzuml/options/.cd, stateLayers/.store in=\tikzumlStateLayersNum}%
+
+\ProcessPgfOptions{/tikzuml/options}
+
+\def\pgfsetlayersArg{background}%
+\newcounter{tikzumlStateLayers}%
+%\setcounter{tikzumlStateLayers}{0}%
+\newcounter{tikzumlPackageLayers}%
+%\setcounter{tikzumlPackageLayers}{0}%
+\pgfdeclarelayer{background}%
+\loop \pgfdeclarelayer{state\thetikzumlStateLayers}%
+  \xdef\pgfsetlayersArg{\pgfsetlayersArg,state\thetikzumlStateLayers}%
+  \ifnum\tikzumlStateLayersNum>\thetikzumlStateLayers
+  \stepcounter{tikzumlStateLayers}%
+\repeat%
+%
+\loop \pgfdeclarelayer{package\thetikzumlPackageLayers}%
+  \xdef\pgfsetlayersArg{\pgfsetlayersArg,package\thetikzumlPackageLayers}%
+  \ifnum\tikzumlPackageLayersNum>\thetikzumlPackageLayers
+  \stepcounter{tikzumlPackageLayers}%
+\repeat%
+%
+\pgfdeclarelayer{connections}%
+\pgfdeclarelayer{threadground}%
+\xdef\pgfsetlayersArg{\pgfsetlayersArg,connections,threadground,main}%
+\pgfsetlayers{\pgfsetlayersArg}
+
+\tikzstyle{every picture}+=[remember picture]
+
+\pgfkeys{/tikzuml/.cd, text/.initial=black, draw/.initial=black, font/.initial=\small,%
+                       fill class/.initial=yellow!20, fill template/.initial=yellow!2, fill package/.initial=blue!20, fill note/.initial=green!20,%
+                       fill usecase/.initial=blue!20, fill system/.initial=white,%
+                       fill state/.initial={yellow!20, yellow!5},%
+                       fill object/.initial=yellow!20,%
+                       .unknown/.code={%
+                         \let\keyname=\pgfkeyscurrentname%
+                         \errmessage{TIKZUML ERROR : invalid option \keyname in tikzumlset}%
+                       }}%
+\pgfkeys{/tikzuml/.cd, text/.get=\tikzumltextcolor, draw/.get=\tikzumldrawcolor, font/.get=\tikzumlfont,%
+                       fill class/.get=\tikzumlfillclasscolor, fill template/.get=\tikzumlfilltemplatecolor,%
+                       fill package/.get=\tikzumlfillpackagecolor, fill note/.get=\tikzumlfillnotecolor,%
+                       fill usecase/.get=\tikzumlfillusecasecolor, fill system/.get=\tikzumlfillsystemcolor,%
+                       fill state/.get=\tikzumlfillstatecolor,%
+                       fill object/.get=\tikzumlfillobjectcolor}%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       class diagrams                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pgfkeys{/tikzuml/relation/.cd, attr1/.style args={#1|#2}{arg1=#1, mult1=#2},%
+                                attr2/.style args={#1|#2}{arg2=#1, mult2=#2},%
+                                attr/.style args={#1|#2}{arg=#1, mult=#2},%
+                                recursive/.style args={#1|#2|#3}{angle1=#1, angle2=#2, loopsize=#3},%
+                                anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2}}%
+
+\tikzstyle{tikzuml class style}=[rectangle split, rectangle split parts=3, minimum height=2em, minimum width=10ex, node distance=2em]%
+\tikzstyle{tikzuml template style}=[dashed, inner ysep=0.7em, inner xsep=1ex]%
+\tikzstyle{tikzuml control nodes style}=[fill=black, inner sep=1.5pt, circle]%
+\tikzstyle{tikzuml inherit style}=[color=\tikzumldrawcolor, -open triangle 45]%
+\tikzstyle{tikzuml implements style}=[color=\tikzumldrawcolor, -open triangle 45, dashed]%
+\tikzstyle{tikzuml association style}=[color=\tikzumldrawcolor, -]%
+\tikzstyle{tikzuml unidirectional association style}=[color=\tikzumldrawcolor, -angle 45]%
+\tikzstyle{tikzuml aggregation style}=[color=\tikzumldrawcolor, open diamond-]%
+\tikzstyle{tikzuml unidirectional aggregation style}=[color=\tikzumldrawcolor, open diamond-angle 45]%
+\tikzstyle{tikzuml composition style}=[color=\tikzumldrawcolor, diamond-]%
+\tikzstyle{tikzuml unidirectional composition style}=[color=\tikzumldrawcolor, diamond-angle 45]%
+\tikzstyle{tikzuml dependency style}=[color=\tikzumldrawcolor, -angle 45, dashed]%
+\tikzstyle{tikzuml import style}=[color=\tikzumldrawcolor, -angle 45, dashed]%
+
+\tikzstyle{tikzuml state style}=[rectangle split, rectangle split parts=2, rounded corners, inner xsep=1.5ex]%
+\tikzstyle{tikzuml state transition style}=[color=\tikzumldrawcolor, rounded corners, -angle 45]%
+
+\tikzstyle{tikzuml synchron-msg style}=[color=\tikzumldrawcolor, -triangle 45]%
+\tikzstyle{tikzuml asynchron-msg style}=[color=\tikzumldrawcolor, -angle 45]%
+\tikzstyle{tikzuml call return style}=[color=\tikzumldrawcolor, dashed, -angle 45]%
+
+\newcounter{tikzumlPackageClassNum}%
+\newcounter{tikzumlPackageSubPackageNum}%
+\newcounter{tikzumlRelationNum}%
+\setcounter{tikzumlRelationNum}{1}%
+\newcounter{tikzumlNoteNum}%
+\setcounter{tikzumlNoteNum}{1}%
+\newcounter{tikzumlStateSpecialStateNum}%
+\newcounter{tikzumlStateSubStateNum}%
+
+\newcounter{pos}%
+\newcounter{posT}%
+\newcounter{posStereo}%
+
+\newcounter{tikzumlPackageLevel}%
+\setcounter{tikzumlPackageLevel}{0}%
+
+% utility : change default colors
+\newcommand{\tikzumlset}[1]{%
+  \pgfkeys{/tikzuml/.cd,#1}%
+  \pgfkeys{/tikzuml/.cd, text/.get=\tikzumltextcolor, draw/.get=\tikzumldrawcolor, font/.get=\tikzumlfont,%
+                       fill class/.get=\tikzumlfillclasscolor, fill template/.get=\tikzumlfilltemplatecolor,%
+                       fill package/.get=\tikzumlfillpackagecolor, fill note/.get=\tikzumlfillnotecolor,%
+                       fill usecase/.get=\tikzumlfillusecasecolor, fill system/.get=\tikzumlfillsystemcolor,%
+                       fill state/.get=\tikzumlfillstatecolor,%
+                       fill object/.get=\tikzumlfillobjectcolor}%
+}%
+
+% define a point
+\newcommand{\umlpoint}[1]{%
+    \begin{pgfonlayer}{connections}%
+    \node[tikzuml control nodes style] at (#1) {};%
+    \end{pgfonlayer}%
+}%
+
+\newcommand{\tikzumlskipescape}[3][_]{%
+\begingroup%
+    \def\_{#1}\edef\x{\endgroup%
+      \def\noexpand\csname #3\endcsname{#2}}\x%
+}%
+
+% define a uml package
+%  arg : package name
+%  optional args : x, y coordinates of the package
+%                  draw, fill, text colors
+\newenvironment{umlpackage}[2][]%
+{%
+  \ifnum\thetikzumlPackageLevel>0%
+    \let\tikzumlPackage@nameold\tikzumlPackage@fitname%
+    \def\tikzumlPackage@name{#2}%
+    \begingroup%
+      \def\_{@}\edef\x{\endgroup%
+        \def\noexpand\tikzumlPackage@fitname{\tikzumlPackage@name}}\x%
+    \let\tikzumlPackage@parentold\tikzumlPackage@parent%
+    \edef\tikzumlPackage@parent{\tikzumlPackage@parentold @@\tikzumlPackage@nameold}%
+  \else%
+    \def\tikzumlPackage@parent{}%
+    \def\tikzumlPackage@name{#2}%
+    \begingroup%
+      \def\_{@}\edef\x{\endgroup%
+        \def\noexpand\tikzumlPackage@fitname{\tikzumlPackage@name}}\x%
+  \fi%
+  %
+  \let\tikzumlPackage@nodeNameold\tikzumlPackage@nodeName%
+  %  
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlPackage@nodeName{\tikzumlPackage@name}}\x%
+  %
+  \expandafter\gdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{}%
+  %
+  \setcounter{tikzumlPackageClassNum}{0}%
+  \setcounter{tikzumlPackageSubPackageNum}{0}%
+  \stepcounter{tikzumlPackageLevel}%
+  
+  \pgfkeys{/tikzuml/package/.cd, x/.initial=0, y/.initial=0, x/.default=0, y/.default=0,%
+                                 draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillpackagecolor, text/.initial=\tikzumltextcolor,%
+                                 .unknown/.code={%
+                                   \let\keyname=\pgfkeyscurrentname%
+                                   \errmessage{TIKZUML ERROR : invalid option \keyname in umlpackage}%
+                                 }}%
+  \pgfkeys{/tikzuml/package/.cd, #1}%
+  \pgfkeys{/tikzuml/package/.cd, x/.get=\xshift, y/.get=\yshift, draw/.get=\tikzumlpackagedraw, fill/.get=\tikzumlpackagefill, text/.get=\tikzumlpackagetext}%
+  %
+  \begin{scope}[xshift=\xshift cm, yshift=\yshift cm]%
+}{%
+  \addtocounter{tikzumlPackageLevel}{-1}%
+  \begin{pgfonlayer}{package\thetikzumlPackageLevel}%
+  %
+  % if contains no class, one define a fictive node to enable the fit option
+  \ifnum\c@tikzumlPackageClassNum=0%
+    \ifnum\c@tikzumlPackageSubPackageNum=0%
+      \node[inner sep=1.5ex] (\tikzumlPackage@nodeName-root) at (0,0) {\phantom{\tikzumlPackage@nodeName}};%
+      \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{(\tikzumlPackage@nodeName-root)}%
+      %
+    \fi%
+  \fi%
+  %
+  \ifnum\c@tikzumlPackageLevel>0%
+    \def\tikzumlPackageFitTmp{\csname tikzumlPackageFit\tikzumlPackage@parent\endcsname}%
+    \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent\endcsname{\tikzumlPackageFitTmp (\tikzumlPackage@nodeName) (\tikzumlPackage@nodeName-caption)}%
+    \stepcounter{tikzumlPackageSubPackageNum}%
+  \fi%
+  %  
+  \node[draw=\tikzumlpackagedraw, fill=\tikzumlpackagefill, text=\tikzumlpackagetext, font=\tikzumlfont, inner sep=1.5ex, fit = \csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname] (\tikzumlPackage@nodeName) {};%
+  \node[draw=\tikzumlpackagedraw, fill=\tikzumlpackagefill, text=\tikzumlpackagetext, font=\tikzumlfont, minimum height=1.5em, outer ysep=-0.3, anchor=south west] (\tikzumlPackage@nodeName-caption) at (\tikzumlPackage@nodeName.north west) {\tikzumlPackage@name};%
+  \end{pgfonlayer}%
+  \end{scope}%
+}%
+
+% shortcut to define an empty package
+\newcommand{\umlemptypackage}[2][]{\begin{umlpackage}[#1]{#2} \end{umlpackage}}%
+
+
+
+%%% End of tikz-uml.sty
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

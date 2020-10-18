@@ -1,0 +1,9 @@
+doc/*.log
+doc/*.aux
+doc/*.out
+doc/*.synctex.gz
+doc/*.toc
+doc/*.tikz
+doc/*.pdf
+src
+pgf-umlsd.sty
