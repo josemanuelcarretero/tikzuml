@@ -17,7 +17,7 @@
 \usepackage{../tikz-uml} % pour les diagrammes de classe
 
 \newif\iffinal % definit un switch entre brouillon et version final
-\finaltrue % a utiliser pour compiler le document en version finale
+%\finaltrue % a utiliser pour compiler le document en version finale
 
 \iffinal
   \newcommand{\inputTikZ}[1]{%
@@ -588,6 +588,43 @@ Là encore, on va pouvoir donner le nom d'un des points de contrôle d'une relat
 \end{center}
 \end{minipage}
 
+\medskip
+
+\medskip
+
+Les notes sont utilisées pour 2 choses : les commentaires et la données de contraintes (généralement au format OCL).
+
+\medskip
+
+La commande {\tt umlnote} dispose des options suivantes :
+
+\begin{description}
+\item[x, y] Ces 2 options définissent les coordonnées de la note
+\item[width] Cette option définit la largeur de la note. Pour les habitués de TikZ, elle encapsule l'option {\bf text width}
+\item[weight, arm, anchor1, anchor2, anchors] Ces options ont exactement le même rôle que pour la commande {\tt umlrelation}, {\bf arm} étant équivalent à {\bf arm1}, c'est-à-dire attachée à la note source et pas à la cible. 
+\end{description}
+
+\medskip
+
+\begin{minipage}{0.6\textwidth}
+\lstinputlisting{fig/figure31.tikz}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\inputTikZ{figure31}
+\end{center}
+\end{minipage}
+
+\medskip
+
+\medskip
+
+Puisque l'option {\tt geometry} est présente, de la même manière que pour {\tt umlrelation}, ont été définis les alias {\tt umlHVnote}, {\tt umlVHnote}, {\tt umlHVHnote} et {\tt umlVHVnote}.
+
+\remarque{Pour chacun de ces 4 alias, l'option {\tt geometry} est interdite.}
+
+\remarque{Il n'y a pas d'alias dans le cas de la valeur -~- pour la seule raison qu'il s'agit de la valeur par défaut.}
+
 \section{Personnaliser l'apparence}
 
 Grâce à la commande {\tt tikzumlset}, il est possible de modifier l'apparence par défaut des packages, des classes et des notes. Les options que l'on peut personnaliser sont :
@@ -632,7 +669,7 @@ On laisse le package p aux coordonnées (0,0) (comportement par défaut), et on 
 }
 
 \begin{center}
-\inputTikZ{figure31}
+\inputTikZ{figure32}
 \end{center}
 
 \subsubsection{Définition des classes A, B, C, D et de leurs attributs et opérations}
@@ -656,7 +693,7 @@ La classe A a deux attributs. La classe B a un attribut et deux opérations dont
 \lstinputlisting[firstline=19, lastline=19]{introex.tikz}
 
 \begin{center}
-\inputTikZ{figure32}
+\inputTikZ{figure33}
 \end{center}
 
 
@@ -672,7 +709,7 @@ On définit une association entre les classes C et B, une composition unidrectio
 }
 
 \begin{center}
-\inputTikZ{figure33}
+\inputTikZ{figure34}
 \end{center}
 
 \subsubsection{Définition des notes}
@@ -687,7 +724,7 @@ On rajoute enfin une note attchée à la classe B et une note attachée à la re
 }
 
 \begin{center}
-\inputTikZ{figure34}
+\inputTikZ{figure35}
 \end{center}
 
 \subsubsection{Modification du style}
@@ -708,7 +745,7 @@ On illustre l'utilisation de la commande {\tt tikzumlset} en changeant les coule
 \end{lstlisting}
 
 \begin{center}
-\inputTikZ{figure35}
+\inputTikZ{figure36}
 \end{center}
 
 \subsection{Définir une spécialisation de classe}
@@ -718,11 +755,11 @@ Une spécialisation de classe est de l'héritage d'un patron de classe dans lequ
 \medskip
 
 \begin{minipage}{0.5\textwidth}
-\lstinputlisting{fig/figure36.tikz}
+\lstinputlisting{fig/figure37.tikz}
 \end{minipage}
 \begin{minipage}{0.5\textwidth}
 \begin{center}
-\inputTikZ{figure36}
+\inputTikZ{figure37}
 \end{center}
 \end{minipage}
 
@@ -731,21 +768,6 @@ Une spécialisation de classe est de l'héritage d'un patron de classe dans lequ
 \begin{enumerate}
 \item L'option {\tt geometry} prime toujours sur les autres arguments. Cela signifie en particulier que si elle n'a pas sa valeur par défaut (--~--), alors les options {\tt angle1}, {\tt angle2} et {\tt loopsize}, paramétrant les relations récursives, seront ignorées.
 \item Dans le cas d'un patron de classe, il existe des cas où une relation la concernant sera mal définie, comme le montre le dessin ci-dessous, où le losange de la relation d'aggrégation est caché par le paramètre template :
-
-\begin{minipage}{0.6\textwidth}
-\lstinputlisting{fig/figure37.tikz}
-\end{minipage}
-\begin{minipage}{0.4\textwidth}
-\begin{center}
-\inputTikZ{figure37}
-\end{center}
-\end{minipage}
-
-\medskip
-
-On peut toutefois corriger partiellement ce problème en reliant la flèche directement entre la partie template de la classe A et la classe B en rajoutant le suffixe -template et en ajustant l'ancre de départ (la valeur -30 est assez satisfaisante) : 
-
-\medskip
 
 \begin{minipage}{0.6\textwidth}
 \lstinputlisting{fig/figure38.tikz}
@@ -758,97 +780,241 @@ On peut toutefois corriger partiellement ce problème en reliant la flèche dire
 
 \medskip
 
+On peut toutefois corriger partiellement ce problème en reliant la flèche directement entre la partie template de la classe A et la classe B en rajoutant le suffixe -template et en ajustant l'ancre de départ (la valeur -30 est assez satisfaisante) : 
+
+\medskip
+
+\begin{minipage}{0.6\textwidth}
+\lstinputlisting{fig/figure39.tikz}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\inputTikZ{figure39}
+\end{center}
+\end{minipage}
+
+\medskip
+
 \item Le comportement de placement automatique des informations d'un attribut sur une relation peut surprendre quand on veut le court-circuiter. Reprenons l'exemple de l'introduction. Si l'on regarde la rela	tion d'association et les attributs {\it toto} et {\it tata}. Si {\it toto} est au-dessus, {\it tata} est lui en dessous. Demandons maintenant de justifier à droite l'attribut {\it tata} (Au passage, on met sa position à 0.1). On constate alors que les positions de {\it tata} et de sa multiplicité s'inversent.
 
 \begin{center}
-\inputTikZ{figure39}
+\inputTikZ{figure40}
 \end{center}
 
 \end{enumerate}
 
-\chapter{Diagrammes de cas d'utilisation}
-
-\section{Système}
-
-\section{Acteur et cas d'utilisation}
-
-\section{Relations}
-
-\section{Personnalisation}
-
-\chapter{Diagrammes d'états-transition}
-
-\chapter{Diagrammes de séquence}
-
-\begin{lstlisting}
-\begin{umlseqdiag}
-\umlobj[class=A]{a}
-\umlobj[class=B, x=4]{b}
-\umlobj[class=C, x=8]{c}
-\umlobj[class=D, x=12]{d}
-\begin{umlcall}[op=opa(), type=synchron, return=0, dt=1.5]{a}{b}
-\begin{umlfragment}
-\begin{umlcall}[op=opb(), type=synchron, return=1, dt=0.5]{b}{c}
-\begin{umlfragment}[type=alt, label=condition, inner xsep=1.1]
-\begin{umlcall}[op=opc(), type=asynchron, dt=0.5]{c}{d}
-\end{umlcall}
-\umlfpart[case = 1]
-\begin{umlcall}[op=opd(), type=synchron, return=3, dt=1]{c}{d}
-\end{umlcall}
-\umlfpart[default]
-\begin{umlcall}[op=ope(), name=toto, type=synchron, return=3, dt=1]{c}{d}
-\end{umlcall}
-\end{umlfragment}
-\end{umlcall}
-\end{umlfragment}
-\begin{umlfragment}
-\begin{umlcallself}[op=opf(), type=synchron, return=4, dt=0.5]{b}
-\begin{umlfragment}[type=assert]
-\begin{umlcall}[op=opg(), type=synchron, return=5, dt=0.5]{b}{c}
-\end{umlcall}
-\end{umlfragment}
-\end{umlcallself}
-\end{umlfragment}
-\end{umlcall}
-\end{umlseqdiag}
-\end{lstlisting}
-
-\begin{tikzpicture}
-\begin{umlseqdiag}
-\umlobj[class=A]{a}
-\umlobj[class=B]{b}
-\umlobj[class=C]{c}
-\umlobj[class=D]{d}
-\begin{umlcall}[op=opa(), type=synchron, return=0]{a}{b}
-\begin{umlfragment}
-\begin{umlcall}[op=opb(),  type=synchron, return=1]{b}{c}
-\begin{umlfragment}[type=alt, label=condition, inner xsep=8]
-\begin{umlcall}[op=opc(), type=asynchron]{c}{d}
-\end{umlcall}
-\umlfpart[case = 1]
-\begin{umlcall}[op=opd(), type=synchron, return=3]{c}{d}
-\end{umlcall}
-\umlfpart[default]
-\begin{umlcall}[op=ope(), type=synchron, return=3]{c}{d}
-\end{umlcall}
-\end{umlfragment}
-\end{umlcall}
-\end{umlfragment}
-\begin{umlfragment}
-\begin{umlcallself}[op=opf(), type=synchron, return=4]{b}
-\begin{umlfragment}[type=assert]
-\begin{umlcall}[op=opg(), type=synchron, return=5]{b}{c}
-\end{umlcall}
-\end{umlfragment}
-\end{umlcallself}
-\end{umlfragment}
-\end{umlcall}
-\umlcreatecall[class=E, x=8]{a}{e}
-\begin{umlfragment}
-\begin{umlcall}[op=oph(), type=synchron, return=6, dt=4]{a}{e}
-\end{umlcall}
-\end{umlfragment}
-\end{umlseqdiag}
-\end{tikzpicture}
-
+%\chapter{Diagrammes de cas d'utilisation}
+%
+%\begin{center}
+%\begin{tikzpicture}
+%\begin{umlsystem}[x=4, fill=red!10]{Le système}
+%\umlusecase{use case1}
+%\umlusecase[y=-2]{use case2}
+%\umlusecase[y=-4]{use case3}
+%\umlusecase[x=4, y=-2]{use case4}
+%\umlusecase[x=6, fill=green!20]{use case5}
+%\umlusecase[x=6, y=-4]{use case6}
+%\end{umlsystem}
+%
+%% revoir la specification de \umlactor incoherente avec l'autre specification (gestion du name + class)
+%\umlactor[name=user]{user}
+%\umlactor[y=-3, name=subuser]{subuser}
+%\umlactor[x=14, y=-1.5, name=admin]{admin}
+%
+%\umlinherit{subuser}{user}
+%\umlassoc{user}{usecase-1}
+%\umlassoc{subuser}{usecase-2}
+%\umlassoc{subuser}{usecase-3}
+%\umlassoc{admin}{usecase-5}
+%\umlassoc{admin}{usecase-6}
+%\umlinherit{usecase-2}{usecase-1}
+%\umlVHextend{usecase-5}{usecase-4}
+%\umlinclude[name=incl]{usecase-3}{usecase-4}
+%
+%\umlnote[x=7, y=-7]{incl-1}{note on include dependency}
+%\end{tikzpicture}
+%\end{center}
+%
+%\section{Système}
+%
+%\section{Acteur et cas d'utilisation}
+%
+%\section{Relations}
+%
+%\section{Personnalisation}
+%
+%\section{Exemples}
+%
+%\section{Règles de priorité des options et bugs identifiés}
+%
+%\chapter{Diagrammes d'états-transitions}
+%
+%\begin{center}
+%\begin{tikzpicture}
+%\begin{umlstate}[name=Amain]{Etat global de l'objet A}
+%\begin{umlstate}[name=Bgraph, fill=red!20]{graphe B}
+%\umlstateinitial[name=Binit]
+%\umlbasicstate[y=-3.5, name=test1, fill=white]{test1}
+%\umltrans{Binit}{test1}
+%\umltrans[recursive=20|60|2.5cm, recursive mode=transition, recursive direction=right to top,  arg={op1}, pos=1.5]{test1}{test1}
+%\umltrans[recursive=160|120|2.5cm, recursive mode=transition, recursive direction=left to top,  arg={op2}, pos=1.5]{test1}{test1}
+%\umltrans[recursive=-160|-120|2.5cm, recursive mode=transition, recursive direction=left to bottom,  arg={op3}, pos=1.5]{test1}{test1}
+%\umltrans[recursive=-20|-60|2.5cm, recursive mode=transition, recursive direction=right to bottom,  arg={op4}, pos=1.5]{test1}{test1}
+%\umlbasicstate[y=-7, name=test2, fill=white]{test2}
+%\umltrans[recursive=-160|-120|2.5cm, recursive mode=transition, recursive direction=left to bottom,  arg={op5}, pos=1.5]{test2}{test2}
+%\umltrans{test1}{test2}
+%\umlstatefinal[x=3, y=-6.75, name=Bfinal]
+%\umltrans{test2}{Bfinal}
+%\end{umlstate}
+%\umlstateinitial[x=6, y=1, name=Ainit]
+%\umlVHtrans[anchor2=40]{Ainit}{Bgraph}
+%\umlstatefinal[x=6, y=-2, name=Afinal]
+%\umlHVtrans[anchor1=30]{Bgraph}{Afinal}
+%\umlbasicstate[x=6, y=-5, name=visu, fill=green!20]{Visualisation}
+%\umlHVtrans{Bfinal}{visu}
+%\umltrans{visu}{Afinal}
+%\umltrans[recursive=-20|-60|2.5cm, recursive mode=transition, recursive direction=right to bottom,  arg=a, pos=1.5]{visu}{visu}
+%\end{umlstate}
+%
+%\end{tikzpicture}
+%\end{center}
+%
+%\section{Les états}
+%
+%\subsection{Etat}
+%
+%\subsection{Etat initial}
+%
+%\subsection{Etat final}
+%
+%\subsection{Etat joint}
+%
+%\subsection{Etat de décision}
+%
+%\subsection{Etat d'entrée}
+%
+%\subsection{Etat de sortie}
+%
+%\subsection{Etat de fin}
+%
+%\subsection{Etat d'historique}
+%
+%\subsection{Etat d'historique profond}
+%
+%\section{Les transitions}
+%
+%\section{Personnalisation}
+%
+%\section{Exemples}
+%
+%\section{Règles de priorité des options et bugs identifiés}
+%
+%\chapter{Diagrammes de séquence}
+%
+%\begin{lstlisting}
+%\begin{umlseqdiag}
+%\umlobj[class=A]{a}
+%\umlobj[class=B, x=4]{b}
+%\umlobj[class=C, x=8]{c}
+%\umlobj[class=D, x=12]{d}
+%\begin{umlcall}[op=opa(), type=synchron, return=0, dt=1.5]{a}{b}
+%\begin{umlfragment}
+%\begin{umlcall}[op=opb(), type=synchron, return=1, dt=0.5]{b}{c}
+%\begin{umlfragment}[type=alt, label=condition, inner xsep=1.1]
+%\begin{umlcall}[op=opc(), type=asynchron, dt=0.5]{c}{d}
+%\end{umlcall}
+%\umlfpart[case = 1]
+%\begin{umlcall}[op=opd(), type=synchron, return=3, dt=1]{c}{d}
+%\end{umlcall}
+%\umlfpart[default]
+%\begin{umlcall}[op=ope(), name=toto, type=synchron, return=3, dt=1]{c}{d}
+%\end{umlcall}
+%\end{umlfragment}
+%\end{umlcall}
+%\end{umlfragment}
+%\begin{umlfragment}
+%\begin{umlcallself}[op=opf(), type=synchron, return=4, dt=0.5]{b}
+%\begin{umlfragment}[type=assert]
+%\begin{umlcall}[op=opg(), type=synchron, return=5, dt=0.5]{b}{c}
+%\end{umlcall}
+%\end{umlfragment}
+%\end{umlcallself}
+%\end{umlfragment}
+%\end{umlcall}
+%\end{umlseqdiag}
+%\end{lstlisting}
+%
+%\begin{tikzpicture}
+%\begin{umlseqdiag}
+%\umlactor[class=A]{a}
+%\umldatabase[class=B, fill=blue!20]{b}
+%\umlmulti[class=C]{c}
+%\umlobject[class=D]{d}
+%\begin{umlcall}[op=opa(), type=synchron, return=0]{a}{b}
+%\begin{umlfragment}
+%\begin{umlcall}[op=opb(),  type=synchron, return=1]{b}{c}
+%\begin{umlfragment}[type=alt, label=condition, inner xsep=8, fill=green!10]
+%\begin{umlcall}[op=opc(), type=asynchron, fill=red!10]{c}{d}
+%\end{umlcall}
+%\umlfpart[case = 1]
+%\begin{umlcall}[op=opd(), type=synchron, return=3]{c}{d}
+%\end{umlcall}
+%\umlfpart[default]
+%\begin{umlcall}[op=ope(), type=synchron, return=3]{c}{d}
+%\end{umlcall}
+%\end{umlfragment}
+%\end{umlcall}
+%\end{umlfragment}
+%\begin{umlfragment}
+%\begin{umlcallself}[op=opf(), type=synchron, return=4]{b}
+%\begin{umlfragment}[type=assert]
+%\begin{umlcall}[op=opg(), type=synchron, return=5]{b}{c}
+%\end{umlcall}
+%\end{umlfragment}
+%\end{umlcallself}
+%\end{umlfragment}
+%\end{umlcall}
+%\umlcreatecall[class=E, x=8]{a}{e}
+%\begin{umlfragment}
+%\begin{umlcall}[op=oph(), name=test, type=synchron, return=6, dt=7, fill=red!10]{a}{e}
+%\umlcreatecall[class=F, stereo=boundary, x=12]{e}{f}
+%\end{umlcall}
+%\begin{umlcall}[op=opi(), type=synchron, return=7]{a}{e}
+%\end{umlcall}
+%\end{umlfragment}
+%
+%\end{umlseqdiag}
+%\end{tikzpicture}
+%
+%\section{Les objets}
+%
+%\subsection{Objet}
+%
+%\subsection{Acteur}
+%
+%\subsection{Base de donnée}
+%
+%\subsection{Frontière}
+%
+%\subsection{Contrôle}
+%
+%\subsection{Entité}
+%
+%\subsection{Collection d'objets}
+%
+%\section{Appels de fonctions}
+%
+%\subsection{Appels simples}
+%
+%\subsection{Appels récursifs}
+%
+%\subsection{Création d'objets}
+%
+%\section{Fragments combinés}
+%
+%\section{Personnalisation}
+%
+%\section{Exemples}
+%
+%\section{Règles de priorité des options et bugs identifiés}
 \end{document}

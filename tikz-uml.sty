@@ -16,17 +16,17 @@
 \RequirePackage{pgfopts}%
 \usetikzlibrary{arrows,shapes,fit,shadows, decorations.markings}%
 
-\def\tikzumlPackageLayersNum{2}
+\def\tikzumlPackageLayersNum{2}%
 \pgfkeys{/tikzuml/options/.cd, packageLayers/.initial=3}%
 \pgfkeys{/tikzuml/options/.cd, packageLayers/.store in=\tikzumlPackageLayersNum}%
-\def\tikzumlStateLayersNum{2}
+\def\tikzumlStateLayersNum{2}%
 \pgfkeys{/tikzuml/options/.cd, stateLayers/.initial=3}%
 \pgfkeys{/tikzuml/options/.cd, stateLayers/.store in=\tikzumlStateLayersNum}%
-\def\tikzumlFragmentLayersNum{2}
+\def\tikzumlFragmentLayersNum{2}%
 \pgfkeys{/tikzuml/options/.cd, fragmentLayers/.initial=3}%
 \pgfkeys{/tikzuml/options/.cd, fragmentLayers/.store in=\tikzumlFragmentLayersNum}%
 
-\ProcessPgfOptions{/tikzuml/options}
+\ProcessPgfOptions{/tikzuml/options}%
 
 \def\pgfsetlayersArg{background}%
 \newcounter{tikzumlStateLayers}%
@@ -56,9 +56,7 @@
 \pgfdeclarelayer{connections}%
 \pgfdeclarelayer{threadground}%
 \xdef\pgfsetlayersArg{\pgfsetlayersArg,lifelines,activity,connections,threadground,main}%
-\pgfsetlayers{\pgfsetlayersArg}
-
-\tikzstyle{every picture}+=[remember picture]
+\pgfsetlayers{\pgfsetlayersArg}%
 
 \pgfkeys{/tikzuml/.cd, text/.initial=black, draw/.initial=black, font/.initial=\small,%
                        fill class/.initial=yellow!20, fill template/.initial=yellow!2, fill package/.initial=blue!20, fill note/.initial=green!20,%
@@ -89,6 +87,8 @@
                                 attr/.style args={#1|#2}{arg=#1, mult=#2},%
                                 recursive/.style args={#1|#2|#3}{angle1=#1, angle2=#2, loopsize=#3},%
                                 anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2},%
+                                recursive direction/.style args={#1 to #2}{recursive direction start=#1, recursive direction end=#2}}%
+\pgfkeys{/tikzuml/note/.cd, anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2}}%
 
 \tikzstyle{tikzuml class style}=[rectangle split, rectangle split parts=3, minimum height=2em, minimum width=10ex, node distance=2em]%
 \tikzstyle{tikzuml template style}=[dashed, inner ysep=0.7em, inner xsep=1ex]%
@@ -347,19 +347,6 @@
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlClassNodeName{\tikzumlClassName}}\x%
   %
-%  \edef\tikzumlClassNodeName{\detokenize\expandafter{\tikzumlClassName}}
-%  \def\tikzumlClassNodeName{#2}
-  
-%  \begingroup 
-%    \catcode`\_ \active 
-%    \lccode`\~`\_ 
-%    \lowercase{\def~{\noexpand\_}} 
-%    \endlinechar-1 
-%    \scantokens\expandafter{\expandafter\def\expandafter 
-%        \x\expandafter{\tikzumlClassNodeName}}% 
-%           \edef\x{\endgroup 
-%              \def\noexpand\tikzumlClassName{\x}}\x
-  %
   \def\tikzumlClassPos{\umlclassX,\umlclassY}%
   \def\tikzumlClassAttributes{#3}%
   \def\tikzumlClassOperations{#4}%
@@ -437,6 +424,8 @@
                                   angle1/.initial=-30, angle2/.initial=30, loopsize/.initial=3em,%
                                   stereo/.initial={}, pos stereo/.initial=0.5,%
                                   style/.initial=->, name/.initial=relation-\thetikzumlRelationNum,%
+                                  recursive mode/.initial=default, recursive direction start/.initial=right,%
+                                  recursive direction end/.initial=bottom,%
                                   .unknown/.code={%
                                     \let\keyname=\pgfkeyscurrentname%
                                     \errmessage{TIKZUML ERROR : invalid option \keyname in umlrelation}%
@@ -450,7 +439,9 @@
                                   anchor1/.get=\tikzumlSrcAnchor, anchor2/.get=\tikzumlDestAnchor,%
                                   angle1/.get=\startangle, angle2/.get=\endangle, loopsize/.get=\loopsize,%
                                   stereo/.get=\stereo, pos stereo/.get=\positionStereotype,%
-                                  style/.get=\style, name/.get=\relationName}%
+                                  style/.get=\style, name/.get=\relationName,%
+                                  recursive mode/.get=\tikzumlrecmode, recursive direction start/.get=\tikzumlrecdirstart,%
+                                  recursive direction end/.get=\tikzumlrecdirend}%
   %
   % managing \_ in class names for node names
   \def\tikzumlSrcClassName{#2}%
@@ -545,13 +536,184 @@
       \def\arcNum{1}%
       \def\arcNumT{1}%
       %
-      \xdef\tikzumlLastArc{node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
-                           node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
-                           node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
-                           node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
-                           node[pos=\positionStereotype, anchor=center] {\stereotype} }%
-      \xdef\tikzumlPath{(\tikzumlSrcClassNodeName) edge[in=\endangle, out=\startangle, distance=\loopsize] \tikzumlLastArc%
-                                                        node[midway, name=\relationName-1, anchor=center] {} (\tikzumlDestClassNodeName) }%
+      \ifthenelse{\equal{\tikzumlrecmode}{default}}{%
+        \xdef\tikzumlLastArc{node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                             node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
+                             node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                             node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
+                             node[pos=\positionStereotype, anchor=center] {\stereotype} }%
+        \xdef\tikzumlPath{(\tikzumlSrcClassNodeName) edge[in=\endangle, out=\startangle, distance=\loopsize] \tikzumlLastArc%
+                                                          node[midway, name=\relationName-1, anchor=center] {} (\tikzumlDestClassNodeName) }%
+      }{%
+        \ifthenelse{\equal{\tikzumlrecmode}{transition}}{%
+          \xdef\tikzumlFirstArc{node[midway, name=\relationName-1, anchor=center] {}}%
+          \xdef\tikzumlMidOneArc{node[midway, name=\relationName-3, anchor=center] {}}%
+          %
+          \ifthenelse{\equal{\tikzumlrecdirstart}{\tikzumlrecdirend}}{%
+            \def\numArcs{3}%
+            \xdef\tikzumlLastArc{node[midway, name=\relationName-5, anchor=center] {}}%
+            %
+            \begin{pgfonlayer}{connections}%
+            \draw (\tikzumlSrcClassNodeName) edge[in=\endangle, out=\startangle, distance=\loopsize, draw=none] %
+                                                  node[midway, name=\relationName-tmp, anchor=center] {} (\tikzumlDestClassNodeName);%
+            \ifthenelse{\equal{\tikzumlrecdirstart}{right}\OR\equal{\tikzumlrecdirstart}{left}}{%
+              \node[name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle -| \relationName-tmp) {};%
+              \node[name=\relationName-4] at (\tikzumlDestClassNodeName.\endangle -| \relationName-tmp) {};%
+            }{%
+              \node[name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle |- \relationName-tmp) {};%
+              \node[name=\relationName-4] at (\tikzumlDestClassNodeName.\endangle |- \relationName-tmp) {};%
+            }%
+            \end{pgfonlayer}%
+          }{%
+            \def\numArcs{4}%
+            \xdef\tikzumlMidTwoArc{node[midway, name=\relationName-5, anchor=center] {}}%
+            \xdef\tikzumlLastArc{node[midway, name=\relationName-7, anchor=center] {}}%
+            %
+            \begin{pgfonlayer}{connections}%
+            \draw (\tikzumlSrcClassNodeName) edge[in=\endangle, out=\startangle, distance=\loopsize, draw=none] %
+                                                  node[midway, name=\relationName-4, anchor=center] {} (\tikzumlDestClassNodeName);%
+            \ifthenelse{\equal{\tikzumlrecdirstart}{right}\OR\equal{\tikzumlrecdirstart}{left}}{%
+              \node[name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle -| \relationName-4) {};%
+              \node[name=\relationName-6] at (\tikzumlDestClassNodeName.\endangle |- \relationName-4) {};%
+            }{%
+              \node[name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle |- \relationName-4) {};%
+              \node[name=\relationName-6] at (\tikzumlDestClassNodeName.\endangle -| \relationName-4) {};%
+            }%
+            \end{pgfonlayer}%
+          }%
+          %
+          \ifnum\numArcs=4%
+            \ifnum\theposStereo>300%
+              \pgfmathsetmacro{\posStereo}{(\theposStereo-300)/100}%
+              \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\posStereo, anchor=center] {\stereotype}}%
+            \else%
+              \ifnum\theposStereo<100%
+                \xdef\tikzumlFirstArc{\tikzumlFirstArc node[pos=\posStereo, anchor=center] {\stereotype}}%
+              \else%
+                \ifnum\theposStereo>200%
+                  \pgfmathsetmacro{\posStereo}{(\theposStereo-200)/100}%
+                  \xdef\tikzumlMidTwoArc{\tikzumlMidTwoArc node[pos=\posStereo, anchor=center] {\stereotype}}%
+                \else%
+                  \pgfmathsetmacro{\posStereo}{(\theposStereo-100)/100}%
+                  \xdef\tikzumlMidOneArc{\tikzumlMidOneArc node[pos=\posStereo, anchor=center] {\stereotype}}%
+                \fi%
+              \fi%
+            \fi%
+            %
+            \ifnum\thepos>300%
+              \pgfmathsetmacro{\pos}{(\thepos-300)/100}%
+              \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                                   node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
+                                   }%
+            \else%
+              \ifnum\thepos<100%
+                \xdef\tikzumlFirstArc{\tikzumlFirstArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                                     node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
+                                     }%
+              \else%
+                \ifnum\thepos>200%
+                  \pgfmathsetmacro{\pos}{(\thepos-200)/100}%
+                  \xdef\tikzumlMidTwoArc{\tikzumlMidTwoArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                                         node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
+                                        }%
+                \else%
+                  \pgfmathsetmacro{\pos}{(\thepos-100)/100}%
+                  \xdef\tikzumlMidOneArc{\tikzumlMidOneArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                                         node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
+                                        }%
+                \fi%
+              \fi%
+            \fi%
+            %
+            \ifnum\theposT>300%
+              \pgfmathsetmacro{\posT}{(\theposT-300)/100}%
+              \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                                   node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
+                                   }%
+            \else%
+              \ifnum\theposT<100%
+                \xdef\tikzumlFirstArc{\tikzumlFirstArc node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                                     node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
+                                     }%
+              \else%
+                \ifnum\theposT>200%
+                  \pgfmathsetmacro{\posT}{(\theposT-200)/100}%
+                  \xdef\tikzumlMidTwoArc{\tikzumlMidTwoArc node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                                         node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
+                                        }%
+                \else%
+                  \pgfmathsetmacro{\posT}{(\theposT-100)/100}%
+                  \xdef\tikzumlMidOneArc{\tikzumlMidOneArc node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                                         node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
+                                        }%
+                \fi%
+              \fi%
+            \fi%
+          \else%
+            \ifnum\theposStereo>200%
+              \pgfmathsetmacro{\posStereo}{(\theposStereo-200)/100}%
+              \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\posStereo, anchor=center] {\stereotype} }%
+            \else%
+              \ifnum\theposStereo<100%
+                \xdef\tikzumlFirstArc{\tikzumlFirstArc node[pos=\posStereo, anchor=center] {\stereotype} }%
+              \else%
+                \pgfmathsetmacro{\posStereo}{(\theposStereo-100)/100}%
+                \xdef\tikzumlMidOneArc{\tikzumlMidOneArc node[pos=\posStereo, anchor=center] {\stereotype} }%
+              \fi%
+            \fi%
+            %
+            \ifnum\thepos>200%
+              \pgfmathsetmacro{\pos}{(\thepos-200)/100}%
+              \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                                   node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
+                                   }%
+            \else%
+              \ifnum\thepos<100%
+                \xdef\tikzumlFirstArc{\tikzumlFirstArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                                     node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
+                                     }%
+              \else%
+                \pgfmathsetmacro{\pos}{(\thepos-100)/100}%
+                \xdef\tikzumlMidOneArc{\tikzumlMidOneArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                                       node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
+                                      }%
+              \fi%
+            \fi%
+            %
+            \ifnum\theposT>200%
+              \pgfmathsetmacro{\posT}{(\theposT-200)/100}%
+              \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                                   node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
+                                   }%
+            \else%
+              \ifnum\theposT<100%
+                \xdef\tikzumlFirstArc{\tikzumlFirstArc node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                                     node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
+                                     }%
+              \else%
+                \pgfmathsetmacro{\posT}{(\theposT-100)/100}%
+                \xdef\tikzumlMidOneArc{\tikzumlMidOneArc node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                                       node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
+                                      }%
+              \fi%
+            \fi%
+          \fi%
+          %
+          \ifthenelse{\equal{\tikzumlrecdirstart}{\tikzumlrecdirend}}{%
+            \xdef\tikzumlPath{(\tikzumlSrcClassNodeName.\startangle) -- \tikzumlFirstArc (\relationName-2.center) -- \tikzumlMidOneArc (\relationName-4.center) -- \tikzumlLastArc (\tikzumlDestClassNodeName.\endangle) }%
+            \ifnum\thetikzumlStateLevel>0%
+              \def\tikzumlStateFitTmp{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+              \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitTmp (\relationName-1) (\relationName-2) (\relationName-3) (\relationName-4) (\relationName-5)}%
+            \fi%
+          }{%
+            \xdef\tikzumlPath{(\tikzumlSrcClassNodeName.\startangle) -- \tikzumlFirstArc (\relationName-2.center) -- \tikzumlMidOneArc (\relationName-4.center) -- \tikzumlMidTwoArc (\relationName-6.center) -- \tikzumlLastArc (\tikzumlDestClassNodeName.\endangle) }%
+            \ifnum\thetikzumlStateLevel>0%
+              \def\tikzumlStateFitTmp{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+              \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitTmp (\relationName-1) (\relationName-2) (\relationName-3) (\relationName-4) (\relationName-5) (\relationName-6) (\relationName-7)}%
+            \fi%
+          }%
+        }{}%
+      }%
     }{%
       \def\arcNum{1}%
       \def\arcNumT{1}%
@@ -1307,34 +1469,127 @@
 % optional : x,y coordinates of the note
 %            width of the note
 %            draw, fill, text colors
-\newcommand{\umlnote}[3][]{%
-  \pgfkeys{/tikzuml/note/.cd, x/.initial=0, y/.initial=0, width/.initial=3cm,%
+\newcommand{\umlnote}[3][]{% ajouter options weight, arm, anchor1, anchor2
+  \pgfkeys{/tikzuml/note/.cd, x/.initial=0, y/.initial=0, width/.initial=3cm, geometry/.initial=--,%
+                              weight/.initial=0.5, arm/.initial={auto}, anchor1/.initial={tikzumlEmpty}, anchor2/.initial={tikzumlEmpty},%
                               draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillnotecolor, text/.initial=\tikzumltextcolor,%
                               .unknown/.code={%
                                 \let\keyname=\pgfkeyscurrentname%
                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlnote}%
                               }}%
   \pgfkeys{/tikzuml/note/.cd, #1}%
-  \pgfkeys{/tikzuml/note/.cd, x/.get=\posx, y/.get=\posy, width/.get=\notetextwidth, draw/.get=\tikzumlnotedraw, fill/.get=\tikzumlnotefill, text/.get=\tikzumlnotetext}%
+  \pgfkeys{/tikzuml/note/.cd, x/.get=\tikzumlnoteX, y/.get=\tikzumlnoteY, width/.get=\notetextwidth, geometry/.get=\tikzumlnotegeometry,%
+                              weight/.get=\tikzumlnoteweight, arm/.get=\tikzumlnotearm, anchor1/.get=\tikzumlnoteSrcAnchor, anchor2/.get=\tikzumlnoteDestAnchor,%
+                              draw/.get=\tikzumlnotedraw, fill/.get=\tikzumlnotefill, text/.get=\tikzumlnotetext}%
   %
   \def\tikzumlClassName{#2}%
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlClassNodeName{\tikzumlClassName}}\x%
   %
-  \node[text width=\notetextwidth, outer sep=0, inner ysep=0.6cm, font=\tikzumlfont] (note-\thetikzumlNoteNum-coord) at (\posx, \posy) {#3};%
-  \draw (note-\thetikzumlNoteNum-coord.north east) node[name=note-\thetikzumlNoteNum-right-top, below=0.5cm, inner sep=0] {};%
-  \draw (note-\thetikzumlNoteNum-coord.north east) node[name=note-\thetikzumlNoteNum-top-right, left=0.5cm, inner sep=0] {};%
+  % def anchors macros
+  \ifthenelse{\equal{\tikzumlnoteSrcAnchor}{tikzumlEmpty}}{%
+    \def\tikzumlnoteSrcAnchor{}%
+  }{%
+    \let\tikzumlnoteSrcAnchorold\tikzumlnoteSrcAnchor%
+    \def\tikzumlnoteSrcAnchor{.\tikzumlnoteSrcAnchorold}%
+  }%
+  %
+  \ifthenelse{\equal{\tikzumlnoteDestAnchor}{tikzumlEmpty}}{%
+    \def\tikzumlnoteDestAnchor{}%
+  }{%
+    \let\tikzumlnoteDestAnchorold\tikzumlnoteDestAnchor%
+    \def\tikzumlnoteDestAnchor{.\tikzumlnoteDestAnchorold}%
+  }%
+  %
+  \node[text=\tikzumlnotetext, text width=\notetextwidth, font=\tikzumlfont, outer sep=0, inner xsep=1ex, inner ysep=3ex] (note-\thetikzumlNoteNum-coord) at (\tikzumlnoteX, \tikzumlnoteY) {#3};%
+  \draw (note-\thetikzumlNoteNum-coord.north east) node[name=note-\thetikzumlNoteNum-right-top, below=2ex, inner sep=0] {};%
+  \draw (note-\thetikzumlNoteNum-coord.north east) node[name=note-\thetikzumlNoteNum-top-right, left=2ex, inner sep=0] {};%
   \draw[draw=\tikzumlnotedraw, fill=\tikzumlnotefill] (note-\thetikzumlNoteNum-coord.south west) -- (note-\thetikzumlNoteNum-coord.south east) -- (note-\thetikzumlNoteNum-right-top.base) -- (note-\thetikzumlNoteNum-top-right.base) -- (note-\thetikzumlNoteNum-coord.north west) -- cycle;%
-  \node[text=\tikzumlnotetext, text width=\notetextwidth, font=\tikzumlfont, outer sep=0, inner ysep=0.6cm] (note-\thetikzumlNoteNum) at (note-\thetikzumlNoteNum-coord) {#3};%
+  \node[text=\tikzumlnotetext, text width=\notetextwidth, outer sep=0, inner xsep=1ex, inner ysep=3ex, font=\tikzumlfont] (note-\thetikzumlNoteNum) at (note-\thetikzumlNoteNum-coord) {#3};%
   \begin{scope}[shift=(note-\thetikzumlNoteNum.north east)]%
-  \draw[draw=\tikzumlnotedraw, fill=\tikzumlnotefill] (-0.5,-0.5) -- ++(0.5,0) -- ++(-0.5,0.5) -- cycle;%
-  \begin{pgfonlayer}{connections}%
-  \draw[dashed] (note-\thetikzumlNoteNum-coord.center) -- (\tikzumlClassNodeName.center);%
-  \end{pgfonlayer}%
+  \draw[draw=\tikzumlnotedraw, fill=\tikzumlnotefill] (-2ex,-2ex) -- ++(2ex,0) -- ++(-2ex,2ex) -- cycle;%
   \end{scope}%
   %
+  \pgfmathsetmacro{\tikzumlnoteweightT}{1-\tikzumlnoteweight}
+  \node (note-\thetikzumlNoteNum-middle) at (barycentric cs:note-\thetikzumlNoteNum-coord=\tikzumlnoteweight,\tikzumlClassNodeName=\tikzumlnoteweightT) {};%
+  %
+  \ifthenelse{\equal{\tikzumlnotegeometry}{--}\OR\equal{\tikzumlnotegeometry}{-|}\OR\equal{\tikzumlnotegeometry}{|-}}{%
+    \edef\tikzumlnotepath{\tikzumlnotegeometry}
+  }{%
+    \ifthenelse{\equal{\tikzumlnotegeometry}{-|-}}{%
+      \ifthenelse{\equal{\tikzumlnotearm}{auto}}{%
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord -| note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center |- \tikzumlClassNodeName) --}%
+      }{%
+        \draw (note-\thetikzumlNoteNum-coord\tikzumlnoteSrcAnchor)+(\tikzumlnotearm,0) node[name=note-\thetikzumlNoteNum-tmp] {};
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-tmp.center) |-}%
+      }%
+    }{%
+      \ifthenelse{\equal{\tikzumlnotegeometry}{|-|}}{%
+        \ifthenelse{\equal{\tikzumlnotearm}{auto}}{%
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord |- note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center -| \tikzumlClassNodeName) --}%
+      }{%
+        \draw (note-\thetikzumlNoteNum-coord\tikzumlnoteSrcAnchor)+(0,\tikzumlnotearm) node[name=note-\thetikzumlNoteNum-tmp] {};
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-tmp.center) -|}%
+      }%
+      
+      }{%
+        \errmessage{TIKZUML ERROR : Unknown geometry value !!! It should be in the following list : --, |-, -|, |-|, -|-}%
+      }%
+    }%
+  }%
+  %
+  \begin{pgfonlayer}{connections}%
+  \draw[dashed] (note-\thetikzumlNoteNum-coord\tikzumlnoteSrcAnchor) \tikzumlnotepath (\tikzumlClassNodeName\tikzumlnoteDestAnchor);%
+  \end{pgfonlayer}%
+  %
   \stepcounter{tikzumlNoteNum}%
+}%
+
+% shortcuts for note with geometry
+\newcommand{\umlHVnote}[3][]{%
+  \pgfkeys{/tikzuml/note/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}}{%
+        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/note/.cd, #1}%
+  \umlnote[geometry=-|, #1]{#2}{#3}%
+}%
+\newcommand{\umlVHnote}[3][]{%
+  \pgfkeys{/tikzuml/note/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}}{%
+        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/note/.cd, #1}%
+  \umlnote[geometry=|-, #1]{#2}{#3}%
+}%
+\newcommand{\umlVHVnote}[3][]{%
+  \pgfkeys{/tikzuml/note/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}}{%
+        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/note/.cd, #1}%
+  \umlnote[geometry=|-|, #1]{#2}{#3}%
+}%
+\newcommand{\umlHVHnote}[3][]{%
+  \pgfkeys{/tikzuml/note/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}}{%
+        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/note/.cd, #1}%
+  \umlnote[geometry=-|-, #1]{#2}{#3}%
 }%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1956,8 +2211,6 @@
   %
   \node[inner sep=2ex, fit = \csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname] (\tikzumlState@nodeName-body) {};%
   \node[above] (\tikzumlState@nodeName-captiontmp) at (\tikzumlState@nodeName-body.north) {\tikzumlState@caption};%
-%  \end{pgfonlayer}
-%  \begin{pgfonlayer}{background}
   \node[rounded corners, draw=\tikzumlstatedraw, fill=\tikzumlstatefill, name=\tikzumlState@nodeName, fit=(\tikzumlState@nodeName-body) (\tikzumlState@nodeName-captiontmp)] {};%
   \node (\tikzumlState@nodeName-caption) at (\tikzumlState@nodeName-captiontmp) {\tikzumlState@caption};%
   \draw (\tikzumlState@nodeName-caption.south -| \tikzumlState@nodeName.north west) -- (\tikzumlState@nodeName-caption.south -| \tikzumlState@nodeName.north east);%
@@ -2119,8 +2372,7 @@
                              draw/.get=\tikzumlobjectdraw, fill/.get=\tikzumlobjectfill, text/.get=\tikzumlobjecttext}%
   %
   \ifthenelse{\equal{\tikzumlobjectX}{tikzumlEmpty}}{%
-    \pgfmathparse{4*(\thetikzumlObjectNum-1)}%
-    \def\tikzumlobjectX{\pgfmathresult}%
+    \pgfmathsetmacro{\tikzumlobjectX}{4*(\thetikzumlObjectNum-1)}%
   }{}%
   %
   \def\tikzumlObjectName{#2}%
@@ -2290,7 +2542,6 @@
     \let\tikzumlcallDTold\tikzumlcallDT%
     \pgfmathparse{0.5*\tikzumlFragment@paddingy+\tikzumlcallDTold}%
     \edef\tikzumlcallDT{\pgfmathresult}%
-%    \addtocounter{tikzumlCallEndFragmentNum}{-1}
   \fi%
   %
   % managing parent-child structure
@@ -2352,11 +2603,9 @@
       \node[tikzuml activity style] (sb-\tikzumlCall@nodeName) at (\tikzumlCallStartNodeName |- tikzumlTmpNode) {};% 
     }{%
       \ifthenelse{\equal{\tikzumlcallreturn}{tikzumlEmpty}}{%
-        \pgfmathparse{0.5*\tikzumlcallpadding}%
-        \def\tikzumlcallpaddingd{\pgfmathresult}%
+        \pgfmathsetmacro{\tikzumlcallpaddingd}{0.5*\tikzumlcallpadding}%
       }{%
-        \pgfmathparse{1.2*\tikzumlcallpadding}%
-        \edef\tikzumlcallpaddingd{\pgfmathresult}%
+        \pgfmathsetmacro{\tikzumlcallpaddingd}{1.2*\tikzumlcallpadding}%
       }%
       \draw (\tikzumlCallBottomSrc)+(0,-\tikzumlcallpaddingd ex) node[coordinate, name=tikzumlTmpNode] {};%
       \node[tikzuml activity style] (eb-\tikzumlCall@nodeName) at (\tikzumlCallEndNodeName |- tikzumlTmpNode) {};%
@@ -2629,7 +2878,6 @@
     \let\tikzumlcallDTold\tikzumlcallDT%
     \pgfmathparse{0.5*\tikzumlFragment@paddingy+\tikzumlcallDTold}%
     \edef\tikzumlcallDT{\pgfmathresult}%
-%    \addtocounter{tikzumlCallEndFragmentNum}{-1}
   \fi%
   %
   % managing parent-child structure
@@ -2671,9 +2919,9 @@
   \fi%
   % add to fit fragment
   \ifnum\c@tikzumlFragmentLevel>0%
-        \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
-        \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCreateCall@nodeName) (sb-\tikzumlCreateCall@nodeName) (\tikzumlCreateCall@nodeName-op) (#3) }%
-      \fi%
+    \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
+    \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCreateCall@nodeName) (sb-\tikzumlCreateCall@nodeName) (\tikzumlCreateCall@nodeName-op) (#3) }%
+  \fi%
 }
 
 %%% End of tikz-uml.sty
