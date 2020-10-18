@@ -105,6 +105,11 @@
 
 \maketitle
 
+\tableofcontents
+
+\chapter*{Préambule}
+\addcontentsline{toc}{chapter}{Préambule}
+
 Devant les immenses possibilités offertes par la librairies {\sc PGF/TikZ}, et devant l'absence apparente de package dédié aux diagrammes UML, j'ai été amené à développer le package \tuml, proposant un ensemble de commandes et d'environnements spécifiques à ce type de diagrammes. Il s'inscrit dans la logique du package pst-uml développé pour des raisons similaires en {\sc PSTricks}. Dans son état actuel, la librairie permet de définir des diagrammes de classes complets de manière assez simple, ainsi que des diagrammes de cas d'utilisation, des diagrammes de séquence, et des diagrammes d'états-transitions. Un certain nombre d'améliorations sont encore à apporter, mais cela se rapproche de l'état final.
 
 Voici un exemple de diagramme de classes que l'on peut réaliser :
@@ -113,9 +118,31 @@ Voici un exemple de diagramme de classes que l'on peut réaliser :
 \inputTikZ{classdiagex}
 \end{center}
 
-Nous allons maintenant vous présenter les différentes fonctionnalités offertes par \tuml.
+Nous allons maintenant vous présenter les différentes fonctionnalités offertes par \tuml, mais avant parler des packages dont \tuml dépend et de son installation.
 
-\tableofcontents
+\section*{Dépendances}
+\addcontentsline{toc}{section}{Dépendances}
+
+\subsection*{Packages requis}
+\addcontentsline{toc}{subsection}{Packages requis}
+
+\begin{description}
+\item[tikz :] Inutile de présenter ce package de dessin extrêmement complet et puissant. Tous les diagrammes générés par \tuml sont bien évidemment générés en réalité par \TikZ. Il fournit également un certain nombre de packages et de librairies utilisées par \tuml, comme les librairies backgrounds, arrows, shapes, fit, shadows, decorations.markings et le package {\bf pgfkeys} qui est un gestionnaire d'options de macros.
+\item[ifthen :] Ce package permet la gestion de tests conditionnels de type if \ldots then \ldots else \ldots
+\item[xstring :] Ce package permet de faire des substitutions dans des chaines de caractères. Il est utilisé dans la gestion entre le nom des item de programmation (classes, états, packages, \ldots) et le nom des n\oe{}uds qui les représentent.
+\item[calc :] Ce package permet d'effectuer des calculs assez simplement.
+\item[pgfopts :] Ce package est une extension du package {\bf pgfkeys} pour la gestion des options de package.
+\end{description}
+
+\subsection*{Autres dépendances}
+\addcontentsline{toc}{subsection}{Autres dépendances}
+
+Pour des raisons encore inconnues, le bon fonctionnement du package \tuml demande d'avoir inclus auparavant le package {\bf babel} avec la langue de votre choix.
+
+\subsection*{Installation}
+\addcontentsline{toc}{section}{Installation}
+
+A venir
 
 \chapter{Diagrammes de classes}\label{c.class}
 
@@ -231,7 +258,7 @@ Pour donner le nom d'une classe, il arrive que l'on utilise des caractères spé
 
 \subsection{Définir des attributs et des opérations}\label{ss.attrop}
 
-On définit les attributs à l'intérieur d'un environnement {\tt umlclass} à l'aide de la commande {\tt umlattr}. On lui passe en argument la liste des arguments en les séparants par $\backslash\backslash$. On procède de même pour les opérations avec la commande {\tt umlop} :
+On définit les attributs avec le second argument de la commande {\tt umlclass}. On écrit la liste des arguments en les séparants par {\tt \\}. Les opérations sont définies avec le troisième argument de la commande {\tt umlclass}. Pour définir un attribut ou une mêthode statique, on peut utiliser la commande {\tt umlstatic}. De même, la commande {\tt umlvirt} permet de spécifier des fonctions virtuelles :
 
 \medskip
 
@@ -243,10 +270,6 @@ On définit les attributs à l'intérieur d'un environnement {\tt umlclass} à l
 \inputTikZ{attr-and-op}
 \end{center}
 \end{minipage}
-
-\medskip
-
-Pour définir un attribut ou une méthode statique, on peut utiliser la commande {\tt umlstatic}. De même, la commande {\tt umlvirt} permet de spécifier des fonctions virtuelles.
 
 \section{Relations entre classes}\label{s.rel}
 
@@ -659,7 +682,6 @@ Grâce à la commande {\tt tikzumlset}, il est possible de modifier l'apparence 
 \item[fill class :] permet de spécifier la couleur de fond des classes (=yellow!20 par défaut),
 \item[fill template :] permet de spécifier la couleur de fond des boites templates (=yellow!2 par défaut),
 \item[fill package :] permet de spécifier la couleur de fond des packages (=blue!20 par défaut),
-\item[fill subpackage :] permet de spécifier la couleur de fond des sous-packages (=blue!20 par défaut),
 \item[fill note :] permet de spécifier la couleur de fond des notes (=green!20 par défaut),
 \item[font :] permet de définir le style de fonte du texte contenu dans tous les éléments d'un diagramme (=$\backslash$small par défaut).
 \end{description}
