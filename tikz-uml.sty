@@ -104,7 +104,7 @@
                                 recursive direction/.style args={#1 to #2}{recursive direction start=#1, recursive direction end=#2}}%
 \pgfkeys{/tikzuml/note/.cd, anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2}}%
 
-\tikzstyle{tikzuml class style}=[rectangle split, rectangle split parts=3, minimum height=2em, node distance=2em]%
+\tikzstyle{tikzuml class style}=[rectangle split, rectangle split parts=3, rectangle split part align={center, left, left}, minimum height=2em, node distance=2em]%
 \tikzstyle{tikzuml narynode style}=[diamond]%
 \tikzstyle{tikzuml template style}=[dashed, inner ysep=0.5em, inner xsep=1ex]%
 \tikzstyle{tikzuml control nodes style}=[fill=black, inner sep=1.5pt, circle]%
@@ -1989,7 +1989,7 @@
   }{%
     \ifthenelse{\equal{\tikzumlnotegeometry}{-|-}}{%
       \ifthenelse{\equal{\tikzumlnotearm}{auto}}{%
-        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord -| note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center |- \tikzumlClassNodeName) --}%
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord\tikzumlassocclassSrcAnchor -| note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center |- \tikzumlClassNodeName\tikzumlassocclassDestAnchor) --}%
       }{%
         \draw (note-\thetikzumlNoteNum-coord\tikzumlnoteSrcAnchor)+(\tikzumlnotearm,0) node[name=note-\thetikzumlNoteNum-tmp] {};
         \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-tmp.center) |-}%
@@ -1997,7 +1997,7 @@
     }{%
       \ifthenelse{\equal{\tikzumlnotegeometry}{|-|}}{%
         \ifthenelse{\equal{\tikzumlnotearm}{auto}}{%
-        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord |- note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center -| \tikzumlClassNodeName) --}%
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord\tikzumlassocclassSrcAnchor |- note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center -| \tikzumlClassNodeName\tikzumlassocclassDestAnchor) --}%
       }{%
         \draw (note-\thetikzumlNoteNum-coord\tikzumlnoteSrcAnchor)+(0,\tikzumlnotearm) node[name=note-\thetikzumlNoteNum-tmp] {};
         \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-tmp.center) -|}%
@@ -2062,6 +2062,145 @@
   \umlnote[geometry=-|-, #1]{#2}{#3}%
 }%
 
+% define a uml association class (command)
+% args : name of the class
+%        attributes of the class
+%        operations of the class
+% optional : x,y coordinates of the class
+%            width of the class node
+%            type of class (class, interface, typedef, enum)
+%            template parameters
+%            draw, fill, text colors
+\newcommand{\umlassocclass}[5][]{%
+  \pgfkeys{/tikzuml/assocclass/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, template/.initial={}, name/.initial={tikzumlEmpty}, geometry/.initial=--,%
+                               weight/.initial=0.5, arm/.initial={auto}, anchor1/.initial={tikzumlEmpty}, anchor2/.initial={tikzumlEmpty},%
+                               draw/.initial=\tikzumldrawcolor, fill template/.initial=\tikzumlfilltemplatecolor, fill/.initial=\tikzumlfillclasscolor,%
+                               text/.initial=\tikzumltextcolor, .unknown/.code={%
+                                 \let\keyname=\pgfkeyscurrentname%
+                                 \errmessage{TIKZUML ERROR : in umlassocclass, invalid option \keyname}%
+                               }}%
+  \pgfkeys{/tikzuml/assocclass/.cd,#1}%
+  \pgfkeys{/tikzuml/assocclass/.cd, x/.get=\umlassocclassX, y/.get=\umlassocclassY, width/.get=\umlassocclassMinimumWidth, type/.get=\umlassocclassType, template/.get=\umlassocclassTemplateParam,%
+                               name/.get=\umlassocclassName, geometry/.get=\tikzumlassocclassgeometry,%
+                               weight/.get=\tikzumlassocclassweight, arm/.get=\tikzumlassocclassarm, anchor1/.get=\tikzumlassocclassSrcAnchor, anchor2/.get=\tikzumlassocclassDestAnchor,%
+                               draw/.get=\tikzumlassocclassdraw, fill/.get=\tikzumlassocclassfill, text/.get=\tikzumlassocclasstext, fill template/.get=\tikzumlassocclasstemplate}%
+  %
+  \ifthenelse{\equal{\umlassocclassType}{class}\OR\equal{\umlassocclassType}{abstract}}{%
+    \def\tikzumlAssocClassType{}%
+  }{%
+    \def\tikzumlAssocClassType{$<<$\umlassocclassType$>>$ \\}%
+  }%
+  %
+  \ifthenelse{\equal{\umlassocclassTemplateParam}{}}{%
+    \def\tikzumlAssocClassVPadding{}%
+    \def\tikzumlAssocClassHPadding{}%
+  }{%
+    \def\tikzumlAssocClassVPadding{\vspace{0.1em} \\}%
+    \def\tikzumlAssocClassHPadding{\hspace{0.5ex} $ $}%
+  }%
+  %
+  \def\tikzumlAssocClassName{#2}%
+  \def\tikzumlAssocClassRelationName{#3}%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlAssocClassNodeName{\tikzumlAssocClassName}}\x%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlAssocClassRelationNodeName{\tikzumlAssocClassRelationName}}\x%
+  %
+  \ifthenelse{\equal{\umlassocclassName}{tikzumlEmpty}}{}{%
+    \def\tikzumlAssocClassNodeName{\umlassocclassName}%
+  }%
+  %
+  \StrSubstitute{\tikzumlAssocClassNodeName}{:}{@COLON@}[\tikzumlAssocClassNodeName]
+  %
+  \ifthenelse{\equal{\umlassocclassType}{abstract}}{%
+    \let\tikzumlAssocClassNameOld\tikzumlAssocClassName%
+    \def\tikzumlAssocClassName{{\it \tikzumlAssocClassNameOld}}%
+  }{}%
+  %
+  \def\tikzumlAssocClassPos{\umlassocclassX,\umlassocclassY}%
+  \def\tikzumlAssocClassAttributes{#4}%
+  \def\tikzumlAssocClassOperations{#5}%
+  %
+  % def anchors macros
+  \ifthenelse{\equal{\tikzumlassocclassSrcAnchor}{tikzumlEmpty}}{%
+    \def\tikzumlassocclassSrcAnchor{}%
+  }{%
+    \let\tikzumlassocclassSrcAnchorold\tikzumlassocclassSrcAnchor%
+    \def\tikzumlassocclassSrcAnchor{.\tikzumlassocclassSrcAnchorold}%
+  }%
+  %
+  \ifthenelse{\equal{\tikzumlassocclassDestAnchor}{tikzumlEmpty}}{%
+    \def\tikzumlassocclassDestAnchor{}%
+  }{%
+    \let\tikzumlassocclassDestAnchorold\tikzumlassocclassDestAnchor%
+    \def\tikzumlassocclassDestAnchor{.\tikzumlassocclassDestAnchorold}%
+  }%
+  %
+  \node[tikzuml class style, draw=\tikzumlassocclassdraw, fill=\tikzumlassocclassfill, text=\tikzumlassocclasstext, font=\tikzumlfont, minimum width=\umlassocclassMinimumWidth] (\tikzumlAssocClassNodeName) at (\tikzumlAssocClassPos) {\begin{tabular}{c}\tikzumlAssocClassVPadding \tikzumlAssocClassType \tikzumlAssocClassHPadding \textbf{\tikzumlAssocClassName} \tikzumlAssocClassHPadding \end{tabular}%
+  \nodepart{second}%
+  \begin{tabular}{l}%
+  \tikzumlAssocClassAttributes%
+  \end{tabular}%
+  \nodepart{third}%
+  \begin{tabular}{l}%
+  \tikzumlAssocClassOperations%
+  \end{tabular}%
+  };%
+  %
+  \ifthenelse{\equal{\umlassocclassTemplateParam}{}}{}{%
+    \draw (\tikzumlAssocClassNodeName.north east) node[tikzuml template style, name=\tikzumlAssocClassNodeName-template, draw=\tikzumlassocclassdraw, fill=\tikzumlassocclasstemplate, text=\tikzumlassocclasstext, font=\tikzumlfont] {\umlassocclassTemplateParam};%
+  }%
+  %
+  \pgfmathsetmacro{\tikzumlassocclassweightT}{1-\tikzumlassocclassweight}
+  \node (\tikzumlAssocClassNodeName-middle) at (barycentric cs:\tikzumlAssocClassNodeName=\tikzumlnoteweight,\tikzumlAssocClassRelationNodeName=\tikzumlnoteweightT) {};%
+  %
+  \ifthenelse{\equal{\tikzumlassocclassgeometry}{--}\OR\equal{\tikzumlassocclassgeometry}{-|}\OR\equal{\tikzumlassocclassgeometry}{|-}}{%
+    \edef\tikzumlassocclasspath{\tikzumlassocclassgeometry}
+  }{%
+    \ifthenelse{\equal{\tikzumlassocclassgeometry}{-|-}}{%
+      \ifthenelse{\equal{\tikzumlassocclassarm}{auto}}{%
+        \edef\tikzumlassocclasspath{-- (\tikzumlAssocClassNodeName\tikzumlassocclassSrcAnchor -| \tikzumlAssocClassNodeName-middle.center) -- (\tikzumlAssocClassNodeName-middle.center) -- (\tikzumlAssocClassNodeName-middle.center |- \tikzumlAssocClassRelationNodeName\tikzumlassocclassDestAnchor) --}%
+      }{%
+        \draw (\tikzumlAssocClassNodeName\tikzumlassocclassSrcAnchor)+(\tikzumlassocclassarm,0) node[name=\tikzumlAssocClassNodeName-tmp] {};
+        \edef\tikzumlnotepath{-- (\tikzumlAssocClassNodeName-tmp.center) |-}%
+      }%
+    }{%
+      \ifthenelse{\equal{\tikzumlassocclassgeometry}{|-|}}{%
+        \ifthenelse{\equal{\tikzumlassocclassarm}{auto}}{%
+        \edef\tikzumlassocclasspath{-- (\tikzumlAssocClassNodeName\tikzumlassocclassSrcAnchor |- \tikzumlAssocClassNodeName-middle.center) -- (\tikzumlAssocClassNodeName-middle.center) -- (\tikzumlAssocClassNodeName-middle.center -| \tikzumlAssocClassRelationNodeName\tikzumlassocclassDestAnchor) --}%
+      }{%
+        \draw (\tikzumlAssocClassNodeName\tikzumlassocclassSrcAnchor)+(0,\tikzumlassocclassarm) node[name=\tikzumlAssocClassNodeName-tmp] {};
+        \edef\tikzumlassocclasspath{-- (\thetikzumlAssocClassNodeName-tmp.center) -|}%
+      }%
+      
+      }{%
+        \errmessage{TIKZUML ERROR : Unknown geometry value !!! It should be in the following list : --, |-, -|, |-|, -|-}%
+      }%
+    }%
+  }%
+  %
+  \begin{pgfonlayer}{connections}%
+  \draw[dashed] (\tikzumlAssocClassNodeName\tikzumlassocclassSrcAnchor) \tikzumlassocclasspath (\tikzumlAssocClassRelationNodeName\tikzumlassocclassDestAnchor);%
+  \end{pgfonlayer}%
+  %
+
+
+  %
+  % add to fit
+  \ifnum\c@tikzumlPackageLevel>0%
+    \edef\tikzumlPackageFitOld{\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname}%
+    \ifthenelse{\equal{\umlassocclassTemplateParam}{}}{%
+      \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{\tikzumlPackageFitOld (\tikzumlAssocClassNodeName)(\tikzumlAssocClassNodeName-middle)}%
+    }{%
+      \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{\tikzumlPackageFitOld (\tikzumlAssocClassNodeName) (\tikzumlAssocClassNodeName-template)(\tikzumlAssocClassNodeName-middle)}%
+    }%
+    \stepcounter{tikzumlPackageClassNum}%
+  \fi%
+}%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                     use case diagrams                   %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2105,8 +2244,10 @@
   \fi%
   %
   \begin{pgfonlayer}{background}%
-  \node[draw=\tikzumlsystemdraw, fill=\tikzumlsystemfill, text=\tikzumlsystemtext, font=\tikzumlfont, inner ysep=1em, inner xsep=2ex, fit = \tikzumlSystemFit] (\tikzumlSystemName) {};%
-  \node[text=\tikzumlsystemtext, font=\tikzumlfont, below=0.05cm] (\tikzumlSystemName-caption) at (\tikzumlSystemName.north) {\tikzumlSystemName};%
+  \node[inner ysep=1em, inner xsep=2ex, fit = \tikzumlSystemFit] (\tikzumlSystemName-tmp) {};%
+  \node[text=\tikzumlsystemtext, font=\tikzumlfont] (\tikzumlSystemName-caption-tmp) at (\tikzumlSystemName-tmp.north) {\tikzumlSystemName};%
+  \node[draw=\tikzumlsystemdraw, fill=\tikzumlsystemfill, text=\tikzumlsystemtext, font=\tikzumlfont, inner ysep=1em, inner xsep=2ex, fit = (\tikzumlSystemName-tmp) (\tikzumlSystemName-caption-tmp)] (\tikzumlSystemName) {};%
+  \node[text=\tikzumlsystemtext, font=\tikzumlfont] (\tikzumlSystemName-caption) at (\tikzumlSystemName-caption-tmp.north) {\tikzumlSystemName};%
   \end{pgfonlayer}%
   \end{scope}%
   %
@@ -2397,6 +2538,7 @@
 \newcounter{tikzumlStateDeepHistoryNum}%
 \newcounter{tikzumlStateLevel}%
 \newcounter{tikzumlStateSubStateNum}%
+\newcounter{tikzumlStateText}%
 
 \newcommand{\umlstatejoin}[1][]{%
   \pgfkeys{/tikzuml/statejoin/.cd, x/.initial=0, y/.initial=0, width/.initial=3ex,%
@@ -2683,33 +2825,46 @@
   \expandafter\gdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{}%
   %
   \setcounter{tikzumlStateSubStateNum}{0}%
+  \setcounter{tikzumlStateText}{0}%
   %
+  \def\tikzumlStateText{tikzumlEmpty}%
   \begin{scope}[xshift=\tikzumlstateX cm, yshift=\tikzumlstateY cm]%
 }{%
   %  
   \def\tikzumlstaterootlabel{\phantom{\tikzumlState@nodeName}}%
   %
-  \def\tikzumlstateentry{}%
-  \def\tikzumlstatedo{}%
-  \def\tikzumlstateexit{}%
   \def\tikzumlstaterootinnerysep{0.5ex}%
   \def\tikzumlstatebodyinnerysep{2ex}%
+  %
   \ifthenelse{\equal{\umlstateentry}{}}{}{%
-    \def\tikzumlstateentry{entry/\umlstateentry}%
+    \def\tikzumlStateText{entry/\umlstateentry}%
+    \setcounter{tikzumlStateText}{1}%
     \ifnum\c@tikzumlStateSubStateNum=0%
       \def\tikzumlstatebodyinnerysep{0}%
       \def\tikzumlstaterootinnerysep{0}%
     \fi%
   }%
   \ifthenelse{\equal{\umlstatedo}{}}{}{%
-    \def\tikzumlstatedo{do/\umlstatedo}%
+    \ifnum\c@tikzumlStateText=0%
+      \def\tikzumlStateText{do/\umlstatedo}%
+    \else%
+      \let\tikzumlStateTextOld\tikzumlStateText%
+      \def\tikzumlStateText{\tikzumlStateTextOld \\ do/\umlstatedo}%
+    \fi%
+    \setcounter{tikzumlStateText}{1}%
     \ifnum\c@tikzumlStateSubStateNum=0%
       \def\tikzumlstatebodyinnerysep{0}%
       \def\tikzumlstaterootinnerysep{0}%
     \fi%
   }%
   \ifthenelse{\equal{\umlstateexit}{}}{}{%
-    \def\tikzumlstateexit{exit/\umlstateexit}%
+    \ifnum\c@tikzumlStateText=0%
+      \def\tikzumlStateText{exit/\umlstateexit}%
+    \else%
+      \let\tikzumlStateTextOld\tikzumlStateText%
+      \def\tikzumlStateText{\tikzumlStateTextOld \\ exit/\umlstateexit}%
+    \fi%
+    \setcounter{tikzumlStateText}{1}%
     \ifnum\c@tikzumlStateSubStateNum=0%
       \def\tikzumlstatebodyinnerysep{0}%
       \def\tikzumlstaterootinnerysep{0}%
@@ -2733,29 +2888,15 @@
   %
   \node[inner xsep=2ex, inner ysep=\tikzumlstatebodyinnerysep, fit = \csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname] (\tikzumlState@nodeName-body) {};%
   \def\tikzumlState@orig{body}%
-  \ifthenelse{\equal{\umlstateexit}{}}{}{%
-    \node[above=0] (\tikzumlState@nodeName-exittmp) at (\tikzumlState@nodeName-\tikzumlState@orig.north) {\tikzumlstateexit};%
-    \def\tikzumlState@orig{exittmp}%
-  }%
-  \ifthenelse{\equal{\tikzumlstatedo}{}}{}{%
-    \node[above=-0.7em] (\tikzumlState@nodeName-dotmp) at (\tikzumlState@nodeName-\tikzumlState@orig.north) {\tikzumlstatedo};%
-    \def\tikzumlState@orig{dotmp}%
-  }%
-  \ifthenelse{\equal{\tikzumlstateentry}{}}{}{%
-    \node[above=-0.7em] (\tikzumlState@nodeName-entrytmp) at (\tikzumlState@nodeName-\tikzumlState@orig.north) {\tikzumlstateentry};%
-   \def\tikzumlState@orig{entrytmp}%
-  }%
+  \ifnum\c@tikzumlStateText=1%
+    \node[above=0] (\tikzumlState@nodeName-texttmp) at (\tikzumlState@nodeName-\tikzumlState@orig.north) {\begin{tabular}{l}\tikzumlStateText \end{tabular}};%
+    \def\tikzumlState@orig{texttmp}%
+  \fi%
   \node[above] (\tikzumlState@nodeName-captiontmp) at (\tikzumlState@nodeName-\tikzumlState@orig.north) {\tikzumlState@caption};%
   \node[rounded corners, draw=\tikzumlstatedraw, fill=\tikzumlstatefill, name=\tikzumlState@nodeName, fit=(\tikzumlState@nodeName-body) (\tikzumlState@nodeName-captiontmp)] {};%
-  \ifthenelse{\equal{\tikzumlstateentry}{}}{}{%
-    \node (\tikzumlState@nodeName-entry) at (\tikzumlState@nodeName-entrytmp) {\tikzumlstateentry};%
-  }%
-  \ifthenelse{\equal{\tikzumlstatedo}{}}{}{%
-    \node (\tikzumlState@nodeName-do) at (\tikzumlState@nodeName-dotmp) {\tikzumlstatedo};%
-  }%
-  \ifthenelse{\equal{\tikzumlstateexit}{}}{}{%
-    \node (\tikzumlState@nodeName-exit) at (\tikzumlState@nodeName-exittmp) {\tikzumlstateexit};%
-  }%
+  \ifnum\c@tikzumlStateText=1%
+    \node (\tikzumlState@nodeName-text) at (\tikzumlState@nodeName-texttmp) {\begin{tabular}{l}\tikzumlStateText \end{tabular}};%
+  \fi%
   \node (\tikzumlState@nodeName-caption) at (\tikzumlState@nodeName-captiontmp) {\tikzumlState@caption};%
   \draw (\tikzumlState@nodeName-caption.south -| \tikzumlState@nodeName.north west) -- (\tikzumlState@nodeName-caption.south -| \tikzumlState@nodeName.north east);%
   \end{pgfonlayer}%
@@ -2764,6 +2905,12 @@
 
 % shortcut for empty state
 \newcommand{\umlbasicstate}[2][]{\begin{umlstate}[#1]{#2} \end{umlstate}}%
+
+% command to add text in a state
+\newcommand{\umlstatetext}[1]{%
+  \def\tikzumlStateText{#1}%
+  \setcounter{tikzumlStateText}{1}%
+}%
 
 % shortcuts for state transitions macros
 \newcommand{\umltrans}[3][]{%
