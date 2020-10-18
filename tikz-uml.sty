@@ -44,10 +44,6 @@
     \stepcounter{tikzumlFragmentLayers}%
 \repeat%
 %
-\pgfdeclarelayer{lifelines}%
-\pgfdeclarelayer{activity}%
-\pgfdeclarelayer{connections}%
-\xdef\pgfsetlayersArg{\pgfsetlayersArg,lifelines,activity,connections}%
 \newcounter{tikzumlStateLayers}%
 \loop \pgfdeclarelayer{state\thetikzumlStateLayers}%
   \xdef\pgfsetlayersArg{\pgfsetlayersArg,state\thetikzumlStateLayers}%
@@ -55,7 +51,10 @@
     \stepcounter{tikzumlStateLayers}%
 \repeat%
 %
-\xdef\pgfsetlayersArg{\pgfsetlayersArg,main}%
+\pgfdeclarelayer{lifelines}%
+\pgfdeclarelayer{activity}%
+\pgfdeclarelayer{connections}%
+\xdef\pgfsetlayersArg{\pgfsetlayersArg,lifelines,activity,connections,main}%
 \pgfsetlayers{\pgfsetlayersArg}%
 
 \pgfkeys{/tikzuml/.cd, text/.initial=black, draw/.initial=black, font/.initial=\small,%
@@ -600,6 +599,86 @@
               \fi%
             \fi%
             %
+            \ifthenelse{\thepos=300\OR\thepos=100}{%
+              \ifthenelse{\equal{\tikzumlrecdirstart}{right}}{%
+                \ifthenelse{\equal{\tikzumlrecdirend}{bottom}}{%
+                  \def\posAttrName{above right}%
+                  \def\posMultiplicity{below left}%
+                }{%
+                  \def\posAttrName{above left}%
+                  \def\posMultiplicity{below right}%
+                }%
+              }{%
+                \ifthenelse{\equal{\tikzumlrecdirstart}{left}}{%
+                  \ifthenelse{\equal{\tikzumlrecdirend}{bottom}}{%
+                    \def\posAttrName{above left}%
+                    \def\posMultiplicity{below right}%
+                  }{%
+                    \def\posAttrName{above right}%
+                    \def\posMultiplicity{below left}%
+                  }%
+                }{%
+                  \ifthenelse{\equal{\tikzumlrecdirstart}{top}}{%
+                    \ifthenelse{\equal{\tikzumlrecdirend}{left}}{%
+                      \def\posAttrName{above right}%
+                      \def\posMultiplicity{below left}%
+                    }{%
+                      \def\posAttrName{above left}%
+                      \def\posMultiplicity{below right}%
+                    }%
+                  }{%
+                    \ifthenelse{\equal{\tikzumlrecdirend}{left}}{%
+                      \def\posAttrName{above left}%
+                      \def\posMultiplicity{below right}%
+                    }{%
+                      \def\posAttrName{above right}%
+                      \def\posMultiplicity{below left}%
+                    }%
+                  }%
+                }%
+              }%
+            }{}%
+            %
+            \ifthenelse{\thepos=200}{%
+              \ifthenelse{\equal{\tikzumlrecdirstart}{right}}{%
+                \ifthenelse{\equal{\tikzumlrecdirend}{bottom}}{%
+                  \def\posAttrName{above left}%
+                  \def\posMultiplicity{below right}%
+                }{%
+                  \def\posAttrName{above right}%
+                  \def\posMultiplicity{below left}%
+                }%
+              }{%
+                \ifthenelse{\equal{\tikzumlrecdirstart}{left}}{%
+                  \ifthenelse{\equal{\tikzumlrecdirend}{bottom}}{%
+                    \def\posAttrName{above right}%
+                    \def\posMultiplicity{below left}%
+                  }{%
+                    \def\posAttrName{above left}%
+                    \def\posMultiplicity{below right}%
+                  }%
+                }{%
+                  \ifthenelse{\equal{\tikzumlrecdirstart}{top}}{%
+                    \ifthenelse{\equal{\tikzumlrecdirend}{left}}{%
+                      \def\posAttrName{above left}%
+                      \def\posMultiplicity{below right}%
+                    }{%
+                      \def\posAttrName{above right}%
+                      \def\posMultiplicity{below left}%
+                    }%
+                  }{%
+                    \ifthenelse{\equal{\tikzumlrecdirend}{left}}{%
+                      \def\posAttrName{above right}%
+                      \def\posMultiplicity{below left}%
+                    }{%
+                      \def\posAttrName{above left}%
+                      \def\posMultiplicity{below right}%
+                    }%
+                  }%
+                }%
+              }%
+            }{}%
+            %
             \ifnum\thepos>300%
               \pgfmathsetmacro{\pos}{(\thepos-300)/100}%
               \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
@@ -624,6 +703,85 @@
                 \fi%
               \fi%
             \fi%
+            %
+            \ifthenelse{\theposT=300\OR\theposT=100}{%
+              \ifthenelse{\equal{\tikzumlrecdirstart}{right}}{%
+                \ifthenelse{\equal{\tikzumlrecdirend}{bottom}}{%
+                  \def\posAttrNameT{above right}%
+                  \def\posMultiplicityT{below left}%
+                }{%
+                  \def\posAttrNameT{above left}%
+                  \def\posMultiplicityT{below right}%
+                }%
+              }{%
+                \ifthenelse{\equal{\tikzumlrecdirstart}{left}}{%
+                  \ifthenelse{\equal{\tikzumlrecdirend}{bottom}}{%
+                    \def\posAttrNameT{above left}%
+                    \def\posMultiplicityT{below right}%
+                  }{%
+                    \def\posAttrNameT{above right}%
+                    \def\posMultiplicityT{below left}%
+                  }%
+                }{%
+                  \ifthenelse{\equal{\tikzumlrecdirstart}{top}}{%
+                    \ifthenelse{\equal{\tikzumlrecdirend}{left}}{%
+                      \def\posAttrNameT{above right}%
+                      \def\posMultiplicityT{below left}%
+                    }{%
+                      \def\posAttrNameT{above left}%
+                      \def\posMultiplicityT{below right}%
+                    }%
+                  }{%
+                    \ifthenelse{\equal{\tikzumlrecdirend}{left}}{%
+                      \def\posAttrNameT{above left}%
+                      \def\posMultiplicityT{below right}%
+                    }{%
+                      \def\posAttrNameT{above right}%
+                      \def\posMultiplicityT{below left}%
+                    }%
+                  }%
+                }%
+              }%
+            }{}%
+            \ifthenelse{\theposT=200}{%
+              \ifthenelse{\equal{\tikzumlrecdirstart}{right}}{%
+                \ifthenelse{\equal{\tikzumlrecdirend}{bottom}}{%
+                  \def\posAttrNameT{above left}%
+                  \def\posMultiplicity{below right}%
+                }{%
+                  \def\posAttrNameT{above right}%
+                  \def\posMultiplicityT{below left}%
+                }%
+              }{%
+                \ifthenelse{\equal{\tikzumlrecdirstart}{left}}{%
+                  \ifthenelse{\equal{\tikzumlrecdirend}{bottom}}{%
+                    \def\posAttrNameT{above right}%
+                    \def\posMultiplicityT{below left}%
+                  }{%
+                    \def\posAttrNameT{above left}%
+                    \def\posMultiplicityT{below right}%
+                  }%
+                }{%
+                  \ifthenelse{\equal{\tikzumlrecdirstart}{top}}{%
+                    \ifthenelse{\equal{\tikzumlrecdirend}{left}}{%
+                      \def\posAttrNameT{above left}%
+                      \def\posMultiplicityT{below right}%
+                    }{%
+                      \def\posAttrNameT{above right}%
+                      \def\posMultiplicityT{below left}%
+                    }%
+                  }{%
+                    \ifthenelse{\equal{\tikzumlrecdirend}{left}}{%
+                      \def\posAttrNameT{above right}%
+                      \def\posMultiplicityT{below left}%
+                    }{%
+                      \def\posAttrNameT{above left}%
+                      \def\posMultiplicityT{below right}%
+                    }%
+                  }%
+                }%
+              }%
+            }{}%
             %
             \ifnum\theposT>300%
               \pgfmathsetmacro{\posT}{(\theposT-300)/100}%
@@ -662,6 +820,86 @@
               \fi%
             \fi%
             %
+            \ifthenelse{\thepos=100}{%
+              \ifthenelse{\equal{\tikzumlrecdirstart}{right}}{%
+                \ifthenelse{\endangle<\startangle}{%
+                  \def\posAttrName{above right}%
+                  \def\posMultiplicity{below left}%
+                }{%
+                  \def\posAttrName{above left}%
+                  \def\posMultiplicity{below right}%
+                }%
+              }{%
+                \ifthenelse{\equal{\tikzumlrecdirstart}{left}}{%
+                  \ifthenelse{\endangle<\startangle}{%
+                    \def\posAttrName{above left}%
+                    \def\posMultiplicity{below right}%
+                  }{%
+                    \def\posAttrName{above right}%
+                    \def\posMultiplicity{below left}%
+                  }%
+                }{%
+                  \ifthenelse{\equal{\tikzumlrecdirstart}{top}}{%
+                    \ifthenelse{\endangle<\startangle}{%
+                      \def\posAttrName{above right}%
+                      \def\posMultiplicity{below left}%
+                    }{%
+                      \def\posAttrName{above left}%
+                      \def\posMultiplicity{below right}%
+                    }%
+                  }{%
+                    \ifthenelse{\endangle<\startangle}{%
+                      \def\posAttrName{above left}%
+                      \def\posMultiplicity{below right}%
+                    }{%
+                      \def\posAttrName{above right}%
+                      \def\posMultiplicity{below left}%
+                    }%
+                  }%
+                }%
+              }%
+            }{}%
+            %
+            \ifthenelse{\thepos=200}{%
+              \ifthenelse{\equal{\tikzumlrecdirstart}{right}}{%
+                \ifthenelse{\endangle<\startangle}{%
+                  \def\posAttrName{above left}%
+                  \def\posMultiplicity{below right}%
+                }{%
+                  \def\posAttrName{above right}%
+                  \def\posMultiplicity{below left}%
+                }%
+              }{%
+                \ifthenelse{\equal{\tikzumlrecdirstart}{left}}{%
+                  \ifthenelse{\endangle<\startangle}{%
+                    \def\posAttrName{above right}%
+                    \def\posMultiplicity{below left}%
+                  }{%
+                    \def\posAttrName{above left}%
+                    \def\posMultiplicity{below right}%
+                  }%
+                }{%
+                  \ifthenelse{\equal{\tikzumlrecdirstart}{top}}{%
+                    \ifthenelse{\endangle<\startangle}{%
+                      \def\posAttrName{above left}%
+                      \def\posMultiplicity{below right}%
+                    }{%
+                      \def\posAttrName{above right}%
+                      \def\posMultiplicity{below left}%
+                    }%
+                  }{%
+                    \ifthenelse{\endangle<\startangle}{%
+                      \def\posAttrName{above right}%
+                      \def\posMultiplicity{below left}%
+                    }{%
+                      \def\posAttrName{above left}%
+                      \def\posMultiplicity{below right}%
+                    }%
+                  }%
+                }%
+              }%
+            }{}%
+            %
             \ifnum\thepos>200%
               \pgfmathsetmacro{\pos}{(\thepos-200)/100}%
               \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
@@ -679,6 +917,86 @@
                                       }%
               \fi%
             \fi%
+            %
+            \ifthenelse{\theposT=100}{%
+              \ifthenelse{\equal{\tikzumlrecdirstart}{right}}{%
+                \ifthenelse{\endangle<\startangle}{%
+                  \def\posAttrNameT{above right}%
+                  \def\posMultiplicityT{below left}%
+                }{%
+                  \def\posAttrNameT{above left}%
+                  \def\posMultiplicityT{below right}%
+                }%
+              }{%
+                \ifthenelse{\equal{\tikzumlrecdirstart}{left}}{%
+                  \ifthenelse{\endangle<\startangle}{%
+                    \def\posAttrNameT{above left}%
+                    \def\posMultiplicityT{below right}%
+                  }{%
+                    \def\posAttrNameT{above right}%
+                    \def\posMultiplicityT{below left}%
+                  }%
+                }{%
+                  \ifthenelse{\equal{\tikzumlrecdirstart}{top}}{%
+                    \ifthenelse{\endangle<\startangle}{%
+                      \def\posAttrNameT{above right}%
+                      \def\posMultiplicityT{below left}%
+                    }{%
+                      \def\posAttrNameT{above left}%
+                      \def\posMultiplicityT{below right}%
+                    }%
+                  }{%
+                    \ifthenelse{\endangle<\startangle}{%
+                      \def\posAttrNameT{above left}%
+                      \def\posMultiplicityT{below right}%
+                    }{%
+                      \def\posAttrNameT{above right}%
+                      \def\posMultiplicityT{below left}%
+                    }%
+                  }%
+                }%
+              }%
+            }{}%
+            %
+            \ifthenelse{\theposT=200}{%
+              \ifthenelse{\equal{\tikzumlrecdirstart}{right}}{%
+                \ifthenelse{\endangle<\startangle}{%
+                  \def\posAttrNameT{above left}%
+                  \def\posMultiplicityT{below right}%
+                }{%
+                  \def\posAttrNameT{above right}%
+                  \def\posMultiplicityT{below left}%
+                }%
+              }{%
+                \ifthenelse{\equal{\tikzumlrecdirstart}{left}}{%
+                  \ifthenelse{\endangle<\startangle}{%
+                    \def\posAttrNameT{above right}%
+                    \def\posMultiplicityT{below left}%
+                  }{%
+                    \def\posAttrNameT{above left}%
+                    \def\posMultiplicityT{below right}%
+                  }%
+                }{%
+                  \ifthenelse{\equal{\tikzumlrecdirstart}{top}}{%
+                    \ifthenelse{\endangle<\startangle}{%
+                      \def\posAttrNameT{above left}%
+                      \def\posMultiplicityT{below right}%
+                    }{%
+                      \def\posAttrNameT{above right}%
+                      \def\posMultiplicityT{below left}%
+                    }%
+                  }{%
+                    \ifthenelse{\endangle<\startangle}{%
+                      \def\posAttrNameT{above right}%
+                      \def\posMultiplicityT{below left}%
+                    }{%
+                      \def\posAttrNameT{above left}%
+                      \def\posMultiplicityT{below right}%
+                    }%
+                  }%
+                }%
+              }%
+            }{}%
             %
             \ifnum\theposT>200%
               \pgfmathsetmacro{\posT}{(\theposT-200)/100}%
@@ -725,6 +1043,10 @@
                            node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
                            node[pos=\positionStereotype, anchor=center] {\stereotype} }%
       \xdef\tikzumlPath{(\tikzumlSrcClassNodeName\tikzumlSrcAnchor) -- \tikzumlLastArc (\tikzumlDestClassNodeName\tikzumlDestAnchor) }%
+      \ifnum\thetikzumlStateLevel>0%
+        \def\tikzumlStateFitTmp{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+        \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitTmp (\relationName-1) }%
+      \fi%
     }%
   }{%
     % first vertical then horizontal line
@@ -787,6 +1109,10 @@
       \fi%
       %
       \xdef\tikzumlPath{(\tikzumlSrcClassNodeName\tikzumlSrcAnchor) -- \tikzumlFirstArc (\relationName-2.base) -- \tikzumlLastArc (\tikzumlDestClassNodeName\tikzumlDestAnchor) }%
+      \ifnum\thetikzumlStateLevel>0%
+        \def\tikzumlStateFitTmp{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+        \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitTmp (\relationName-1) (\relationName-2) (\relationName-3) }%
+      \fi%
     }{%
       % first horizontal then vertical line
       \ifthenelse{\equal{\geometry}{-|}}{%
@@ -847,6 +1173,10 @@
         \fi%
         %
         \xdef\tikzumlPath{(\tikzumlSrcClassNodeName\tikzumlSrcAnchor) -- \tikzumlFirstArc (\relationName-2.base) -- \tikzumlLastArc (\tikzumlDestClassNodeName\tikzumlDestAnchor) }%
+        \ifnum\thetikzumlStateLevel>0%
+          \def\tikzumlStateFitTmp{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+          \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitTmp (\relationName-1) (\relationName-2) (\relationName-3) }%
+        \fi%
       }{%
         % first vertical, then horizontal, finally vertical line
         \ifthenelse{\equal{\geometry}{|-|}}{%
@@ -948,6 +1278,10 @@
           \fi%
           %
           \xdef\tikzumlPath{(\tikzumlSrcClassNodeName\tikzumlSrcAnchor) -- \tikzumlFirstArc (\relationName-2.base) -- \tikzumlMidOneArc (\relationName-4.base) -- \tikzumlLastArc (\tikzumlDestClassNodeName\tikzumlDestAnchor) }%
+          \ifnum\thetikzumlStateLevel>0%
+            \def\tikzumlStateFitTmp{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+            \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitTmp (\relationName-1) (\relationName-2) (\relationName-3) (\relationName-4) (\relationName-5) }%
+          \fi%
         }{%
           % first horizontal, then vertical, finally horizontal line
           \ifthenelse{\equal{\geometry}{-|-}}{%
@@ -1050,6 +1384,10 @@
             \fi%
             %
             \xdef\tikzumlPath{(\tikzumlSrcClassNodeName\tikzumlSrcAnchor) -- \tikzumlFirstArc (\relationName-2.base) -- \tikzumlMidOneArc (\relationName-4.base) -- \tikzumlLastArc (\tikzumlDestClassNodeName\tikzumlDestAnchor) }%
+            \ifnum\thetikzumlStateLevel>0%
+              \def\tikzumlStateFitTmp{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+              \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitTmp (\relationName-1) (\relationName-2) (\relationName-3) (\relationName-4) (\relationName-5) }%
+            \fi%
           }{%
             \errmessage{TIKZUML ERROR : Unknown geometry value !!! It should be in the following list : --, |-, -|, |-|, -|-}%
           }%
@@ -1925,12 +2263,11 @@
 \newcounter{tikzumlStateEndNum}%
 \newcounter{tikzumlStateHistoryNum}%
 \newcounter{tikzumlStateDeepHistoryNum}%
-\newcounter{tikzumlStateSpecialStateNum}%
 \newcounter{tikzumlStateLevel}%
 \newcounter{tikzumlStateSubStateNum}%
 
 \newcommand{\umlstatejoin}[1][]{%
-  \pgfkeys{/tikzuml/statejoin/.cd, x/.initial=0, y/.initial=0, width/.initial=0.5cm,%
+  \pgfkeys{/tikzuml/statejoin/.cd, x/.initial=0, y/.initial=0, width/.initial=3ex,%
                                    name/.initial=statejoin-\thetikzumlStateJoinNum, color/.initial=\tikzumldrawcolor,%
                                    .unknown/.code={%
                                      \let\keyname=\pgfkeyscurrentname%
@@ -1948,13 +2285,13 @@
   \ifnum\c@tikzumlStateLevel>0%
     \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatejoinname)}%
-    \stepcounter{tikzumlStateSpecialStateNum}%
+    \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   \stepcounter{tikzumlStateJoinNum}%
 }%
 
 \newcommand{\umlstatedecision}[1][]{%
-  \pgfkeys{/tikzuml/statedecision/.cd, x/.initial=0, y/.initial=0, width/.initial=0.4cm,%
+  \pgfkeys{/tikzuml/statedecision/.cd, x/.initial=0, y/.initial=0, width/.initial=3ex,%
                                        name/.initial=statedecision-\thetikzumlStateDecisionNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
@@ -1972,13 +2309,13 @@
   \ifnum\c@tikzumlStateLevel>0%
     \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatedecisionname)}%
-    \stepcounter{tikzumlStateSpecialStateNum}%
+    \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   \stepcounter{tikzumlStateDecisionNum}%
 }%
 
 \newcommand{\umlstateinitial}[1][]{%
-  \pgfkeys{/tikzuml/stateinitial/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+  \pgfkeys{/tikzuml/stateinitial/.cd, x/.initial=0, y/.initial=0, width/.initial=5ex,%
                                        name/.initial=stateinitial-\thetikzumlStateInitialNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
@@ -1996,13 +2333,13 @@
   \ifnum\c@tikzumlStateLevel>0%
     \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstateinitialname)}%
-    \stepcounter{tikzumlStateSpecialStateNum}%
+    \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   \stepcounter{tikzumlStateInitialNum}%
 }%
 
 \newcommand{\umlstatefinal}[1][]{%
-  \pgfkeys{/tikzuml/statefinal/.cd, x/.initial=0, y/.initial=0, width/.initial=0.9cm,%
+  \pgfkeys{/tikzuml/statefinal/.cd, x/.initial=0, y/.initial=0, width/.initial=5.5ex,%
                                        name/.initial=statefinal-\thetikzumlStateFinalNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
@@ -2020,13 +2357,13 @@
   \ifnum\c@tikzumlStateLevel>0%
     \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatefinalname)}%
-    \stepcounter{tikzumlStateSpecialStateNum}%
+    \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   \stepcounter{tikzumlStateFinalNum}%
 }%
 
 \newcommand{\umlstateenter}[1][]{%
-  \pgfkeys{/tikzuml/stateenter/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+  \pgfkeys{/tikzuml/stateenter/.cd, x/.initial=0, y/.initial=0, width/.initial=5ex,%
                                        name/.initial=stateenter-\thetikzumlStateEnterNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
@@ -2044,13 +2381,13 @@
   \ifnum\c@tikzumlStateLevel>0%
     \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstateentername)}%
-    \stepcounter{tikzumlStateSpecialStateNum}%
+    \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   \stepcounter{tikzumlStateEnterNum}%
 }%
 
 \newcommand{\umlstateexit}[1][]{%
-  \pgfkeys{/tikzuml/stateexit/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+  \pgfkeys{/tikzuml/stateexit/.cd, x/.initial=0, y/.initial=0, width/.initial=5ex,%
                                        name/.initial=stateexit-\thetikzumlStateExitNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
@@ -2069,13 +2406,13 @@
   \ifnum\c@tikzumlStateLevel>0%
     \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstateexitname)}%
-    \stepcounter{tikzumlStateSpecialStateNum}%
+    \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   \stepcounter{tikzumlStateExitNum}%
 }%
 
 \newcommand{\umlstateend}[1][]{%
-  \pgfkeys{/tikzuml/stateend/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+  \pgfkeys{/tikzuml/stateend/.cd, x/.initial=0, y/.initial=0, width/.initial=5ex,%
                                        name/.initial=stateend-\thetikzumlStateEndNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
@@ -2094,7 +2431,7 @@
   \ifnum\c@tikzumlStateLevel>0%
     \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstateendname)}%
-    \stepcounter{tikzumlStateSpecialStateNum}%
+    \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   \stepcounter{tikzumlStateEndNum}%
 }%
@@ -2108,7 +2445,7 @@
 }%
 
 \newcommand{\umlstatehistory}[1][]{%
-  \pgfkeys{/tikzuml/statehistory/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+  \pgfkeys{/tikzuml/statehistory/.cd, x/.initial=0, y/.initial=0, width/.initial=5ex,%
                                        name/.initial=statehistory-\thetikzumlStateHistoryNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
@@ -2126,7 +2463,7 @@
   \ifnum\c@tikzumlStateLevel>0%
     \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatehistoryname)}%
-    \stepcounter{tikzumlStateSpecialStateNum}%
+    \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   \stepcounter{tikzumlStateHistoryNum}%
 }%
@@ -2143,7 +2480,7 @@
 }%
 
 \newcommand{\umlstatedeephistory}[1][]{%
-  \pgfkeys{/tikzuml/statedeephistory/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+  \pgfkeys{/tikzuml/statedeephistory/.cd, x/.initial=0, y/.initial=0, width/.initial=5ex,%
                                        name/.initial=statedeephistory-\thetikzumlStateDeepHistoryNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
@@ -2161,7 +2498,7 @@
   \ifnum\c@tikzumlStateLevel>0%
     \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatedeephistoryname)}%
-    \stepcounter{tikzumlStateSpecialStateNum}%
+    \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   \stepcounter{tikzumlStateDeepHistoryNum}%
 }%
@@ -2238,7 +2575,13 @@
 \newcommand{\umlbasicstate}[2][]{\begin{umlstate}[#1]{#2} \end{umlstate}}%
 
 % shortcuts for state transitions macros
-\newcommand{\umltrans}[3][]{\umlrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
+\newcommand{\umltrans}[3][]{%
+  \ifthenelse{\equal{#2}{#3}}{%
+    \umlrelation[style={tikzuml transition style}, recursive mode=transition, #1]{#2}{#3}%
+  }{%
+    \umlrelation[style={tikzuml transition style}, #1]{#2}{#3}%
+  }%
+}%
 \newcommand{\umlHVtrans}[3][]{\umlHVrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
 \newcommand{\umlVHtrans}[3][]{\umlVHrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
 \newcommand{\umlVHVtrans}[3][]{\umlVHVrelation[style={tikzuml transition style}, #1]{#2}{#3}}%

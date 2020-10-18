@@ -1000,66 +1000,295 @@ On remarquera l'utilisation de l'option {\tt name} pour s'assurer simplement de 
 
 %\section{Règles de priorité des options et bugs identifiés}\label{s.usecasebug}
 
-%\chapter{Diagrammes d'états-transitions}\label{c.statetrans}
-%
-%\begin{center}
-%\begin{tikzpicture}
-%\begin{umlstate}[name=Amain]{Etat global de l'objet A}
-%\begin{umlstate}[name=Bgraph, fill=red!20]{graphe B}
-%\umlstateinitial[name=Binit]
-%\umlbasicstate[y=-3.5, name=test1, fill=white]{test1}
-%\umltrans{Binit}{test1}
-%\umltrans[recursive=20|60|2.5cm, recursive mode=transition, recursive direction=right to top,  arg={op1}, pos=1.5]{test1}{test1}
-%\umltrans[recursive=160|120|2.5cm, recursive mode=transition, recursive direction=left to top,  arg={op2}, pos=1.5]{test1}{test1}
-%\umltrans[recursive=-160|-120|2.5cm, recursive mode=transition, recursive direction=left to bottom,  arg={op3}, pos=1.5]{test1}{test1}
-%\umltrans[recursive=-20|-60|2.5cm, recursive mode=transition, recursive direction=right to bottom,  arg={op4}, pos=1.5]{test1}{test1}
-%\umlbasicstate[y=-7, name=test2, fill=white]{test2}
-%\umltrans[recursive=-160|-120|2.5cm, recursive mode=transition, recursive direction=left to bottom,  arg={op5}, pos=1.5]{test2}{test2}
-%\umltrans{test1}{test2}
-%\umlstatefinal[x=3, y=-6.75, name=Bfinal]
-%\umltrans{test2}{Bfinal}
-%\end{umlstate}
-%\umlstateinitial[x=6, y=1, name=Ainit]
-%\umlVHtrans[anchor2=40]{Ainit}{Bgraph}
-%\umlstatefinal[x=6, y=-2, name=Afinal]
-%\umlHVtrans[anchor1=30]{Bgraph}{Afinal}
-%\umlbasicstate[x=6, y=-5, name=visu, fill=green!20]{Visualisation}
-%\umlHVtrans{Bfinal}{visu}
-%\umltrans{visu}{Afinal}
-%\umltrans[recursive=-20|-60|2.5cm, recursive mode=transition, recursive direction=right to bottom,  arg=a, pos=1.5]{visu}{visu}
-%\end{umlstate}
-%
-%\end{tikzpicture}
-%\end{center}
-%
-%\section{Les états}\label{s.state}
-%
-%\subsection{Etat}\label{ss.state}
-%
-%\subsection{Etat initial}\label{ss.initial}
-%
-%\subsection{Etat final}\label{ss.final}
-%
-%\subsection{Etat joint}\label{ss.join}
-%
-%\subsection{Etat de décision}\label{ss.decision}
-%
-%\subsection{Etat d'entrée}\label{ss.enter}
-%
-%\subsection{Etat de sortie}\label{ss.exit}
-%
-%\subsection{Etat de fin}\label{ss.end}
-%
-%\subsection{Etat d'historique}\label{ss.hist}
-%
-%\subsection{Etat d'historique profond}\label{ss.deephist}
-%
-%\section{Les transitions}\label{s.trans}
-%
-%\section{Personnalisation}\label{s.fitstatetrans}
-%
-%\section{Exemples}
-%
+\chapter{Diagrammes d'états-transitions}\label{c.statetrans}
+
+Voici un exemple de diagramme d'états-transitions que l'on peut réaliser :
+
+\begin{center}
+\inputTikZ{statediagex}
+\end{center}
+
+Nous allons voir successivement comment définir les éléments constitutifs d'un tel diagramme : les 10 types d'états et les transitions.
+
+\newpage
+
+\section{Les états}\label{s.state}
+
+\subsection{Etat}\label{ss.state}
+
+Un état \og standard\fg{} se définit à l'aide de l'environnement {\tt umlstate} :
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/figure51.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{figure51}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Les options {\tt x} et {\tt y} permettent de positionner l'état dans la figure, ou dans un autre état. Elles valent toutes deux 0 par défaut. L'argument est le label de l'état. Le n\oe{}ud représentatnt l'état a par défaut un nom basé sur un compteur. Pour des raisons pratiques, lors de la définition de transitions par exemple, on peut le renommer à l'aide de l'option{\tt name}.
+
+\medskip
+
+On peut également définir la largeur minimale d'un état avec l'option {\tt width} (10ex par défaut).
+
+\medskip
+
+On peut définir un état dans un autre état. Dans ce cas, les coordonnées des sous-états sont relatives à l'état parent :
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/figure52.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{figure52}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Si l'on veut définir un état sans le décomposer, on peut utiliser la commande {\tt umlbasicstate} qui est un raccourci vers l'environnement {\tt umlstate}.
+
+\medskip
+
+Regardonc maintenant les états spécifiques :
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/figure53.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{figure53}
+\end{center}
+\end{minipage}
+
+\medskip
+
+De gauche à droite et de haut en bas :
+
+\medskip
+
+\begin{itemize}
+\item Un état initial se définit à l'aide de la commande {\tt umlstateinitial}.
+\item Un état final se définit à l'aide de la commande {\tt umlstatefinal}.
+\item Un état de jonction se définit à l'aide de la commande {\tt umlstatejoin}.
+\item Un état de décision se définit à l'aide de la commande {\tt umlstatedecision}.
+\item Un état d'entrée se définit à l'aide de la commande {\tt umlstateenter}.
+\item Un état de sortie se définit à l'aide de la commande {\tt umlstateexit}.
+\item Un état de fin se définit à l'aide de la commande {\tt umlstateend}.
+\item Un état d'historique se définit à l'aide de la commande {\tt umlstatehistory}.
+\item Un état d'historique profond se définit à l'aide de la commande {\tt umlstatedeephistory}.
+\end{itemize}
+
+\medskip
+
+Ces commandes prennent toutes pour options {\tt name}, pour renommer le n\oe{}ud, et {\tt width} pour fixer sa taille, et on peut les utiliser à l'intérieur d'un environnement {\tt umlstate} :
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/figure54.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{figure54}
+\end{center}
+\end{minipage}
+
+\medskip
+
+\section{Les transitions}\label{s.trans}
+
+Les transitions sont les noms des relations dans un diagramme d'états-transitions. On les définit à l'aide de la commande {\tt umltrans} qui dérive de {\tt umlrelation}. On va distinguer le cas des transitions unidirectionnelles et celui des transitions recursives.
+
+\subsection{Les transitions unidirectionnelles}\label{s.unitrans}
+
+De par l'existence de l'option {\tt geometry}, on va définir de même les alias {\tt umlHVtrans}, {\tt umlVHtrans}, {\tt umlVHVtrans} et {\tt umlHVHtrans}. Graphiquement, ce sont l'utilisation de ces alias qui sont les plus intéressants, dans la mesure où tous les coins d'une flèche de transition sont arrondis.
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/figure55.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{figure55}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Toutes les options de {\tt umlrelation} peuvent être utilisées avec {\tt umltrans} et ses dérivées.
+
+\subsection{Les transitions récursives}\label{s.rectrans}
+
+Les transitions récursives sont graphiquement les plus délicates à mettre en \oe{}uvre, car elles ont l'aspect de rectangles aux coins arrondis, contrairement aux flèches récursives des diagrammes de classes. Elles se comportent donc, sur le principe, comme les flèches dont l'option {\tt geometry} est -|- ou |-|, c'est-à-dire des flèches composées de plusieurs segments.
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/figure56.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{figure56}
+\end{center}
+\end{minipage}
+
+\medskip
+
+L'option {\tt recursive direction} est fondamentale. En effet, la donnée des angles de départ et d'arrivée ne suffit pas à savoir la direction de départ et d'arrivée de la flèche récursive. On est donc obligé de le préciser. 2 cas se présentent :
+
+\medskip
+
+\begin{itemize}
+\item Soit la flèche est constituée de 3 segments. Dans ce cas, les n\oe{}uds utilisables sont répartis comme suit :
+
+\begin{center}
+\inputTikZ{figure57}
+\end{center}
+
+\item Soit la flèche est constituée de 4 segments. Dans ce cas, les n\oe{}uds utilisables sont répartis comme suit :
+
+\medskip
+
+\begin{center}
+\inputTikZ{figure58}
+\end{center}
+
+\vspace{-4cm}
+
+\end{itemize}
+
+\subsection{Transitions entre sous-états}\label{ss.substatetrans}
+
+Lorsqu'on définit des transitions entre sous-états, la transition doit être intégralement représentée à l'intérieur de l'état parent. C'est la raison pour laquelle on définira la transition à l'intérieur de l'environnement {\tt umlstate}. Comparez les 2 séquences de codes suivantes :
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/figure59.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{figure59}
+\end{center}
+\end{minipage}
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/figure60.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{figure60}
+\end{center}
+\end{minipage}
+
+\section{Personnalisation}\label{s.fitstatetrans}
+
+Grace à la commande {\tt tikzumlset}, on peut modifier globalement les couleurs par défaut des états et transitions :
+
+\begin{description}
+\item[text :] permet de spécifier la couleur du texte (=black par défaut),
+\item[draw :] permet de spécifier la couleur des traits et des états initiaux, finaux et de jonction (=black par défaut),
+\item[fill state :] permet de spécifier la couleur de fond des cas d'utilisation (=yellow!20 par défaut),
+\item[font :] permet de spécifier le style de fonte du texte (=$\backslash$small par défaut).
+\end{description}
+
+On peut également utiliser les options {\tt text}, {\tt draw} et {\tt fill} sur un élément particulier pour lui modifier ses couleurs, comme illustré dans l'exemple d'introduction.
+
+\section{Exemples}
+
+\subsection{Exemple de l'introduction pas à pas}
+
+\subsubsection{Définition des états standards}
+
+\medskip
+
+\begin{center}
+\inputTikZ{figure61}
+\end{center}
+
+\newpage
+
+{\color{red!70!black}
+\lstinputlisting[firstline=2, lastline=3]{fig/statediagex.tikz}\vspace{-0.37cm}
+\lstinputlisting[firstline=5, lastline=5]{fig/statediagex.tikz}\vspace{-0.37cm}
+\lstinputlisting[firstline=11, lastline=11]{fig/statediagex.tikz}\vspace{-0.37cm}
+\lstinputlisting[firstline=16, lastline=16]{fig/statediagex.tikz}\vspace{-0.37cm}
+\lstinputlisting[firstline=21, lastline=21]{fig/statediagex.tikz}\vspace{-0.37cm}
+\lstinputlisting[firstline=25, lastline=25]{fig/statediagex.tikz}
+}
+
+\vspace{-0.5cm}
+
+\subsubsection{Définition des états spécifiques}
+
+\medskip
+
+\begin{center}
+\inputTikZ{figure62}
+\end{center}
+
+\medskip
+
+\lstinputlisting[firstline=2, lastline=3]{fig/statediagex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=4, lastline=4]{fig/statediagex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=5, lastline=5]{fig/statediagex.tikz}\vspace{-0.37cm}
+\lstinputlisting[firstline=11, lastline=11]{fig/statediagex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=14, lastline=14]{fig/statediagex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=16, lastline=16]{fig/statediagex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=17, lastline=17]{fig/statediagex.tikz}\vspace{-0.37cm}
+\lstinputlisting[firstline=19, lastline=19]{fig/statediagex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=21, lastline=21]{fig/statediagex.tikz}\vspace{-0.37cm}
+\lstinputlisting[firstline=25, lastline=25]{fig/statediagex.tikz}
+\subsubsection{Définition des transitions}
+
+\lstinputlisting[firstline=2, lastline=5]{fig/statediagex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=6, lastline=10]{fig/statediagex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=11, lastline=11]{fig/statediagex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=12, lastline=13]{fig/statediagex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=14, lastline=14]{fig/statediagex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=15, lastline=15]{fig/statediagex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=16, lastline=17]{fig/statediagex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=18, lastline=18]{fig/statediagex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=19, lastline=19]{fig/statediagex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=20, lastline=20]{fig/statediagex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=21, lastline=21]{fig/statediagex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=22, lastline=24]{fig/statediagex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=25, lastline=25]{fig/statediagex.tikz}
+
+\begin{center}
+\inputTikZ{figure63}
+\end{center}
+
 %\section{Règles de priorité des options et bugs identifiés}\label{s.statetransbug}
 %
 %\chapter{Diagrammes de séquence}\label{c.seq}
