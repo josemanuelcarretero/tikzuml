@@ -1484,5 +1484,319 @@
   %
 }%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                      state diagrams                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcounter{tikzumlStateJoinNum}%
+\setcounter{tikzumlStateJoinNum}{0}%
+
+\newcommand{\umlstatejoin}[1][]{%
+  \pgfkeys{/tikzuml/statejoin/.cd, x/.initial=0, y/.initial=0, width/.initial=0.5cm,%
+                                   name/.initial=statejoin-\thetikzumlStateJoinNum, color/.initial=\tikzumldrawcolor,%
+                                   .unknown/.code={%
+                                     \let\keyname=\pgfkeyscurrentname%
+                                     \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatejoin}%
+                                   }}%
+  \pgfkeys{/tikzuml/statejoin/.cd, #1}%
+  \pgfkeys{/tikzuml/statejoin/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatejoinwidth,%
+                                   name/.get=\tikzumlstatejoinname, color/.get=\tikzumlstatejoincolor}%
+  %
+  \def\tikzumlStateJoinPos{\posx,\posy}%
+  %
+  \node[circle, minimum size=\tikzumlstatejoinwidth, draw=\tikzumlstatejoincolor, fill=\tikzumlstatejoincolor] (\tikzumlstatejoinname) at (\tikzumlStateJoinPos) {};%
+  %
+  % add to fit
+  \ifnum\c@tikzumlStateLevel>0%
+    \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatejoinname)}%
+    \stepcounter{tikzumlStateSpecialStateNum}%
+  \fi%
+  \stepcounter{tikzumlStateJoinNum}%
+}%
+
+\newcounter{tikzumlStateDecisionNum}%
+\setcounter{tikzumlStateDecisionNum}{0}%
+
+\newcommand{\umlstatedecision}[1][]{%
+  \pgfkeys{/tikzuml/statedecision/.cd, x/.initial=0, y/.initial=0, width/.initial=0.4cm,%
+                                       name/.initial=statedecision-\thetikzumlStateDecisionNum, color/.initial=\tikzumldrawcolor,%
+                                      .unknown/.code={%
+                                        \let\keyname=\pgfkeyscurrentname%
+                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatedecision}%
+                                      }}%
+  \pgfkeys{/tikzuml/statedecision/.cd, #1}%
+  \pgfkeys{/tikzuml/statedecision/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatedecisionwidth,%
+                                       name/.get=\tikzumlstatedecisionname, color/.get=\tikzumlstatedecisioncolor}%
+  %  
+  \def\tikzumlStateDecisionPos{\posx,\posy}%
+  %
+  \node[rectangle, rotate=45, minimum size=\tikzumlstatedecisionwidth, draw=\tikzumlstatedecisioncolor] (\tikzumlstatedecisionname) at (\tikzumlStateDecisionPos) {};%
+  %
+  % add to fit
+  \ifnum\c@tikzumlStateLevel>0%
+    \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatedecisionname)}%
+    \stepcounter{tikzumlStateSpecialStateNum}%
+  \fi%
+  \stepcounter{tikzumlStateDecisionNum}%
+}%
+
+\newcounter{tikzumlStateInitialNum}%
+\setcounter{tikzumlStateInitialNum}{0}%
+
+\newcommand{\umlstateinitial}[1][]{%
+  \pgfkeys{/tikzuml/stateinitial/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+                                       name/.initial=stateinitial-\thetikzumlStateInitialNum, color/.initial=\tikzumldrawcolor,%
+                                      .unknown/.code={%
+                                        \let\keyname=\pgfkeyscurrentname%
+                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstateinitial}%
+                                      }}%
+  \pgfkeys{/tikzuml/stateinitial/.cd, #1}%
+  \pgfkeys{/tikzuml/stateinitial/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstateinitialwidth,%
+                                       name/.get=\tikzumlstateinitialname, color/.get=\tikzumlstateinitialcolor}%
+  %  
+  \def\tikzumlStateInitialPos{\posx,\posy}%
+  %
+  \node[circle, minimum size=\tikzumlstateinitialwidth, fill=\tikzumlstateinitialcolor] (\tikzumlstateinitialname) at (\tikzumlStateInitialPos) {};%
+  %
+  % add to fit
+  \ifnum\c@tikzumlStateLevel>0%
+    \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstateinitialname)}%
+    \stepcounter{tikzumlStateSpecialStateNum}%
+  \fi%
+  \stepcounter{tikzumlStateInitialNum}%
+}%
+
+\newcounter{tikzumlStateFinalNum}%
+\setcounter{tikzumlStateFinalNum}{0}%
+
+\newcommand{\umlstatefinal}[1][]{%
+  \pgfkeys{/tikzuml/statefinal/.cd, x/.initial=0, y/.initial=0, width/.initial=0.9cm,%
+                                       name/.initial=statefinal-\thetikzumlStateFinalNum, color/.initial=\tikzumldrawcolor,%
+                                      .unknown/.code={%
+                                        \let\keyname=\pgfkeyscurrentname%
+                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatefinal}%
+                                      }}%
+  \pgfkeys{/tikzuml/statefinal/.cd, #1}%
+  \pgfkeys{/tikzuml/statefinal/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatefinalwidth,%
+                                       name/.get=\tikzumlstatefinalname, color/.get=\tikzumlstatefinalcolor}%
+  %  
+  \def\tikzumlStateFinalPos{\posx,\posy}%
+  %
+  \node[circle, minimum size=\tikzumlstatefinalwidth, draw=\tikzumlstatefinalcolor, fill=\tikzumlstatefinalcolor, double, double distance=0.1cm] (\tikzumlstatefinalname) at (\tikzumlStateFinalPos) {};%
+  %
+  % add to fit
+  \ifnum\c@tikzumlStateLevel>0%
+    \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatefinalname)}%
+    \stepcounter{tikzumlStateSpecialStateNum}%
+  \fi%
+  \stepcounter{tikzumlStateFinalNum}%
+}%
+
+\newcounter{tikzumlStateEnterNum}%
+\setcounter{tikzumlStateEnterNum}{0}%
+
+\newcommand{\umlstateenter}[1][]{%
+  \pgfkeys{/tikzuml/stateenter/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+                                       name/.initial=stateenter-\thetikzumlStateEnterNum, color/.initial=\tikzumldrawcolor,%
+                                      .unknown/.code={%
+                                        \let\keyname=\pgfkeyscurrentname%
+                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstateenter}%
+                                      }}%
+  \pgfkeys{/tikzuml/stateenter/.cd, #1}%
+  \pgfkeys{/tikzuml/stateenter/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstateenterwidth,%
+                                       name/.get=\tikzumlstateentername, color/.get=\tikzumlstateentercolor}%
+  %  
+  \def\tikzumlStateEnterPos{\posx,\posy}%
+  %
+  \node[circle, minimum size=\tikzumlstateenterwidth, draw=\tikzumlstateentercolor] (\tikzumlstateentername) at (\tikzumlStateEnterPos) {};%
+  %
+  % add to fit
+  \ifnum\c@tikzumlStateLevel>0%
+    \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstateentername)}%
+    \stepcounter{tikzumlStateSpecialStateNum}%
+  \fi%
+  \stepcounter{tikzumlStateEnterNum}%
+}%
+
+\newcounter{tikzumlStateExitNum}%
+\setcounter{tikzumlStateExitNum}{0}%
+
+\newcommand{\umlstateexit}[1][]{%
+  \pgfkeys{/tikzuml/stateexit/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+                                       name/.initial=stateexit-\thetikzumlStateExitNum, color/.initial=\tikzumldrawcolor,%
+                                      .unknown/.code={%
+                                        \let\keyname=\pgfkeyscurrentname%
+                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstateexit}%
+                                      }}%
+  \pgfkeys{/tikzuml/stateexit/.cd, #1}%
+  \pgfkeys{/tikzuml/stateexit/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstateexitwidth,%
+                                       name/.get=\tikzumlstateexitname, color/.get=\tikzumlstateexitcolor}%
+  %  
+  \def\tikzumlStateExitPos{\posx,\posy}%
+  %
+  \node[circle, minimum size=\tikzumlstateexitwidth, draw=\tikzumlstateexitcolor] (\tikzumlstateexitname) at (\tikzumlStateExitPos) {};%
+  \draw[draw=\tikzumlstateexitcolor] (\tikzumlstateexitname.north east) -- (\tikzumlstateexitname.south west) (\tikzumlstateexitname.north west) -- (\tikzumlstateexitname.south east);
+  %
+  % add to fit
+  \ifnum\c@tikzumlStateLevel>0%
+    \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstateexitname)}%
+    \stepcounter{tikzumlStateSpecialStateNum}%
+  \fi%
+  \stepcounter{tikzumlStateExitNum}%
+}%
+
+\newcounter{tikzumlStateEndNum}%
+\setcounter{tikzumlStateEndNum}{0}%
+
+\newcommand{\umlstateend}[1][]{%
+  \pgfkeys{/tikzuml/stateend/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+                                       name/.initial=stateend-\thetikzumlStateEndNum, color/.initial=\tikzumldrawcolor,%
+                                      .unknown/.code={%
+                                        \let\keyname=\pgfkeyscurrentname%
+                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstateend}%
+                                      }}%
+  \pgfkeys{/tikzuml/stateend/.cd, #1}%
+  \pgfkeys{/tikzuml/stateend/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstateendwidth,%
+                                       name/.get=\tikzumlstateendname, color/.get=\tikzumlstateendcolor}%
+  %  
+  \def\tikzumlStateEndPos{\posx,\posy}%
+  %
+  \node[circle, minimum size=\tikzumlstateendwidth] (\tikzumlstateendname) at (\tikzumlStateEndPos) {};%
+  \draw[draw=\tikzumlstateendcolor] (\tikzumlstateendname.north east) -- (\tikzumlstateendname.south west) (\tikzumlstateendname.north west) -- (\tikzumlstateendname.south east);
+  %
+  % add to fit
+  \ifnum\c@tikzumlStateLevel>0%
+    \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstateendname)}%
+    \stepcounter{tikzumlStateSpecialStateNum}%
+  \fi%
+  \stepcounter{tikzumlStateEndNum}%
+}%
+
+\newcommand{\picturedhistory}[1]{%
+  \begin{tikzpicture}[#1]
+  \draw[thick] (-0.1cm,-0.15cm) -- (-0.1cm,0.15cm)
+               (-0.1cm,0) -- (0.1cm,0)
+               (0.1cm,-0.15cm) -- (0.1cm,0.15cm);
+  \end{tikzpicture}
+}%
+
+\newcounter{tikzumlStateHistoryNum}%
+\setcounter{tikzumlStateHistoryNum}{0}%
+
+\newcommand{\umlstatehistory}[1][]{%
+  \pgfkeys{/tikzuml/statehistory/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+                                       name/.initial=statehistory-\thetikzumlStateHistoryNum, color/.initial=\tikzumldrawcolor,%
+                                      .unknown/.code={%
+                                        \let\keyname=\pgfkeyscurrentname%
+                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatehistory}%
+                                      }}%
+  \pgfkeys{/tikzuml/statehistory/.cd, #1}%
+  \pgfkeys{/tikzuml/statehistory/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatehistorywidth,%
+                                       name/.get=\tikzumlstatehistoryname, color/.get=\tikzumlstatehistorycolor}%
+  %
+  \def\tikzumlStateHistoryPos{\posx,\posy}%
+  %
+  \node[circle, minimum size=\tikzumlstatehistorywidth, draw=\tikzumlstatehistorycolor] (\tikzumlstatehistoryname) at (\tikzumlStateHistoryPos) {\picturedhistory{draw=\tikzumlstatehistorycolor}};%
+  %
+  % add to fit
+  \ifnum\c@tikzumlStateLevel>0%
+    \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatehistoryname)}%
+    \stepcounter{tikzumlStateSpecialStateNum}%
+  \fi%
+  \stepcounter{tikzumlStateHistoryNum}%
+}%
+
+\newcommand{\pictureddeephistory}[1]{%
+  \begin{tikzpicture}[#1]
+  \draw[thick] (-0.1cm,-0.15cm) -- (-0.1cm,0.15cm)
+               (-0.1cm,0) -- (0.1cm,0)
+               (0.1cm,-0.15cm) -- (0.1cm,0.15cm)
+               (0.23cm,0.19cm) -- (0.23cm,0.11cm)
+               (0.20cm,0.17cm) -- (0.26cm,0.13cm)
+               (0.20cm,0.13cm) -- (0.26cm,0.17cm);
+  \end{tikzpicture}
+}%
+
+\newcounter{tikzumlStateDeepHistoryNum}%
+\setcounter{tikzumlStateDeepHistoryNum}{0}%
+
+\newcommand{\umlstatedeephistory}[1][]{%
+  \pgfkeys{/tikzuml/statedeephistory/.cd, x/.initial=0, y/.initial=0, width/.initial=0.8cm,%
+                                       name/.initial=statedeephistory-\thetikzumlStateDeepHistoryNum, color/.initial=\tikzumldrawcolor,%
+                                      .unknown/.code={%
+                                        \let\keyname=\pgfkeyscurrentname%
+                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatedeephistory}%
+                                      }}%
+  \pgfkeys{/tikzuml/statedeephistory/.cd, #1}%
+  \pgfkeys{/tikzuml/statedeephistory/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatedeephistorywidth,%
+                                       name/.get=\tikzumlstatedeephistoryname, color/.get=\tikzumlstatedeephistorycolor}%
+  %  
+  \def\tikzumlStateDeepHistoryPos{\posx,\posy}%
+  %
+  \node[circle, minimum size=\tikzumlstatedeephistorywidth, draw=\tikzumlstatedeephistorycolor] (\tikzumlstatedeephistoryname) at (\tikzumlStateDeepHistoryPos) {\pictureddeephistory{draw=\tikzumlstatedeephistorycolor}};%
+  %
+  % add to fit
+  \ifnum\c@tikzumlStateLevel>0%
+    \edef\tikzumlStateFitOld{\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{\tikzumlStateFitOld (\tikzumlstatedeephistoryname)}%
+    \stepcounter{tikzumlStateSpecialStateNum}%
+  \fi%
+  \stepcounter{tikzumlStateDeepHistoryNum}%
+}%
+
+\newcounter{tikzumlStateLevel}%
+\setcounter{tikzumlStateLevel}{0}%
+
+% define a uml state
+% args : name of the state
+%         content of the state
+% optional args : x,y coordinates of the state
+%                 width of the state node
+\newcommand{\umlstate}[3][]%
+{%
+  \pgfkeys{/tikzuml/state/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class,%
+                               draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillstatecolor,%
+                               text/.initial=\tikzumltextcolor, .unknown/.code={%
+                                 \let\keyname=\pgfkeyscurrentname%
+                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlstate}%
+                               }}%
+  \pgfkeys{/tikzuml/state/.cd,#1}%
+  \pgfkeys{/tikzuml/state/.cd, x/.get=\umlstateX, y/.get=\umlstateY, width/.get=\umlstateMinimumWidth, type/.get=\umlstateType,%
+                               draw/.get=\tikzumlstatedraw, fill/.get=\tikzumlstatefill, text/.get=\tikzumlstatetext}%
+  %
+  \def\tikzumlStateName{#2}%
+  %\xdef\tikzumlStateContent{#3}%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlStateNodeName{\tikzumlStateName}}\x%
+  %
+  \def\tikzumlStatePos{\umlstateX,\umlstateY}%
+  %
+  \node[tikzuml state style, draw=\tikzumlstatedraw, rectangle split part fill={\tikzumlstatefill}, text=\tikzumlstatetext, font=\tikzumlfont, minimum width=\umlstateMinimumWidth] (\tikzumlStateNodeName) at (\tikzumlStatePos) {\textbf{\tikzumlStateName}%
+  \nodepart{second}%
+  \begin{tikzpicture}%
+  #3 %
+  \end{tikzpicture}%
+  };%
+}%
+
+% shortcut to define an empty state
+\newcommand{\umlbasicstate}[2][]{\umlstate[#1]{#2}{}}%
+
+% state transitions macros
+\newcommand{\umltrans}[3][]{\umlrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
+\newcommand{\umlHVtrans}[3][]{\umlHVrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
+\newcommand{\umlVHtrans}[3][]{\umlVHrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
+\newcommand{\umlVHVtrans}[3][]{\umlVHVrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
+\newcommand{\umlHVHtrans}[3][]{\umlHVHrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
+
 %%% End of tikz-uml.sty
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
