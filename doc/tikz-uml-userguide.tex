@@ -1,0 +1,1266 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc} % police encodee en UTF-8 %
+\usepackage[french]{babel} % police fr %
+\usepackage{graphicx} % pour inclusion d'images %
+\usepackage{pgf} % pour dessiner %
+\usepackage{tikz} % pour dessiner %
+\usepackage{xcolor} % definition des couleurs %	
+\usepackage[plainpages=false,pdfpagelabels,bookmarksnumbered,breaklinks=true]{hyperref} % pour les references %
+\usepackage{amsmath} % pour les formules de maths %
+\usepackage{latexsym} % pour les symboles maths %
+\usepackage{amssymb} % pour les symboles maths %
+\usepackage{aeguill} % pour les guillemets et accents francais %
+\usepackage{listings} % pour les listings de code %
+\usepackage{helvet} % police helvetica %
+\usepackage{../tikz-uml} % pour les diagrammes de classe
+
+\hypersetup{%
+  pdftitle={Le package TikZ-UML},%
+  pdfauthor={N. Kielbasiewicz},%
+  pdfpagemode=UseOutlines,%
+  linkbordercolor=0 0 0,%
+  linkcolor=black,%
+  citecolor=black,%
+  colorlinks=true%
+}%
+
+% modification des dimensions de la page et de son centrage %
+%\pagestyle{empty} % page brute %
+\textwidth 17.5cm
+\textheight 24.5cm
+\hoffset=-2.4cm % position du point en haut {\`a} gauche %
+\voffset=-1.9cm % position du point en haut {\`a} gauche %
+%\itemsep -0.15cm % pour les listes %
+%\parindent=1cm % pour les paragraphes %
+
+% pour la justification a gauche et a droite et l'occupation maximale de l'espace dispo %
+\sloppy
+\hyphenpenalty 10000000
+
+%\pagestyle{fancy} % on va mettre en tete et pied de page %
+% \cfoot{\thepage}
+
+%\fancypagestyle{plain}{%
+%  \fancyhf{}
+%  \fancyfoot{}
+%  \renewcommand\headrulewidth{0pt}
+%  \renewcommand\footrulewidth{0pt}
+%}
+
+%\fancyhead[RE,LO]{\leftmark}
+%\fancyhead[RO,LE]{\thepage}
+%\fancyfoot{}
+
+\def\figureautorefname{figure}%
+\def\tableautorefname{tableau}%
+\def\partautorefname{partie}%
+\def\chapterautorefname{chapitre}%
+\def\appendixautorefname{annexe}%
+\def\sectionautorefname{section}%
+\def\subsectionautorefname{sous-section}%
+\def\subsubsectionautorefname{paragraphe}%
+
+\newcommand{\clearemptydoublepage}{\newpage{\pagestyle{empty}\cleardoublepage}}
+\newcommand{\remarque}[1]{\begin{tikzpicture} \draw (0,0) node[regular polygon, regular polygon sides=3, draw, thick] {} node {\bf !};\end{tikzpicture} #1}
+
+% redefinitions necessaires si inclusion du package marvosym
+%\renewcommand{\Rightarrow}{\reflectbox{$\Leftarrow$}}
+%\renewcommand{\Longrightarrow}{\reflectbox{$\Longleftarrow$}}
+
+\newcommand{\tuml}{{\sc TikZ-uml}}
+\newcommand{\TikZ}{{\sc TikZ}}
+
+\lstset{language=[LaTeX]tex, basicstyle=\small, breaklines=true}
+
+%\date{} % date %
+\title{Le package \tuml} % titre %
+\author{Nicolas {\sc Kielbasiewicz}} % auteur %
+
+\begin{document}
+
+\maketitle
+
+Devant les immenses possibilités offertes par la librairies PGF/TikZ, et devant l'absence apparente de package dédié aux diagrammes UML, j'ai été amené à développer le package \tuml, proposant un ensemble de commandes et d'environnements spécifiques à ce type de diagrammes. Il s'inscrit dans la logique du package pst-uml développé pour des raisons similaires en PSTricks. Dans son état actuel, la librairie ne permet de définir que des diagrammes de classes complets de manière assez simple, mais il est prévu de proposer des diagrammes de cas d'utilisation, des diagrammes de séquence, voire ensuite d'autres diagrammes.
+
+Voici un exemple de diagramme de classes que l'on peut réaliser :
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlpackage}{p}
+\begin{umlpackage}{sp1}
+\umlclass[template=T]{A}{
+  n : uint \\ t : float
+}{}
+\umlclass[y=-3]{B}{
+  d : double
+}{
+  \umlvirt{setB(b : B) : void} \\ getB() : B}
+\end{umlpackage}
+\begin{umlpackage}[x=10,y=-6]{sp2}
+\umlinterface{C}{
+  n : uint \\ s : string
+}{}
+\end{umlpackage}
+\umlclass[x=2,y=-10]{D}{
+  n : uint
+  }{}
+\end{umlpackage}
+
+\umlassoc[geometry=-|-, arg1=tata, mult1=*, pos1=0.3, arg2=toto, mult2=1, pos2=2.9, align2=left]{C}{B}
+\umlunicompo[geometry=-|, arg=titi, mult=*, pos=1.7, stereo=vector]{D}{C}
+\umlimport[geometry=|-, anchors=90 and 50, name=import]{sp2}{sp1}
+\umlaggreg[arg=tutu, mult=1, pos=0.8, angle1=30, angle2=60, loopsize=2cm]{D}{D}
+\umlinherit[geometry=-|]{D}{B}
+\umlnote[x=2.5,y=-6, width=3cm]{B}{Je suis une note qui concerne la classe B}
+\umlnote[x=7.5,y=-2]{import-2}{Je suis une note qui concerne la relation d'import}
+\end{tikzpicture}
+\end{center}
+
+Nous allons maintenant vous présenter les différentes fonctionnalités offertes par \tuml.
+
+\tableofcontents
+
+\section{Package, classe, attributs et opérations}
+
+\subsection{Définir un package}
+
+Un package est défini par l'environnement {\tt umlpackage} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\begin{umlpackage}[x=0,y=0]{package-name}
+\end{umlpackage}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\begin{umlpackage}[x=0,y=0]{package-name}
+\end{umlpackage}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Les options {\tt x} et {\tt y} permettent de définir la position du package dans la figure. Elles valent toutes deux 0 par défaut. 
+
+\begin{itemize}
+\item Quand un package contient des classes ou des sous-packages, sa taille s'ajuste automatiquement à son contenu.
+\item On peut définir autant de packages que l'on veut dans une figure.
+\item Il existe un raccourci pour définir un package qui sera vide (on ne définira pas de classes à l'intérieur) : la commande {\tt umlemptypackage} qui prend les mêmes arguments que l'environnement {\tt umlpackage}
+\end{itemize}
+
+\subsection{Définir une classe}
+
+Pour définir une classe, on utilise l'environnement {\tt umlclass}, de la même manière que l'environnement {\tt umlpackage} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlclass[x=0,y=0]{class\_name}{}{}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlclass[x=0,y=0]{class\_name}{}{}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+Les options {\tt x} et {\tt y} définissent la position de la classe. 2 possibilités : si la classe est définie dans un package, il s'agit de la position relative de la classe dans le package; dans le cas contraire, il s'agit de la position dans la figure. Elles valent toutes deux 0 par défaut. Comme pour le package, il existe un raccourci pour définir une classe vide (dont on ne définira pas les attributs et les opérations) : la commande {\tt umlemptyclass}, qui prend les mêmes arguments que l'environnement {\tt umlclass}.
+
+\subsubsection{Définir la largeur d'une classe}
+
+Par défaut, la largeur d'une classe est de 10ex. On peut la modifier avec l'option {\tt width} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass[width=15ex]{class20}
+\umlemptyclass[y=-2, width=30ex]{class40}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass[width=15ex]{class20}
+\umlemptyclass[y=-2, width=30ex]{class40}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection{Spécifier le type d'une classe}
+
+La classe peut être de différents types : classe, interface, typedef, enum. On utilise l'option {\tt type} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass[type=interface]{class\_name}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass[type=interface]{class\_name}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection{Spécifier des paramètres templates}
+
+La classe peut être un template. On spécifie la liste des paramètres avec l'option {\tt template} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass[template={T,U}]{class\_name}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass[template={T,U}]{class\_name}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsection{Définir des attributs et des opérations}
+
+On définit les attributs à l'intérieur d'un environnement {\tt umlclass} à l'aide de la commande {\tt umlattr}. On lui passe en argument la liste des arguments en les séparants par $\backslash\backslash$. On procède de même pour les opérations avec la commande {\tt umlop} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlclass}{A}{
+  + n : uint \\ \umlstatic{-- i : int} \\ \# r : const float
+  }{
+  + setA(i : int) : void \\ \umlvirt{\# getA() : A}
+}
+\end{umlclass}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlclass{A}{
+  + n : uint \\ \umlstatic{-- i : int} \\ \# r : const float
+  }{
+  + setA(i : int) : void \\ \umlvirt{\# getA() : A}
+}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Pour définir un attribut ou une méthode statique, on peut utiliser la commande {\tt umlstatic}. De même, la commande {\tt umlvirt} permet de spécifier des fonctions virtuelles.
+
+\section{Relations entre classes}
+
+\subsection{Commande générale}
+
+Chaque classe et chaque package sont représentés par un n\oe{}ud ayant le même nom. Pour définir une relation entre 2 classes, on va donc spécifier le nom de la classe de départ, le nom de la classe d'arrivée et un certain nombre d'options propres à la relation.
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=3,y=-3]{A2}
+\umluniaggreg[arg2=a,mult2=1,pos2=0.9]{A1}{A2}
+\umluniassoc[geometry=-|,arg1=x,mult1=1,pos1=1.9,arg2=y,mult2=*,pos2=0.2]{A1}{A2}
+\umlunicompo[arg=z,mult=1..*,pos=0.8, angle1=-90, angle2=-140, loopsize=2cm]{A2}{A2}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=3,y=-3]{A2}
+\umluniaggreg[arg2=a,mult2=1,pos2=0.9]{A1}{A2}
+\umluniassoc[geometry=-|,arg1=x,mult1=1,pos1=1.9,arg2=y,mult2=*,pos2=0.2]{A1}{A2}
+\umlunicompo[arg=z,mult=1..*,pos=0.8, angle1=-90, angle2=-140, loopsize=2cm]{A2}{A2}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+D'un point de vue sémantique, il existe 11 relations différentes, toutes présentes dans \tuml{} :
+
+\begin{description}
+\item[La dépendance :] utiliser la commande {\tt umldep}
+\item[L'association :] utiliser la commande {\tt umlassoc}
+\item[L'association unidirectionnelle :] utiliser la commande {\tt umluniassoc}
+\item[L'aggrégation :] utiliser la commande {\tt umlaggreg}
+\item[L'aggrégation unidirectionnelle :] utiliser la commande {\tt umluniaggreg}
+\item[La composition :] utiliser la commande {\tt umlcompo}
+\item[La composition unidirectionnelle :] utiliser la commande {\tt umlunicompo}
+\item[L'import :] utiliser la commande {\tt umlimport}
+\item[L'héritage :] utiliser la commande {\tt umlinherit}
+\item[L'implémentation :] utiliser la commande {\tt umlimpl}
+\item[La réalisation :] utiliser la commande {\tt umlreal}
+\end{description}
+
+Ces 11 commandes sont basées sur le même schéma (la commande {\tt umlrelation}) et prennent en théorie exactement le même jeu d'options. En pratique, certaines options concernent certains types de relations.
+
+\subsection{Définir la géométrie de la relation}
+
+Comme vous avez pu le voir dans les exemples précédents, on peut spécifier la forme géométrique de la relation à l'aide de l'option {\tt geometry}. Cette option demande un argument parmi la liste -~- (ligne droite), -| (horizontal puis vertical), |- (vertical puis horizontal), -|- (chicane horizontale) ou |-| (chicane verticale), ces arguments étant largement inspirés de la philosophie TikZ.
+
+Il apparaît à l'utilisation que cette option est très souvent utilisée. C'est la raison pour laquelle un alias de la commande {\tt umlrelation} a été défini pour chacune des valeurs possibles de l'option {\tt geometry} :
+
+\begin{description}
+\item[umlHVrelation :] alias de umlrelation avec geometry=-|
+\item[umlVHrelation :] alias de umlrelation avec geometry=|-
+\item[umlHVHrelation :] alias de umlrelation avec geometry=-|-
+\item[umlVHVrelation :] alias de umlrelation avec geometry=|-|
+\end{description}
+
+\remarque{Pour chacun de ces 4 alias, l'option {\tt geometry} est interdite.}
+
+\remarque{Il n'y a pas d'alias dans le cas de la valeur -~- pour la seule raison qu'il s'agit de la valeur par défaut.}
+
+
+\subsection{Ajuster la géométrie de la relation}
+
+Lorsque la géométrie de la relation contient 2 segments, on peut spécifier les coordonnées du point intermédiaire, ou n\oe{}ud de contrôle. Plutôt que la commande {\tt umlrelation}, on utilisera {\tt umlCNrelation}, elle aussi déclinée en 11 alias :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=3,y=-3]{A2}
+\umluniaggreg[geometry=-|]{A1}{A2}
+\umlCNuniassoc{A1}{4,0}{A2}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=3,y=-3]{A2}
+\umluniaggreg[geometry=-|]{A1}{A2}
+\umlCNuniassoc{A1}{4,0}{A2}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Lorsque la géométrie de la relation contient 3 segments, la position relative du segment central entre les classes est défini comme passant par le milieu entre les classes reliées. On peut ajuster ce paramètre à l'aide de l'option {\tt weight} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=-1]{A2}
+\umlemptyclass[y=-2]{A3}
+\umlassoc[geometry=-|-]{A1}{A2}
+\umluniaggreg[geometry=-|-, weight=0.3]{A3}{A2}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=-1]{A2}
+\umlemptyclass[y=-2]{A3}
+\umlassoc[geometry=-|-]{A1}{A2}
+\umluniaggreg[geometry=-|-, weight=0.3]{A3}{A2}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+Dans certains cas, cette option est peu pratique, car elle demande de calculer la valeur à passer à l'option. On peut alors procéder autrement en utilisant les options {\tt arm1} et {\tt arm2} qui fixent la taille respectivement du premier et dernier segment. Regardons ici les deux exemples utilisant respectivement l'option {\tt weight} et l'option {\tt arm1} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=1]{A2}
+\umlemptyclass[x=6, y=3]{A3}
+
+\umlHVHdep[weight=0.375]{A1}{A2}
+\umlHVHdep[weight=0.25]{A1}{A3}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=1]{A2}
+\umlemptyclass[x=6, y=3]{A3}
+
+\umlHVHdep[weight=0.375]{A1}{A2}
+\umlHVHdep[weight=0.25]{A1}{A3}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=1]{A2}
+\umlemptyclass[x=6, y=3]{A3}
+
+\umlHVHdep[arm1=1.5cm]{A1}{A2}
+\umlHVHdep[arm1=1.5cm]{A1}{A3}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=1]{A2}
+\umlemptyclass[x=6, y=3]{A3}
+
+\umlHVHdep[arm1=1.5cm]{A1}{A2}
+\umlHVHdep[arm1=1.5cm]{A1}{A3}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Les options {\tt arm1} et {\tt arm2} prennent aussi des valeurs négatives. Que se passe t'il alors ?
+Si l'on passe une valeur positive, alors le bras sera orienté dans le sens normal (soit à droite, soit vers le haut). Si l'on passe une valeur négative, alors l'arc sera orienté dans l'autre sens, ce qui permet de dessiner d'autres types de relations à 3 segments, comme le montre l'exemple ci-dessous :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=2]{A2}
+
+\umlHVHdep[arm2=-2cm]{A1}{A2}
+\umlHVHdep[arm2=2cm]{A1}{A2}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=2]{A2}
+
+\umlHVHdep[arm2=-2cm]{A1}{A2}
+\umlHVHdep[arm2=2cm]{A1}{A2}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+
+\subsection{Définir des informations sur les attributs associés à une relation}
+
+Une relation visualise la dépendance entre deux classes et se traduit généralement sous la forme d'un attribut. On peut spécifier son nom avec l'option {\tt arg1} ou {\tt arg2}, et sa multiplicité avec {\tt mult1} ou {\tt mult2} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=5]{A2}
+\umlassoc[arg1=arg1, mult1=mult1, arg2=arg2, mult2=mult2]{A1}{A2}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=5]{A2}
+\umlassoc[arg1=arg1, mult1=mult1, arg2=arg2, mult2=mult2]{A1}{A2}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Pour les relations unidirectionnelles, on ne va être amené à utiliser que les options {\tt arg2} et {\tt mult2}. Comme il paraît dans ce cas peu naturel que ces options finissent par 2, on peut utiliser les options {\tt arg} et {\tt mult} qui jouent le même rôle.
+
+Par ailleurs, lorsqu'on définit à la fois le nom et la multiplicité d'un attribut, on peut le faire sous une forme plus contractée à l'aide des options {\tt attr1}, {\tt attr2} et {\tt attr} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=5]{A2}
+\umlassoc[attr1=arg1|mult1, attr2=arg2|mult2]{A1}{A2}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=5]{A2}
+\umlassoc[attr1=arg1|mult1, attr2=arg2|mult2]{A1}{A2}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+L'avantage de cette forme contractée est de pouvoir s'affranchir de la sémantique entre le nom et la multiplicité et de pouvoir alors inverser les deux :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=5]{A2}
+\umlassoc[attr1=mult1|arg1, attr2=mult2|arg2]{A1}{A2}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=5]{A2}
+\umlassoc[attr1=mult1|arg1, attr2=mult2|arg2]{A1}{A2}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+\subsection{Positionner les informations sur les attributs associés à une relation}
+
+On peut positionner les informations définies dans la section précédente à l'aide des options {\tt pos1}, {\tt pos2} et {\tt pos}.
+La commande {\tt umlrelation} détermine elle-même si le nom et la multiplicité doivent être respectivement à gauche et à droite, ou au-dessus et au-dessous, de la flèche, selon sa géométrie et leur position. Pour les initiés à TikZ, elle se base sur les options {\tt auto} et {\tt swap}.
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=2,y=-2]{A2}
+\umlemptyclass[x=-2,y=-2.5]{A3}
+\umlassoc[geometry=-|,arg1=x,mult1=1,pos1=0.2,arg2=y,mult2=*,pos2=1.9]{A1}{A2}
+\umlassoc[geometry=|-|,arg1=a,mult1=1,pos1=0.5,arg2=b,mult2=*,pos2=1.5]{A1}{A3}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=2,y=-2]{A2}
+\umlemptyclass[x=-2,y=-2.5]{A3}
+\umlassoc[geometry=-|,arg1=x,mult1=1,pos1=0.2,arg2=y,mult2=*,pos2=1.9]{A1}{A2}
+\umlassoc[geometry=|-|,arg1=a,mult1=1,pos1=0.5,arg2=b,mult2=*,pos2=1.5]{A1}{A3}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Il est à noter que l'intervalle de valeurs de la position d'un nom d'argument dépend du nombre de segments constituants la flèche de relation. Si la flèche est droite, alors la position doit être comprise entre 0 (classe de départ) et 1 (classe d'arrivée). Si la flèche comporte un seul angle droit, alors la position varie entre 0 et 2 (point d'arrivée), la valeur 1 correspondant à l'angle. Dans les deux autres possibilités, la position varie entre 0 et 3 (point d'arrivée), les valeurs 1 et 2 correspondant respectivement au premier et au deuxième angle.
+
+\subsection{Ajuster l'alignement des informations sur les attributs associés à une relation}
+
+Par défault, nom et multiplicité de l'argument, quand ils sont affichés l'un au dessus de l'autre, sont centrés. Les options {\tt align1}, {\tt align2} et {\tt } permettent de les justifier à gauche ou à droite.
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=-3]{A2}
+\umlassoc[geometry=-|-, arg1=arg1, mult1=mult1, pos1=0.1, align1=left, arg2=arg2, mult2=mult2, pos2=2.9, align2=right]{A1}{A2}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=-3]{A2}
+\umlassoc[geometry=-|-, arg1=arg1, mult1=mult1, pos1=0.1, align1=left, arg2=arg2, mult2=mult2, pos2=2.9, align2=right]{A1}{A2}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsection{Définir et positionner le stéréotype d'une relation}
+
+Le stéréotype d'une relation est un mot clé contenu entre $<<$ et $>>$. On peut le définir à l'aide de l'opération {\tt stereo}
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=-3]{A2}
+\umlassoc[geometry=-|-, stereo=vector, pos stereo=1.2]{A1}{A2}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=-3]{A2}
+\umlassoc[geometry=-|-,stereo=vector, pos stereo=1.2]{A1}{A2}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsection{Modifier les points d'ancrage d'une relation}
+
+Le paragraphe qui vient concerne les relations dont la géométrie est à base de flèches segmentées. Par défaut, elles partent du centre du n\oe{}ud de la classe d'origine et vont au centre du n\oe{}ud de la classe cible. Il est possible d'ajuster ce comportement avec la paire d'options {\tt anchor1}, {\tt anchor2}.
+
+\medskip
+
+\begin{minipage}{0.6\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A}
+\umlemptyclass[x=4,y=2]{B}
+\umldep[geometry=-|]{A}{B}
+\umlassoc[geometry=-|, anchor1=30, anchor2=300, name=assoc1]{A}{B}
+\umlassoc[geometry=-|, anchor1=-30, anchor2=-60, name=assoc2]{A}{B}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A}
+\umlemptyclass[x=4,y=2]{B}
+\umldep[geometry=-|]{A}{B}
+\umlassoc[geometry=-|, anchor1=30, anchor2=300, name=assoc1]{A}{B}
+\umlassoc[geometry=-|, anchor1=-30, anchor2=-60, name=assoc2]{A}{B}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Les arguments que l'on donne sont des angles dont la valeur est en degré et peut être négative. Le mécanisme interne de la librairie {\sc TikZ} effectue un modulo pour ramener ce nombre dans l'intervalle adéquat. La valeur 0 indique l'est, 90, indique le nord, 180 indique l'ouest, et 270 (ou -90) indique le sud du n\oe{}ud. La figure ci-dessous illustre cette option et sa signification angulaire, sur 2 exemples de n\oe{}ud de type rectangle, comme c'est le cas pour les classes. \`{A} noter que les points d'ancrage frontières (pour prendre la terminologie TikZ) dépendent bien des dimensions du n\oe{}ud.
+
+\begin{center}
+\begin{tikzpicture}
+\node[name=s,shape=rectangle, draw=black!30, line width=0.5cm, fill=yellow!30, inner sep=1.5cm] {\color{yellow!30} \Huge Rectangle};
+\node[name=t,shape=rectangle, draw=black!30, line width=0.5cm, fill=yellow!30, inner sep=1.5cm] at (8,0) {\color{yellow!30} \Huge O};
+\foreach \anchor/\placement in {north/below left, west/right, center/above left, east/right, south/above, 10/right, 20/right, 30/right, 40/above, 50/above, 60/above, 70/above, 80/above, -30/right, -60/below, -70/below, -80/below, -100/below, -110/below, -120/below}{
+  	\draw[shift=(s.\anchor)] plot[mark=x] coordinates{(0,0)} node[\placement] {\scriptsize\texttt{\anchor}};
+  	\draw[shift=(t.\anchor)] plot[mark=x] coordinates{(0,0)} node[\placement] {\scriptsize\texttt{\anchor}};
+  	\draw[help lines] (s.center) -- (s.\anchor);
+  	\draw[help lines] (t.center) -- (t.\anchor);
+}
+\draw[black!50] (s.center) +(1,0) arc (0:-30:1cm) (1,-0.3) node[right] {$-30^o$};
+\draw[black!50] (t.center) +(1,0) arc (0:-30:1cm) (9,-0.3) node[right] {$-30^o$};
+\end{tikzpicture}
+\end{center}
+
+Il arrive finalement très souvent que l'on définisse les deux options {\tt anchor1} et {\tt anchor2} simultanément. On peut donc utiliser une forme contractée : l'option {\tt anchors} qui s'utilise de la manière suivante, en reprenant l'exemple précédent :
+
+\medskip
+
+\begin{minipage}{0.6\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A}
+\umlemptyclass[x=4,y=2]{B}
+\umldep[geometry=-|]{A}{B}
+\umlassoc[geometry=-|, anchors=30 and 300, name=assoc1]{A}{B}
+\umlassoc[geometry=-|, anchors=-30 and -60, name=assoc2]{A}{B}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A}
+\umlemptyclass[x=4,y=2]{B}
+\umldep[geometry=-|]{A}{B}
+\umlassoc[geometry=-|, anchors=30 and 300, name=assoc1]{A}{B}
+\umlassoc[geometry=-|, anchors=-30 and -60, name=assoc2]{A}{B}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsection{Relation récursive}
+
+Il est possible de définir une relation récursive, c'est-à-dire une relation d'une classe à elle-même. Dans ce cas, l'option {\tt geometry} doit être ignorée, mais 3 options deviennent très utiles : {\tt angle1} détermine l'angle de départ, {\tt angle2} détermine l'angle d'arrivée, et {\tt loopsize} donne une idée de la taille de la boucle.
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlassoc[arg=x,mult=1,pos=0.6, angle1=-90, angle2=-140, loopsize=2cm]{A1}{A1}
+\umlassoc[arg=y,mult=1..*,pos=0.6, angle1=-90, angle2=-140, loopsize=4cm]{A1}{A1}
+\umlassoc[arg=z,mult=0..*,pos=0.8, angle1=-90, angle2=0, loopsize=2cm]{A1}{A1}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlassoc[arg=x,mult=1,pos=0.6, angle1=-90, angle2=-140, loopsize=2cm]{A1}{A1}
+\umlassoc[arg=y,mult=1..*,pos=0.6, angle1=-90, angle2=-140, loopsize=4cm]{A1}{A1}
+\umlassoc[arg=z,mult=0..*,pos=0.8, angle1=-90, angle2=0, loopsize=2cm]{A1}{A1}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+\`{A} l'utilisation, il s'avère que l'on utilise très souvent les 3 options en même temps. C'ets la raison pour laquelle il existe une forme contractée, l'option {\tt recursive} qui s'utilise de la manière suivante :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlassoc[arg=x, mult=1, pos=0.6, recursive=-90|-140|2cm]{A1}{A1}
+\umlassoc[arg=y, mult=1..*, pos=0.6, recursive=-90|-140|4cm]{A1}{A1}
+\umlassoc[arg=z, mult=0..*, pos=0.8, recursive=-90|0|2cm]{A1}{A1}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlassoc[arg=x, mult=1, pos=0.6, recursive=-90|-140|2cm]{A1}{A1}
+\umlassoc[arg=y, mult=1..*, pos=0.6, recursive=-90|-140|4cm]{A1}{A1}
+\umlassoc[arg=z, mult=0..*, pos=0.8, recursive=-90|0|2cm]{A1}{A1}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsection{Nom des points de construction d'une relation}
+
+Pour voir l'importance de la possibilité de donner un nom à une relation et son utilité, il nous faut d'abord ici répondre à la question technique suivante : comment les flèches sont-elles concrètement définies ?
+
+Pour construire une flèche, on a besoin de définir des n\oe{}uds de contrôle, auquel il faut donner un nom. Le seul moyen d'identifier de manière unique une relation est de lui donner un identifiant à travers un compteur que l'on va incrémenter. Supposons que notre relation a pour identifiant $i$. Le nom de la relation que l'on appellera dans ce qui suit {\it relname} est alors initialisé à : relation-$i$
+
+Le premier n\oe{}ud défini est le milieu de la relation, il s'appelle {\it relname-middle}. Je ne parlerai pas ici du placement adéquat de l'argument et de sa multiplicité dans un souci de simplification. Il y a donc 3 possibilités :
+
+\begin{enumerate}
+\item Si la flèche est une ligne continue (droite ou récursive), il est renommé en {\it relname-1}.
+
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A}
+\umlemptyclass[x=6]{B}
+\umluniassoc[name=assoc]{A}{B}
+\umluniassoc[name=recassoc, loopsize=2cm]{B}{B}
+\draw (assoc-1) node[fill=black, circle, inner sep=0.1cm] {} node[above=0.2cm] {relname-1};
+\draw (recassoc-1) node[fill=black, circle, inner sep=0.1cm] {} node[right=0.2cm] {relname-1};
+\end{tikzpicture}
+\end{center}
+\item Si la flèche a un seul angle droit, alors l'unique n\oe{}ud correspondant à l'angle droit est nommé {\it relname-2}, ce qui suffit à tracer la flèche. On définit par ailleurs les milieux des 2 arêtes constituant la flèche, nommés respectivement {\it relname-1} et {\it relname-3}.
+
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A}
+\umlemptyclass[x=5, y=2]{B}
+\umluniassoc[name=assoc, geometry=-|]{A}{B}
+\draw (assoc-1) node[fill=black, circle, inner sep=0.1cm] {} node[above=0.2cm] {relname-1};
+\draw (assoc-2) node[fill=black, circle, inner sep=0.1cm] {} node[right=0.2cm] {relname-2};
+\draw (assoc-3) node[fill=black, circle, inner sep=0.1cm] {} node[right=0.2cm] {relname-3};
+\end{tikzpicture}
+\end{center}
+\item Si la flèche à deux angles droits, ceux-ci sont définis de manière unique à l'aide de {\it relname-middle}, ce qui suffit à tracer la flèche. On nomme les n\oe{}uds aux angles droits respectivement {\it relname-2} et {\it relname-4}. On définit alors les milieux des 3 arêtes constituant la flèche, nommés respectivement {\it relname-1}, {\it relname-3}, et {\it relname-5}.
+
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A}
+\umlemptyclass[x=8, y=2]{B}
+\umluniassoc[name=assoc, geometry=-|-]{A}{B}
+\draw (assoc-1) node[fill=black, circle, inner sep=0.1cm] {} node[above=0.2cm] {relname-1};
+\draw (assoc-2) node[fill=black, circle, inner sep=0.1cm] {} node[right=0.2cm] {relname-2};
+\draw (assoc-3) node[fill=black, circle, inner sep=0.1cm] {} node[right=0.2cm] {relname-3};
+\draw (assoc-4) node[fill=black, circle, inner sep=0.1cm] {} node[left=0.2cm] {relname-4};
+\draw (assoc-5) node[fill=black, circle, inner sep=0.1cm] {} node[above=0.2cm] {relname-5};
+\end{tikzpicture}
+\end{center}
+\end{enumerate}
+
+Il faut toutefois reconnaître que la définition par défaut de {\it relname} est non seulement peu pratique puisqu'on n'a pas vraiment accès à la numérotation, mais aussi fortement sujette à l'ordre dans lequel on définit les relations, donc peu portable en cas de modification de diagrammes. Pour simplifier cela, on va pouvoir définir {\it relname} à l'aide de l'option {\tt name}. Et la raison pour laquelle cette option existe va être expliquée dans les 2 sections suivantes.
+
+\subsection{Tracer un point à une intersection de relations}
+
+Il arrive que dans un diagramme des relations se croisent et se chevauchent. Prenons 2 flèches qui se croisent. Est-ce que les 2 points de départ peuvent aller aux deux points d'arrivée ? Si oui, alors on va vouloir tracer un point à l'intersection des deux flèches, qui vraisemblablement va être un des n\oe{}uds de contrôle définis sur la relation. On utilisera pour cela la commande {\tt umlpoint}.
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=-1]{A2}
+\umlemptyclass[y=-2]{A3}
+\umlassoc[geometry=-|-, name=assoc]{A1}{A2}
+\umluniaggreg[geometry=-|-, weight=0.3]{A3}{A2}
+\umlpoint{assoc-4}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlemptyclass[x=4, y=-1]{A2}
+\umlemptyclass[y=-2]{A3}
+\umlassoc[geometry=-|-, name=assoc]{A1}{A2}
+\umluniaggreg[geometry=-|-, weight=0.3]{A3}{A2}
+\umlpoint{assoc-4}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\section{Note de commentaires / contraintes}
+
+Une note est un commentaire de texte attaché à une classe ou une relation. La commande {\tt umlnote} demande pour cela le nom du n\oe{}ud auquel il faut se rattacher et le texte du commentaire en argument :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlnote[x=3]{A1}{Je suis une note attachee a la classe A1}
+\umlnote[x=2,y=-3, width=5cm]{A1}{Je suis une note plus large attachee a la classe A1}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A1}
+\umlnote[x=3]{A1}{Je suis une note attachee a la classe A1}
+\umlnote[x=2,y=-3, width=5cm]{A1}{Je suis une note plus large attachee a la classe A1}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Là encore, on va pouvoir donner le nom d'un des points de contrôle d'une relation si l'on veut y attacher une note. Il faut donc pour cela pouvoir définir soi-même un nom simple à ces points :
+
+\medskip
+
+\begin{minipage}{0.6\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass{A}
+\umlemptyclass[x=4]{B}
+\umluniassoc[arg=bb, mult=1, pos=0.95, align=right, name=uniassoc]{A}{B}
+\umlnote[x=2,y=-3]{uniassoc-1}{Je suis une note attachee a la relation uniassoc}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass{A}
+\umlemptyclass[x=4]{B}
+\umluniassoc[arg=bb, mult=1, pos=0.95, align=right, name=uniassoc]{A}{B}
+\umlnote[x=2,y=-3]{uniassoc-1}{Je suis une note attachee a la relation uniassoc}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\section{Personnaliser l'apparence}
+
+Grâce à la commande {\tt tikzumlset}, il est possible de modifier l'apparence par défaut des packages, des classes et des notes. Les options que l'on peut personnaliser sont :
+
+\begin{description}
+\item[text : ] permet de spécifier la couleur du texte (=black par défaut),
+\item[draw :] permet de spécifier la couleur des bords (=black par défaut),
+\item[fill class :] permet de spécifier la couleur de fond des classes (=yellow!20 par défaut),
+\item[fill template :] permet de spécifier la couleur de fond des boites templates (=yellow!2 par défaut),
+\item[fill package :] permet de spécifier la couleur de fond des packages (=blue!20 par défaut),
+\item[fill subpackage :] permet de spécifier la couleur de fond des sous-packages (=blue!20 par défaut),
+\item[fill note :] permet de spécifier la couleur de fond des notes (=green!20 par défaut),
+\item[font :] permet de définir le style de fonte du texte contenu dans tous les éléments d'un diagramme (=\small par défaut).
+\end{description}
+
+Par ailleurs, les commandes de relation disposent toutes d'une option {\tt style} prenant en argument un nom de style au sens de TikZ.
+
+Regardons l'exemple de la définition de la commande {\tt umlinherit} :
+
+\begin{lstlisting}
+\tikzstyle{tikzuml inherit style}=[color=\tikzumldrawcolor, -open triangle 45]
+\newcommand{\umlinherit}[3][]{\umlrelation[style={tikzuml inherit style}, #1]{#2}{#3}}
+\end{lstlisting}
+
+Vous pouvez donc très facilement définir une commande sur le même modèle en définissant un style particulier.
+
+\section{Exemples}
+
+\subsection{Exemple de l'introduction, pas à pas}
+
+On va construire petit à petit l'exemple illustrant la première page de ce document afin de mettre en valeur les différentes commandes utilisées.
+
+\subsubsection{Définition des packages p, sp1 et sp2}
+
+On laisse le package p aux coordonnées (0,0) (comportement par défaut), et on place le sous-package p1 aux coordonnées (0,0) et le sous-package p2 aux coordonnées (10,-6).
+
+{\color{red!70!black}
+\lstinputlisting[firstline=1, lastline=2]{introex.tikz}\vspace{-0.4cm}
+\lstinputlisting[firstline=10, lastline=11]{introex.tikz}\vspace{-0.4cm}
+\lstinputlisting[firstline=15, lastline=15]{introex.tikz}\vspace{-0.4cm}
+\lstinputlisting[firstline=19, lastline=19]{introex.tikz}
+}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlpackage}{p}
+\begin{umlpackage}{sp1}
+\end{umlpackage}
+\begin{umlpackage}[x=10,y=-6]{p2}
+\end{umlpackage}
+\end{umlpackage}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{Définition des classes A, B, C, D et de leurs attributs et opérations}
+
+La classe A est en (0,0) dans le sous-package sp1 et a un paramètre template : T. La classe B est positionnée 3 unités en dessous de A, toujours dans le sous-package sp1, et  possède un attribut statique et une opération virtuelle. La classe C est une interface en (0,0) dans le sous-package sp2. La classe D est placée en (2,-11) dans le package p.
+
+La classe A a deux attributs. La classe B a un attribut et deux opérations dont une virtuelle. La classe C a deux attributs. La classe D a un attribut.
+
+\lstinputlisting[firstline=1, lastline=2]{introex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=3, lastline=9]{introex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=10, lastline=11]{introex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=12, lastline=14]{introex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=15, lastline=15]{introex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=16, lastline=18]{introex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=19, lastline=19]{introex.tikz}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlpackage}{p}
+\begin{umlpackage}{sp1}
+\umlclass[template=T]{A}{
+  n : uint \\ t : float
+  }{}
+\umlclass[y=-3]{B}{
+  d : double
+  }{
+  \umlvirt{setB(b : B) : void} \\ getB() : B
+}
+\end{umlpackage}
+\begin{umlpackage}[x=10,y=-6]{sp2}
+\umlinterface{C}{
+  n : uint \\ s : string
+  }{}
+\end{umlpackage}
+\umlclass[x=2,y=-10]{D}{
+  n : uint
+  }{}
+\end{umlpackage}
+\end{tikzpicture}
+\end{center}
+
+
+\subsubsection{Définition des relations}
+
+On définit une association entre les classes C et B, une composition unidrectionnelle entre les classes D et C, une relation d'import nommée "import" entre les sous-packages sp2 et sp1 (avec modification des ancres), une relation d'aggrégation récursive sur la classe D et une relation d'héritage entre les classes D et B. Sur ces relations, on va spécifier des noms d'arguments et leurs multiplicités. Regardez la valeur donnée à la position de ces éléments suivant la géométrie de la flèche.
+
+\medskip
+
+\hspace{-0.7cm}\lstinline{...}
+{\color{red!70!black}
+\lstinputlisting[firstline=20, lastline=24]{introex.tikz}
+}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlpackage}{p}
+\begin{umlpackage}{sp1}
+\umlclass[template=T]{A}{
+  n : uint \\ t : float
+  }{}
+\umlclass[y=-3]{B}{
+  d : double
+ }{
+  \umlvirt{setB(b : B) : void} \\ getB() : B
+}
+\end{umlpackage}
+\begin{umlpackage}[x=10,y=-6]{sp2}
+\umlinterface{C}{
+  n : uint \\ s : string
+  }{}
+\end{umlpackage}
+\umlclass[x=2,y=-10]{D}{
+  n : uint
+  }{}
+\end{umlpackage}
+\umlassoc[geometry=-|-, arg1=tata, mult1=*, pos1=0.3, arg2=toto, mult2=1, pos2=2.9, align2=left]{C}{B}
+\umlunicompo[geometry=-|, arg=titi, mult=*, pos=1.7, stereo=vector]{D}{C}
+\umlimport[geometry=|-, anchors=90 and 50]{sp2}{sp1}
+\umlaggreg[arg=tutu, mult=1, pos=0.8, angle1=30, angle2=60, loopsize=2cm]{D}{D}
+\umlinherit[geometry=-|]{D}{B}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{Définition des notes}
+
+On rajoute enfin une note attchée à la classe B et une note attachée à la relation d'import affectée du nom import.
+
+\medskip
+
+\hspace{-0.7cm}\lstinline{...}
+{\color{red!70!black}
+\lstinputlisting[firstline=25]{introex.tikz}
+}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlpackage}{p}
+\begin{umlpackage}{sp1}
+\umlclass[template=T]{A}{
+  n : uint \\ t : float
+  }{}
+\umlclass[y=-3]{B}{
+  d : double
+  }{
+  \umlvirt{setB(b : B) : void} \\ getB() : B
+}
+\end{umlpackage}
+\begin{umlpackage}[x=10,y=-6]{sp2}
+\umlinterface{C}{
+  n : uint \\ s : string
+  }{}
+\end{umlpackage}
+\umlclass[x=2,y=-10]{D}{
+  n : uint
+  }{}
+\end{umlpackage}
+\umlassoc[geometry=-|-, arg1=tata, mult1=*, pos1=0.3, arg2=toto, mult2=1, pos2=2.9, align2=left]{C}{B}
+\umlunicompo[geometry=-|, arg=titi, mult=*, pos=1.7, stereo=vector]{D}{C}
+\umlimport[geometry=|-, anchors=90 and 50, name=import]{sp2}{sp1}
+\umlaggreg[arg=tutu, mult=1, pos=0.8, angle1=30, angle2=60, loopsize=2cm]{D}{D}
+\umlinherit[geometry=-|]{D}{B}
+\umlnote[x=2.5,y=-6, width=3cm]{B}{Je suis une note qui concerne la classe B}
+\umlnote[x=7.5,y=-2]{import-2}{Je suis une note qui concerne la relation d'import}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{Modification du style}
+
+On illustre l'utilisation de la commande {\tt tikzumlset} en changeant les couleurs associées à la classe et le type de font. On peut par ailleurs modifier les couleurs d'une classe donnée avec les options {\tt draw}, {\tt text} et {\tt fill}
+
+\medskip
+
+\begin{lstlisting}
+\tikzumlset{fill class=red!20, fill template=violet!10, font=\bfseries\footnotesize}
+\begin{tikzpicture}
+...
+\umlclass[x=2,y=-11, fill=orange!50, draw=white, text=red]{D}{
+  n : uint
+  }{}
+...
+\end{tikzpicture}
+\end{lstlisting}
+
+\begin{center}
+\tikzumlset{fill class=red!20, fill template=violet!10, font=\bfseries\footnotesize}
+\begin{tikzpicture}
+\begin{umlpackage}{p}
+\begin{umlpackage}{sp1}
+\umlclass[template=T]{A}{
+  n : uint \\ t : float
+  }{}
+\umlclass[y=-3]{B}{
+  d : double
+  }{
+  \umlvirt{setB(b : B) : void} \\ getB() : B
+}
+\end{umlpackage}
+\begin{umlpackage}[x=10,y=-6]{sp2}
+\umlinterface{C}{
+  n : uint \\ s : string
+  }{}
+\end{umlpackage}
+\umlclass[x=2,y=-10, fill=orange!50, draw=white, text=red]{D}{
+  n : uint
+  }{}
+\end{umlpackage}
+
+\umlassoc[geometry=-|-, arg1=tata, mult1=*, pos1=0.3, arg2=toto, mult2=1, pos2=2.9, align2=left]{C}{B}
+\umlunicompo[geometry=-|, arg=titi, mult=*, pos=1.7, stereo=vector]{D}{C}
+\umlimport[geometry=|-, anchors=90 and 50, name=import]{sp2}{sp1}
+\umlaggreg[arg=tutu, mult=1, pos=0.8, angle1=30, angle2=60, loopsize=2cm]{D}{D}
+\umlinherit[geometry=-|]{D}{B}
+\umlnote[x=2.5,y=-6, width=3cm]{B}{Je suis une note qui concerne la classe B}
+\umlnote[x=7.5,y=-2]{import-2}{Je suis une note qui concerne la relation d'import}
+\end{tikzpicture}
+\end{center}
+
+\subsection{Définir une spécialisation de classe}
+
+Une spécialisation de classe est de l'héritage d'un patron de classe dans lequel l'un des paramètres à son type fixé. Pour définir cette relation, c'est la commande {\tt umlreal} qui va servir ici, ainsi que l'option {\tt stereo} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass[template=T]{A}
+\umlemptyclass[template={T,U}, x=5, y=-2]{B}
+\umlreal[stereo={U $\rightarrow$ int}]{A}{B}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass[template=T]{A}
+\umlemptyclass[template={T,U}, x=5, y=-2]{B}
+\umlreal[stereo={U $\rightarrow$ int}]{A}{B}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\section{Règles de priorité des options et bugs identifiés}
+
+\begin{enumerate}
+\item L'option {\tt geometry} prime toujours sur les autres arguments. Cela signifie en particulier que si elle n'a pas sa valeur par défaut (--~--), alors les options {\tt angle1}, {\tt angle2} et {\tt loopsize}, paramétrant les relations récursives, seront ignorées.
+\item Dans le cas d'un patron de classe, il existe des cas où une relation la concernant sera mal définie, comme le montre le dessin ci-dessous, où le losange de la relation d'aggrégation est caché par le paramètre template :
+
+\begin{minipage}{0.6\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass[template=T]{A}
+\umlemptyclass[x=4,y=2]{B}
+\umluniaggreg{A}{B}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass[template=T]{A}
+\umlemptyclass[x=4,y=2]{B}
+\umluniaggreg{A}{B}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+On peut toutefois corriger partiellement ce problème en reliant la flèche directement entre la partie template de la classe A et la classe B en rajoutant le suffixe -template et en ajustant l'ancre de départ (la valeur -30 est assez satisfaisante) : 
+
+\medskip
+
+\begin{minipage}{0.6\textwidth}
+\begin{lstlisting}
+\begin{tikzpicture}
+\umlemptyclass[template=T]{A}
+\umlemptyclass[x=4,y=2]{B}
+\umluniaggreg[anchor1=-30]{A-template}{B}
+\end{tikzpicture}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\umlemptyclass[template=T]{A}
+\umlemptyclass[x=4,y=2]{B}
+\umluniaggreg[anchor1=-30]{A-template}{B}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\medskip
+
+\item Le comportement de placement automatique des informations d'un attribut sur une relation peut surprendre quand on veut le court-circuiter. Reprenons l'exemple de l'introduction. Si l'on regarde la rela	tion d'association et les attributs {\it toto} et {\it tata}. Si {\it toto} est au-dessus, {\it tata} est lui en dessous. Demandons maintenant de justifier à droite l'attribut {\it tata} (Au passage, on met sa position à 0.1). On constate alors que les positions de {\it tata} et de sa multiplicité s'inversent.
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlpackage}{p}
+\begin{umlpackage}{sp1}
+\umlclass[template=T]{A}{
+  n : uint \\ t : float
+}{}
+\umlclass[y=-3]{B}{
+  d : double
+}{
+  \umlvirt{setB(b : B) : void} \\ getB() : B}
+\end{umlpackage}
+\begin{umlpackage}[x=10,y=-6]{sp2}
+\umlinterface{C}{
+  n : uint \\ s : string
+}{}
+\end{umlpackage}
+\umlclass[x=2,y=-10]{D}{
+  n : uint
+  }{}
+\end{umlpackage}
+
+\umlassoc[geometry=-|-, arg1=tata, mult1=*, pos1=0.1, align1=right, arg2=toto, mult2=1, pos2=2.9, align2=left]{C}{B}
+\umlunicompo[geometry=-|, arg=titi, mult=*, pos=1.7, stereo=vector]{D}{C}
+\umlimport[geometry=|-, anchors=90 and 50, name=import]{sp2}{sp1}
+\umlaggreg[arg=tutu, mult=1, pos=0.8, angle1=30, angle2=60, loopsize=2cm]{D}{D}
+\umlinherit[geometry=-|]{D}{B}
+\umlnote[x=2.5,y=-6, width=3cm]{B}{Je suis une note qui concerne la classe B}
+\umlnote[x=7.5,y=-2]{import-2}{Je suis une note qui concerne la relation d'import}
+\end{tikzpicture}
+\end{center}
+
+\end{enumerate}
+
+\end{document}

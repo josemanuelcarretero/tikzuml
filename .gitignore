@@ -4,6 +4,14 @@ doc/*.out
 doc/*.synctex.gz
 doc/*.toc
 doc/*.tikz
-doc/*.pdf
+doc/*.4ct
+doc/*.4tc
+doc/*.css
+doc/*.dvi
+doc/*.html
+doc/*.idv
+doc/*.lg
+doc/*.tmp
+doc/*.xref
 src
 pgf-umlsd.sty
