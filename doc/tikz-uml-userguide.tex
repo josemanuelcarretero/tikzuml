@@ -718,6 +718,25 @@ For a note, you can also use the {\tt geometry} option, as for {\tt umlrelation}
 
 \remarque{There is no alias for the - - value. It is the default one.}
 
+\section{Association class}
+
+Drawing an association class is very easy with \tuml. It is just a class and a dependency between this class and a built point of another relation. The {\tt umlassocclass} makes it for you :
+
+\medskip
+
+\begin{minipage}{0.4\textwidth}
+\lstinputlisting{fig/assocclass.tikz}
+\end{minipage}
+\begin{minipage}{0.6\textwidth}
+\begin{center}
+\inputTikZ{assocclass}
+\end{center}
+\end{minipage}
+
+\medskip
+
+As the command is like a class and a relation, you can use the following options : {\tt x}, {\tt y}, {\tt width} (default is 10ex), {\tt type} (default is class), {\tt template} coming from the {\tt umlclass} environment, and {\tt name}, {\tt geometry} (default is - -), {\tt weight}, {\tt arm}, {\tt anchor1}, {\tt anchor2}, and {\tt anchors} coming from the {\tt umlrelation} command.
+
 \section{To change preferences}\label{s.classset}
 
 Thanks to the {\tt tikzumlset} command, you can change default preferences for packages, classes and notes. The available options are :
@@ -1157,7 +1176,7 @@ For practical reasons, when you define a transition for instance, you can rename
 
 \medskip
 
-You can also define the maximal width of a state with the  {\tt width} option (10ex by default).
+You can also define the width of an empty state with the  {\tt width} option (8ex by default).
 
 \medskip
 
@@ -1941,7 +1960,7 @@ The argument to give is the label of the component. The node representing the st
 
 \medskip
 
-You can also define the maximal width of a component with the {\tt width} option (10ex by default).
+You can also define the width of an empty component with the {\tt width} option (8ex by default).
 
 \medskip
 
@@ -1957,6 +1976,10 @@ You can define a component in another component or in a package. Then, the coord
 \inputTikZ{componentinner}
 \end{center}
 \end{minipage}
+
+\medskip
+
+Notice that you can define a class inside a component.
 
 \medskip
 

@@ -697,6 +697,25 @@ Puisque l'option {\tt geometry} est présente, de la même manière que pour {\t
 
 \remarque{Il n'y a pas d'alias dans le cas de la valeur -~- pour la seule raison qu'il s'agit de la valeur par défaut.}
 
+\section{Classe d'association}
+
+Dessiner une classe d'association est très facile avec \tuml. Il s'agit juste d'une classe et d'une relation de dépendence entre cette classe et le point de construction d'une relation. La commande {\tt umlassocclass} s'en charge pour vous :
+
+\medskip
+
+\begin{minipage}{0.4\textwidth}
+\lstinputlisting{fig/assocclass.tikz}
+\end{minipage}
+\begin{minipage}{0.6\textwidth}
+\begin{center}
+\inputTikZ{assocclass}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Comme la commande se comporte comme une classe et une relation, vous pouvez utiliser les options suivantes : {\tt x}, {\tt y}, {\tt width} (10ex par défaut), {\tt type} (class par défaut), {\tt template} venant de la commande {\tt umlclass}, et {\tt name}, {\tt geometry} (- - par défaut), {\tt weight}, {\tt arm}, {\tt anchor1}, {\tt anchor2}, et {\tt anchors} venant de la commande {\tt umlrelation}.
+
 \section{Personnalisation}\label{s.classset}
 
 Grâce à la commande {\tt tikzumlset}, il est possible de modifier l'apparence par défaut des packages, des classes et des notes. Les options que l'on peut personnaliser sont :
@@ -1131,7 +1150,7 @@ Les options {\tt x} et {\tt y} permettent de positionner l'état dans la figure,
 
 \medskip
 
-On peut également définir la largeur minimale d'un état avec l'option {\tt width} (10ex par défaut).
+On peut également définir la largeur d'un état vide avec l'option {\tt width} (8ex par défaut).
 
 \medskip
 
@@ -1913,7 +1932,7 @@ L'argument d'entrée est le nom du composant. Le n\oe{}ud qui le représente a u
 
 \medskip
 
-On peut aussi définir la largeur maximale d'un composant avec l'option {\tt width} (10ex par défaut).
+On peut aussi définir la largeur d'un composant vide avec l'option {\tt width} (8ex par défaut).
 
 \medskip
 
@@ -1929,6 +1948,10 @@ On peut définir un composant à l'intérieur d'un autre composant ou à l'inté
 \inputTikZ{componentinner}
 \end{center}
 \end{minipage}
+
+\medskip
+
+A noter que l'on peut définir une classe dans un composant.
 
 \medskip
 
