@@ -209,6 +209,200 @@
 % shortcut to define an empty package
 \newcommand{\umlemptypackage}[2][]{\begin{umlpackage}[#1]{#2} \end{umlpackage}}%
 
+% define a uml class
+% arg : name of the class
+% optional args : x,y coordinates of the class
+%                 width of the class node
+%                 type of class (class, interface, typedef, enum)
+%                 template parameters
+%                 draw, fill, text colors
+\newenvironment{umlclassenv}[2][]%
+{%
+  \pgfkeys{/tikzuml/class/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, template/.initial={},%
+                               draw/.initial=\tikzumldrawcolor, fill template/.initial=\tikzumlfilltemplatecolor, fill/.initial=\tikzumlfillclasscolor,%
+                               text/.initial=\tikzumltextcolor, .unknown/.code={%
+                                 \let\keyname=\pgfkeyscurrentname%
+                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlclass}%
+                               }}%
+  \pgfkeys{/tikzuml/class/.cd,#1}%
+  \pgfkeys{/tikzuml/class/.cd, x/.get=\umlclassX, y/.get=\umlclassY, width/.get=\umlclassMinimumWidth, type/.get=\umlclassType, template/.get=\umlclassTemplateParam,%
+                               draw/.get=\tikzumlclassdraw, fill/.get=\tikzumlclassfill, text/.get=\tikzumlclasstext, fill template/.get=\tikzumlclasstemplate}%
+  %
+  \ifthenelse{\equal{\umlclassType}{class}}{%
+    \def\tikzumlClassType{}%
+  }{%
+    \def\tikzumlClassType{$<<$\umlclassType$>>$ \\}%
+  }%
+  %
+  \ifthenelse{\equal{\umlclassTemplateParam}{}}{%
+    \def\tikzumlClassVPadding{}%
+    \def\tikzumlClassHPadding{}%
+  }{%
+    \def\tikzumlClassVPadding{\vspace{0.1em} \\}%
+    \def\tikzumlClassHPadding{\hspace{0.1em} $ $}%
+  }%
+  %
+  \def\tikzumlClassName{#2}%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlClassNodeName{\tikzumlClassName}}\x%
+  %
+%  \edef\tikzumlClassNodeName{\detokenize\expandafter{\tikzumlClassName}}
+%  \def\tikzumlClassNodeName{#2}
+  
+%  \begingroup 
+%    \catcode`\_ \active 
+%    \lccode`\~`\_ 
+%    \lowercase{\def~{\noexpand\_}} 
+%    \endlinechar-1 
+%    \scantokens\expandafter{\expandafter\def\expandafter 
+%        \x\expandafter{\tikzumlClassNodeName}}% 
+%           \edef\x{\endgroup 
+%              \def\noexpand\tikzumlClassName{\x}}\x
+  %
+  \def\tikzumlClassPos{\umlclassX,\umlclassY}%
+  \def\tikzumlClassAttributes{}%
+  \def\tikzumlClassOperations{}%
+  \def\tikzumlClassAbstractClass{}%
+  \def\tikzumlClassInterface{}%
+  %
+}{%
+  \node[tikzuml class style, draw=\tikzumlclassdraw, fill=\tikzumlclassfill, text=\tikzumlclasstext, font=\tikzumlfont, minimum width=\umlclassMinimumWidth] (\tikzumlClassNodeName) at (\tikzumlClassPos) {\begin{tabular}{c}\tikzumlClassVPadding \tikzumlClassType \tikzumlClassHPadding \textbf{\tikzumlClassName} \tikzumlClassHPadding \end{tabular}%
+  \nodepart{second}%
+  \begin{tabular}{l}%
+  \tikzumlClassAttributes%
+  \end{tabular}%
+  \nodepart{third}%
+  \begin{tabular}{l}%
+  \tikzumlClassOperations%
+  \end{tabular}%
+  };%
+  %
+  \ifthenelse{\equal{\umlclassTemplateParam}{}}{}{%
+    \draw (\tikzumlClassNodeName.north east) node[tikzuml template style, name=\tikzumlClassNodeName-template, draw=\tikzumlclassdraw, fill=\tikzumlclasstemplate, text=\tikzumlclasstext, font=\tikzumlfont] {\umlclassTemplateParam};%
+  }%
+  %
+  % add to fit
+  \ifnum\c@tikzumlPackageLevel>0%
+    \edef\tikzumlPackageFitOld{\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname}%
+    \ifthenelse{\equal{\umlclassTemplateParam}{}}{%
+      \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{\tikzumlPackageFitOld (\tikzumlClassNodeName)}%
+    }{%
+      \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{\tikzumlPackageFitOld (\tikzumlClassNodeName) (\tikzumlClassNodeName-template)}%
+    }%
+    \stepcounter{tikzumlPackageClassNum}%
+  \fi%
+}%
+
+% shortcuts for interface, enum and typedef environments
+\newenvironment{umlinterfaceenv}[2][]{\begin{umlclassenv}[type=interface,#1]{#2}}{\end{umlclassenv}}%
+\newenvironment{umltypedefenv}[2][]{\begin{umlclassenv}[type=typedef,#1]{#2}}{\end{umlclassenv}}%
+\newenvironment{umlenumenv}[2][]{\begin{umlclassenv}[type=enum,#1]{#2}}{\end{umlclassenv}}%
+
+% define a uml class
+% args : name of the class
+%        attributes of the class
+%        operations of the class
+% optional args : x,y coordinates of the class
+%                 width of the class node
+%                 type of class (class, interface, typedef, enum)
+%                 template parameters
+%                 draw, fill, text colors
+\newcommand{\umlclass}[4][]%
+{%
+  \pgfkeys{/tikzuml/class/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, template/.initial={},%
+                               draw/.initial=\tikzumldrawcolor, fill template/.initial=\tikzumlfilltemplatecolor, fill/.initial=\tikzumlfillclasscolor,%
+                               text/.initial=\tikzumltextcolor, .unknown/.code={%
+                                 \let\keyname=\pgfkeyscurrentname%
+                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlclass}%
+                               }}%
+  \pgfkeys{/tikzuml/class/.cd,#1}%
+  \pgfkeys{/tikzuml/class/.cd, x/.get=\umlclassX, y/.get=\umlclassY, width/.get=\umlclassMinimumWidth, type/.get=\umlclassType, template/.get=\umlclassTemplateParam,%
+                               draw/.get=\tikzumlclassdraw, fill/.get=\tikzumlclassfill, text/.get=\tikzumlclasstext, fill template/.get=\tikzumlclasstemplate}%
+  %
+  \ifthenelse{\equal{\umlclassType}{class}}{%
+    \def\tikzumlClassType{}%
+  }{%
+    \def\tikzumlClassType{$<<$\umlclassType$>>$ \\}%
+  }%
+  %
+  \ifthenelse{\equal{\umlclassTemplateParam}{}}{%
+    \def\tikzumlClassVPadding{}%
+    \def\tikzumlClassHPadding{}%
+  }{%
+    \def\tikzumlClassVPadding{\vspace{0.6em} \\}%
+    \def\tikzumlClassHPadding{\hspace{0.1em} $ $}%
+  }%
+  %
+  \def\tikzumlClassName{#2}%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlClassNodeName{\tikzumlClassName}}\x%
+  %
+%  \edef\tikzumlClassNodeName{\detokenize\expandafter{\tikzumlClassName}}
+%  \def\tikzumlClassNodeName{#2}
+  
+%  \begingroup 
+%    \catcode`\_ \active 
+%    \lccode`\~`\_ 
+%    \lowercase{\def~{\noexpand\_}} 
+%    \endlinechar-1 
+%    \scantokens\expandafter{\expandafter\def\expandafter 
+%        \x\expandafter{\tikzumlClassNodeName}}% 
+%           \edef\x{\endgroup 
+%              \def\noexpand\tikzumlClassName{\x}}\x
+  %
+  \def\tikzumlClassPos{\umlclassX,\umlclassY}%
+  \def\tikzumlClassAttributes{#3}%
+  \def\tikzumlClassOperations{#4}%
+  %
+  \node[tikzuml class style, draw=\tikzumlclassdraw, fill=\tikzumlclassfill, text=\tikzumlclasstext, font=\tikzumlfont, minimum width=\umlclassMinimumWidth] (\tikzumlClassNodeName) at (\tikzumlClassPos) {\begin{tabular}{c}\tikzumlClassVPadding \tikzumlClassType \tikzumlClassHPadding \textbf{\tikzumlClassName} \tikzumlClassHPadding \end{tabular}%
+  \nodepart{second}%
+  \begin{tabular}{l}%
+  \tikzumlClassAttributes%
+  \end{tabular}%
+  \nodepart{third}%
+  \begin{tabular}{l}%
+  \tikzumlClassOperations%
+  \end{tabular}%
+  };%
+  %
+  \ifthenelse{\equal{\umlclassTemplateParam}{}}{}{%
+    \draw (\tikzumlClassNodeName.north east) node[tikzuml template style, name=\tikzumlClassNodeName-template, draw=\tikzumlclassdraw, fill=\tikzumlclasstemplate, text=\tikzumlclasstext, font=\tikzumlfont] {\umlclassTemplateParam};%
+  }%
+  %
+  % add to fit
+  \ifnum\c@tikzumlPackageLevel>0%
+    \edef\tikzumlPackageFitOld{\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname}%
+    \ifthenelse{\equal{\umlclassTemplateParam}{}}{%
+      \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{\tikzumlPackageFitOld (\tikzumlClassNodeName)}%
+    }{%
+      \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{\tikzumlPackageFitOld (\tikzumlClassNodeName) (\tikzumlClassNodeName-template)}%
+    }%
+    \stepcounter{tikzumlPackageClassNum}%
+  \fi%
+}%
+
+% shortcuts for interface, enum and typedef environments
+\newcommand{\umlinterface}[4][]{\umlclass[type=interface,#1]{#2}{#3}{#4}}%
+\newcommand{\umltypedef}[4][]{\umlclass[type=typedef,#1]{#2}{#3}{#4}}%
+\newcommand{\umlenum}[4][]{\umlclass[type=enum,#1]{#2}{#3}{#4}}%
+
+% shortcut to define an empty class
+\newcommand{\umlemptyclass}[2][]{\umlclass[#1]{#2}{}{}}%
+
+% define a class attribute
+\newcommand{\umlattr}[1]{\def\tikzumlClassAttributes{#1}}%
+
+% underline the text for static arg
+\newcommand{\umlstatic}[1]{\underline{#1}}%
+\newcommand{\umlvirt}[1]{\textit{#1}}%
+
+% define a class operation
+\newcommand{\umlop}[1]{\def\tikzumlClassOperations{#1}}%
+
 
 
 %%% End of tikz-uml.sty
