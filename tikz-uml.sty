@@ -12,17 +12,18 @@
 
 \RequirePackage{ifthen}%
 \RequirePackage{tikz}%
+\RequirePackage{xstring}%
 \RequirePackage{calc}%
 \RequirePackage{pgfopts}%
 \usetikzlibrary{backgrounds,arrows,shapes,fit,shadows,decorations.markings}%
 
-\def\tikzumlPackageLayersNum{2}%
+\def\tikzumlPackageLayersNum{3}%
 \pgfkeys{/tikzuml/options/.cd, packageLayers/.initial=3}%
 \pgfkeys{/tikzuml/options/.cd, packageLayers/.store in=\tikzumlPackageLayersNum}%
-\def\tikzumlStateLayersNum{2}%
+\def\tikzumlStateLayersNum{3}%
 \pgfkeys{/tikzuml/options/.cd, stateLayers/.initial=3}%
 \pgfkeys{/tikzuml/options/.cd, stateLayers/.store in=\tikzumlStateLayersNum}%
-\def\tikzumlFragmentLayersNum{2}%
+\def\tikzumlFragmentLayersNum{3}%
 \pgfkeys{/tikzuml/options/.cd, fragmentLayers/.initial=3}%
 \pgfkeys{/tikzuml/options/.cd, fragmentLayers/.store in=\tikzumlFragmentLayersNum}%
 
@@ -90,7 +91,7 @@
 \pgfkeys{/tikzuml/note/.cd, anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2}}%
 
 \tikzstyle{tikzuml class style}=[rectangle split, rectangle split parts=3, minimum height=2em, node distance=2em]%
-\tikzstyle{tikzuml template style}=[dashed, inner ysep=0.7em, inner xsep=1ex]%
+\tikzstyle{tikzuml template style}=[dashed, inner ysep=0.5em, inner xsep=1ex]%
 \tikzstyle{tikzuml control nodes style}=[fill=black, inner sep=1.5pt, circle]%
 \tikzstyle{tikzuml inherit style}=[color=\tikzumldrawcolor, -open triangle 45]%
 \tikzstyle{tikzuml implements style}=[color=\tikzumldrawcolor, -open triangle 45, dashed]%
@@ -223,7 +224,7 @@
 %            template parameters
 %            draw, fill, text colors
 \newenvironment{umlclassenv}[2][]{%
-  \pgfkeys{/tikzuml/class/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, template/.initial={},%
+  \pgfkeys{/tikzuml/class/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, template/.initial={}, name/.initial={tikzumlEmpty},%
                                draw/.initial=\tikzumldrawcolor, fill template/.initial=\tikzumlfilltemplatecolor, fill/.initial=\tikzumlfillclasscolor,%
                                text/.initial=\tikzumltextcolor, .unknown/.code={%
                                  \let\keyname=\pgfkeyscurrentname%
@@ -231,12 +232,17 @@
                                }}%
   \pgfkeys{/tikzuml/class/.cd,#1}%
   \pgfkeys{/tikzuml/class/.cd, x/.get=\umlclassX, y/.get=\umlclassY, width/.get=\umlclassMinimumWidth, type/.get=\umlclassType, template/.get=\umlclassTemplateParam,%
+                               name/.get=\umlclassName,%
                                draw/.get=\tikzumlclassdraw, fill/.get=\tikzumlclassfill, text/.get=\tikzumlclasstext, fill template/.get=\tikzumlclasstemplate}%
   %
   \ifthenelse{\equal{\umlclassType}{class}}{%
     \def\tikzumlClassType{}%
   }{%
-    \def\tikzumlClassType{$<<$\umlclassType$>>$ \\}%
+    \ifthenelse{\equal{\umlclassType}{abstract}}{%
+      \def\tikzumlClassType{}%
+    }{%
+      \def\tikzumlClassType{$<<$\umlclassType$>>$ \\}%
+    }%
   }%
   %
   \ifthenelse{\equal{\umlclassTemplateParam}{}}{%
@@ -244,7 +250,7 @@
     \def\tikzumlClassHPadding{}%
   }{%
     \def\tikzumlClassVPadding{\vspace{0.1em} \\}%
-    \def\tikzumlClassHPadding{\hspace{0.1em} $ $}%
+    \def\tikzumlClassHPadding{\hspace{0.5ex} $ $}%
   }%
   %
   \def\tikzumlClassName{#2}%
@@ -252,6 +258,17 @@
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlClassNodeName{\tikzumlClassName}}\x%
+  %
+  \ifthenelse{\equal{\umlclassName}{tikzumlEmpty}}{}{%
+    \def\tikzumlClassNodeName{\umlclassName}%
+  }%
+  %
+  \StrSubstitute{\tikzumlClassNodeName}{:}{@COLON@}[\tikzumlClassNodeName]
+  %
+  \ifthenelse{\equal{\umlclassType}{abstract}}{%
+    \let\tikzumlClassNameOld\tikzumlClassName%
+    \def\tikzumlClassName{{\it \tikzumlClassNameOld}}%
+  }{}%
   %
 %  \edef\tikzumlClassNodeName{\detokenize\expandafter{\tikzumlClassName}}
 %  \def\tikzumlClassNodeName{#2}
@@ -301,6 +318,7 @@
 }%
 
 % shortcuts for interface, enum and typedef environments
+\newenvironment{umlabstractenv}[2][]{\begin{umlclassenv}[type=abstract,#1]{#2}}{\end{umlclassenv}}%
 \newenvironment{umlinterfaceenv}[2][]{\begin{umlclassenv}[type=interface,#1]{#2}}{\end{umlclassenv}}%
 \newenvironment{umltypedefenv}[2][]{\begin{umlclassenv}[type=typedef,#1]{#2}}{\end{umlclassenv}}%
 \newenvironment{umlenumenv}[2][]{\begin{umlclassenv}[type=enum,#1]{#2}}{\end{umlclassenv}}%
@@ -316,7 +334,7 @@
 %            draw, fill, text colors
 \newcommand{\umlclass}[4][]%
 {%
-  \pgfkeys{/tikzuml/class/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, template/.initial={},%
+  \pgfkeys{/tikzuml/class/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, template/.initial={}, name/.initial={tikzumlEmpty},%
                                draw/.initial=\tikzumldrawcolor, fill template/.initial=\tikzumlfilltemplatecolor, fill/.initial=\tikzumlfillclasscolor,%
                                text/.initial=\tikzumltextcolor, .unknown/.code={%
                                  \let\keyname=\pgfkeyscurrentname%
@@ -324,19 +342,24 @@
                                }}%
   \pgfkeys{/tikzuml/class/.cd,#1}%
   \pgfkeys{/tikzuml/class/.cd, x/.get=\umlclassX, y/.get=\umlclassY, width/.get=\umlclassMinimumWidth, type/.get=\umlclassType, template/.get=\umlclassTemplateParam,%
+                               name/.get=\umlclassName,%
                                draw/.get=\tikzumlclassdraw, fill/.get=\tikzumlclassfill, text/.get=\tikzumlclasstext, fill template/.get=\tikzumlclasstemplate}%
   %
   \ifthenelse{\equal{\umlclassType}{class}}{%
     \def\tikzumlClassType{}%
   }{%
-    \def\tikzumlClassType{$<<$\umlclassType$>>$ \\}%
+    \ifthenelse{\equal{\umlclassType}{abstract}}{%
+      \def\tikzumlClassType{}%
+    }{%
+      \def\tikzumlClassType{$<<$\umlclassType$>>$ \\}%
+    }%
   }%
   %
   \ifthenelse{\equal{\umlclassTemplateParam}{}}{%
     \def\tikzumlClassVPadding{}%
     \def\tikzumlClassHPadding{}%
   }{%
-    \def\tikzumlClassVPadding{\vspace{-0.5ex} \\}%
+    \def\tikzumlClassVPadding{\vspace{0.1em} \\}%
     \def\tikzumlClassHPadding{\hspace{0.5ex} $ $}%
   }%
   %
@@ -345,6 +368,17 @@
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlClassNodeName{\tikzumlClassName}}\x%
+  %
+  \ifthenelse{\equal{\umlclassName}{tikzumlEmpty}}{}{%
+    \def\tikzumlClassNodeName{\umlclassName}%
+  }%
+  %
+  \StrSubstitute{\tikzumlClassNodeName}{:}{@COLON@}[\tikzumlClassNodeName]
+  %
+  \ifthenelse{\equal{\umlclassType}{abstract}}{%
+    \let\tikzumlClassNameOld\tikzumlClassName%
+    \def\tikzumlClassName{{\it \tikzumlClassNameOld}}%
+  }{}%
   %
   \def\tikzumlClassPos{\umlclassX,\umlclassY}%
   \def\tikzumlClassAttributes{#3}%
@@ -378,6 +412,7 @@
 }%
 
 % shortcuts for interface, enum and typedef environments
+\newcommand{\umlabstract}[4][]{\umlclass[type=abstract,#1]{#2}{#3}{#4}}%
 \newcommand{\umlinterface}[4][]{\umlclass[type=interface,#1]{#2}{#3}{#4}}%
 \newcommand{\umltypedef}[4][]{\umlclass[type=typedef,#1]{#2}{#3}{#4}}%
 \newcommand{\umlenum}[4][]{\umlclass[type=enum,#1]{#2}{#3}{#4}}%
@@ -448,10 +483,14 @@
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlSrcClassNodeName{\tikzumlSrcClassName}}\x%
   %
+  \StrSubstitute{\tikzumlSrcClassNodeName}{:}{@COLON@}[\tikzumlSrcClassNodeName]
+  %
   \def\tikzumlDestClassName{#3}%
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlDestClassNodeName{\tikzumlDestClassName}}\x%
+  %
+  \StrSubstitute{\tikzumlDestClassNodeName}{:}{@COLON@}[\tikzumlDestClassNodeName]
   %
   % managing alias keys
   \def\attrNameT{\attrNameTO\attrNameTT}%
@@ -1635,10 +1674,14 @@
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlSrcClassNodeName{\tikzumlSrcClassName}}\x%
   %
+  \StrSubstitute{\tikzumlSrcClassNodeName}{:}{@COLON@}[\tikzumlSrcClassNodeName]
+  %
   \def\tikzumlDestClassName{#4}%
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlDestClassNodeName{\tikzumlDestClassName}}\x%
+  %
+  \StrSubstitute{\tikzumlDestClassNodeName}{:}{@COLON@}[\tikzumlDestClassNodeName]
   %
   % managing alias keys
   \def\attrNameT{\attrNameTO\attrNameTT}%
