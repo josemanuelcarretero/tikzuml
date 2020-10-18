@@ -76,6 +76,7 @@
                        fill call/.initial=white,%
                        fill fragment/.initial= none,%
 			fill component/.initial= yellow!20,%
+			fill port/.initial= yellow!20,%
 			fill assembly connector/.initial= white,%
                        .unknown/.code={%
                          \let\keyname=\pgfkeyscurrentname%
@@ -90,6 +91,7 @@
                        fill call/.get=\tikzumlfillcallcolor,%
                        fill fragment/.get=\tikzumlfillfragmentcolor,%
 			fill component/.get=\tikzumlfillcomponentcolor,%
+			fill port/.get=\tikzumlfillportcolor,%
 			fill assembly connector/.get=\tikzumlfillassemblyconnectorcolor}%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -145,7 +147,10 @@
                        fill state/.get=\tikzumlfillstatecolor,%
                        fill object/.get=\tikzumlfillobjectcolor,%
                        fill call/.get=\tikzumlfillcallcolor,%
-                       fill fragment/.get=\tikzumlfillfragmentcolor}%
+                       fill fragment/.get=\tikzumlfillfragmentcolor,%
+			fill component/.get=\tikzumlfillcomponentcolor,%
+			fill port/.get=\tikzumlfillportcolor,%
+			fill assembly connector/.get=\tikzumlfillassemblyconnectorcolor}%
 }%
 
 % define a point
@@ -1989,7 +1994,7 @@
   }{%
     \ifthenelse{\equal{\tikzumlnotegeometry}{-|-}}{%
       \ifthenelse{\equal{\tikzumlnotearm}{auto}}{%
-        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord\tikzumlassocclassSrcAnchor -| note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center |- \tikzumlClassNodeName\tikzumlassocclassDestAnchor) --}%
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord\tikzumlnoteSrcAnchor -| note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center |- \tikzumlClassNodeName\tikzumlnoteDestAnchor) --}%
       }{%
         \draw (note-\thetikzumlNoteNum-coord\tikzumlnoteSrcAnchor)+(\tikzumlnotearm,0) node[name=note-\thetikzumlNoteNum-tmp] {};
         \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-tmp.center) |-}%
@@ -1997,7 +2002,7 @@
     }{%
       \ifthenelse{\equal{\tikzumlnotegeometry}{|-|}}{%
         \ifthenelse{\equal{\tikzumlnotearm}{auto}}{%
-        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord\tikzumlassocclassSrcAnchor |- note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center -| \tikzumlClassNodeName\tikzumlassocclassDestAnchor) --}%
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord\tikzumlnoteSrcAnchor |- note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center -| \tikzumlClassNodeName\tikzumlnoteDestAnchor) --}%
       }{%
         \draw (note-\thetikzumlNoteNum-coord\tikzumlnoteSrcAnchor)+(0,\tikzumlnotearm) node[name=note-\thetikzumlNoteNum-tmp] {};
         \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-tmp.center) -|}%
@@ -3074,11 +3079,16 @@
 \newcommand{\umlobject}[2][]{
   \stepcounter{tikzumlObjectNum}%
   %
+  \edef\tikzumlobject@ddot{:}%
   \pgfkeys{/tikzuml/obj/.cd, x/.initial={tikzumlEmpty}, y/.initial=0, stereo/.initial=object, class/.initial={}, scale/.initial=1,%
                              draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillobjectcolor, text/.initial=\tikzumltextcolor,%
                              .unknown/.code={%
                                  \let\keyname=\pgfkeyscurrentname%
-                                 \errmessage{TIKZUML ERROR : in umlobj, invalid option \keyname}%
+                                 \ifthenelse{\equal{\keyname}{no ddots}}{%
+                                   \edef\tikzumlobject@ddot{}%
+                                 }{%
+                                   \errmessage{TIKZUML ERROR : in umlobj, invalid option \keyname}%
+                                 }%
                              }}%
   \pgfkeys{/tikzuml/obj/.cd, #1}%
   \pgfkeys{/tikzuml/obj/.cd, x/.get=\tikzumlobjectX, y/.get=\tikzumlobjectY, stereo/.get=\tikzumlobjectstereo, class/.get=\tikzumlobjectclass,%
@@ -3110,9 +3120,9 @@
   }%
   %
   \ifnum\tikzumlInCreateCall=1%
-    \draw (\tikzumlCreateCallObjectSrc -| \tikzumlobjectX,0) node[tikzuml object box style] (\tikzumlObjectName) {\tikzumlObjectName:\tikzumlobjectclass};%
+    \draw (\tikzumlCreateCallObjectSrc -| \tikzumlobjectX,0) node[tikzuml object box style] (\tikzumlObjectName) {\tikzumlObjectName\tikzumlobject@ddot\tikzumlobjectclass};%
   \else%
-    \node[tikzuml object box style] (\tikzumlObjectName) at (\tikzumlobjectX,\tikzumlobjectY) {\tikzumlObjectName:\tikzumlobjectclass};%
+    \node[tikzuml object box style] (\tikzumlObjectName) at (\tikzumlobjectX,\tikzumlobjectY) {\tikzumlObjectName\tikzumlobject@ddot\tikzumlobjectclass};%
   \fi%
   %
   \ifthenelse{\equal{\tikzumlobjectstereo}{multi}}{%
@@ -3135,6 +3145,18 @@
 }
 
 % shortcuts for objects
+\newcommand{\umlbasicobject}[2][]{%
+  \pgfkeys{/tikzuml/basicobj/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{no ddots}}{%
+        \errmessage{TIKZUML ERROR : in umlbasicobject, forbidden option no ddots}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/basicobj/.cd, #1}%
+  \umlobject[no ddots, #1]{#2}%
+}%
+
 \newcommand{\umldatabase}[2][]{%
   \pgfkeys{/tikzuml/databaseobj/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
@@ -3781,8 +3803,20 @@
   \node[font=\tikzumlfont] (\tikzumlComponent@nodeName-caption) at (\tikzumlComponent@nodeName-captiontmp) {\tikzumlComponent@caption};%
   \draw (\tikzumlComponent@nodeName-caption.north -| \tikzumlComponent@nodeName-body.east) node[below=-0.8ex, name=\tikzumlComponent@nodeName-logo] {\picturedcomponent{draw=\tikzumlcomponentdraw, fill=\tikzumlcomponentfill, font=\tikzumlfont} };%
   \draw (\tikzumlComponent@nodeName-caption.south -| \tikzumlComponent@nodeName.north west) -- (\tikzumlComponent@nodeName-caption.south -| \tikzumlComponent@nodeName.north east);%
+  \coordinate (\tikzumlComponent@nodeName-west-port) at (\tikzumlComponent@nodeName.west);
+  \coordinate (\tikzumlComponent@nodeName-east-port) at (\tikzumlComponent@nodeName.east);
+  \coordinate (\tikzumlComponent@nodeName-south-port) at (\tikzumlComponent@nodeName.south);
+  \coordinate (\tikzumlComponent@nodeName-north-port) at (\tikzumlComponent@nodeName.north);
+
   \end{pgfonlayer}%
   \end{scope}%
+  %
+  % add to fit
+  \ifnum\c@tikzumlPackageLevel>0%
+    \edef\tikzumlPackageFitOld{\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{\tikzumlPackageFitOld (\tikzumlComponent@nodeName)}%
+    \stepcounter{tikzumlPackageClassNum}%
+  \fi%
 }%
 
 % shortcut for empty state
@@ -3852,7 +3886,7 @@
  			distance/.get=\tikzumlRequiredInterfaceDistance,%
  			padding/.get=\tikzumlRequiredInterfacePadding,%
  			width/.get=\tikzumlRequiredInterfaceWidth,%
-                       	draw/.get=\tikzumlrequiredinterfacedraw, fill/.get=\tikzumlrequiredinterfacefill,}%
+                       	draw/.get=\tikzumlrequiredinterfacedraw, fill/.get=\tikzumlrequiredinterfacefill}%
   %
   \edef\tikzumlRequiredInterface@name{#2}%
   %
@@ -3966,7 +4000,7 @@
 				anchor1/.initial={}, anchor2/.initial={},%
 				draw/.initial=\tikzumldrawcolor,%
 				fill assembly connector/.initial=\tikzumlfillassemblyconnectorcolor,%
-				fill port/.initial=\tikzumlfillcomponentcolor}%
+				fill port/.initial=\tikzumlfillportcolor}%
   \pgfkeys{/tikzuml/assemblyconnectorrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{with port}}{%
@@ -4117,15 +4151,18 @@
     \def\tikzumlAssemblyConnectorEndAnchor{\umlAssemblyConnectorEndAnchor}%
   }%
   %
+  \node[inner sep=0] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port-tmp) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
+  \node[inner sep=0] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port-tmp) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
+  %
+  \umlrelation[style={tikzuml connector style}, #1]{\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port-tmp}{\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port-tmp}%
+  %
   \ifthenelse{\equal{\tikzumlAssemblyConnectorWithPort}{tikzumlTrue}}{%
-    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
-    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
+    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port-tmp) {};%
+    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port-tmp) {};%
   }{%
     \node[inner sep=0] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
     \node[inner sep=0] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
   }%
-  %
-  \umlrelation[style={tikzuml connector style}, #1]{\tikzumlAssemblyConnectorStart@nodeName}{\tikzumlAssemblyConnectorEnd@nodeName}%
   %
   \addtocounter{tikzumlRelationNum}{-1}%
   \ifthenelse{\equal{\tikzumlAssemblyConnectorName}{connector-\thetikzumlConnectorNum}}{%
@@ -4232,7 +4269,30 @@
   \umlassemblyconnector[geometry=|-|, #1]{#2}{#3}%
 }%
 
+\newcommand{\umlport}[3][]{%
+  \pgfkeys{/tikzuml/port/.cd, draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillportcolor,%
+                                              width/.initial=1em}%
+  \pgfkeys{/tikzuml/port/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \errmessage{TIKZUML ERROR : in umlport forbidden option \keyname}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/port/.cd, #1}%
+  \pgfkeys{/tikzuml/port/.cd, width/.get=\tikzumlPortWidth,%
+                       	draw/.get=\tikzumlportdraw, fill/.get=\tikzumlportfill}%
+
+  \edef\tikzumlPort@name{#2}%
+  \edef\tikzumlPort@anchor{#3}%
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlPort@nodeName{\tikzumlPort@name}}\x%
+  %
+  \node[inner sep=0.5*\tikzumlPortWidth, rectangle, draw=\tikzumlportdraw, fill=\tikzumlportfill] (\tikzumlPort@nodeName-\tikzumlPort@anchor-port) at (\tikzumlPort@nodeName.\tikzumlPort@anchor) {};
+}
+
 \newcommand{\umldelegateconnector}[3][]{%
+  \def\tikzumlDelegateConnectorWithStartPort{tikzumlFalse}%
+  \def\tikzumlDelegateConnectorWithEndPort{tikzumlFalse}%
   \pgfkeys{/tikzuml/delegateconnector/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
@@ -4255,7 +4315,7 @@
     }%
   }%
   \pgfkeys{/tikzuml/HVdelegateconnector/.cd, #1}%
-  \umlrelation[style={tikzuml connector style}, stereo=delegate, geometry=-|, #1]{#2}{#3}%
+  \umldelegateconnector[geometry=-|, #1]{#2}{#3}%
 }%
 
 \newcommand{\umlVHdelegateconnector}[3][]{%
@@ -4267,7 +4327,7 @@
     }%
   }%
   \pgfkeys{/tikzuml/VHdelegateconnector/.cd, #1}%
-  \umlrelation[style={tikzuml connector style}, stereo=delegate, geometry=|-, #1]{#2}{#3}%
+  \umldelegateconnector[geometry=|-, #1]{#2}{#3}%
 }%
 
 \newcommand{\umlHVHdelegateconnector}[3][]{%
@@ -4279,7 +4339,7 @@
     }%
   }%
   \pgfkeys{/tikzuml/HVHdelegateconnector/.cd, #1}%
-  \umlrelation[style={tikzuml connector style}, stereo=delegate, geometry=-|-, #1]{#2}{#3}%
+  \umldelegateconnector[geometry=-|-, #1]{#2}{#3}%
 }%
 
 \newcommand{\umlVHVdelegateconnector}[3][]{%
@@ -4291,7 +4351,7 @@
     }%
   }%
   \pgfkeys{/tikzuml/VHVdelegateconnector/.cd, #1}%
-  \umlrelation[style={tikzuml connector style}, stereo=delegate, geometry=|-|, #1]{#2}{#3}%
+  \umldelegateconnector[geometry=|-|, #1]{#2}{#3}%
 }%
 %%% End of tikz-uml.sty
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

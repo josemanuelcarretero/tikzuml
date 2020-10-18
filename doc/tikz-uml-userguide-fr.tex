@@ -18,7 +18,7 @@
 \usepackage{../tikz-uml} % pour les diagrammes de classe
 
 \newif\iffinal % definit un switch entre brouillon et version final
-\finaltrue % a utiliser pour compiler le document en version finale
+%\finaltrue % a utiliser pour compiler le document en version finale
 
 \iffinal
   \newcommand{\inputTikZ}[1]{%
@@ -1879,4 +1879,276 @@ Il existe un cas particulier : {\tt umlcreatecall}. Les options {\tt text}, {\tt
 \end{center}
 
 \end{enumerate}
+
+\chapter{Diagrammes de composants}
+
+Voici un exemple de diagramme de composants que l'on peut réaliser :
+
+\begin{center}
+\inputTikZ{compdiagex}
+\end{center}
+
+Nous allons voir les différents élements qui composent de tels diagrammes : les composants, les interfaces requises et offertes, les connecteurs d'assemblage, les connecteurs de délégation et les ports.
+
+\section{Définir un composant}
+
+Un composant peut être défini à l'aide de l'environnement {\tt umlcomponent} :  
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/component.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{component}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Les options {\tt x} et {\tt y} permettent de placer le composant dans la figure, ou dans un autre composant. La valeur par défaut est 0. 
+
+L'argument d'entrée est le nom du composant. Le n\oe{}ud qui le représente a un nom défini par défaut à partir d'un compteur. Pour des raisons pratiques, on peut également le renommer avec l'option {\tt name}.
+
+\medskip
+
+On peut aussi définir la largeur maximale d'un composant avec l'option {\tt width} (10ex par défaut).
+
+\medskip
+
+On peut définir un composant à l'intérieur d'un autre composant ou à l'intérieur d'un package. Les coordonnées du composant sont alors relatives à son parent :
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/componentinner.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{componentinner}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Si vous souhaitez définir un composant sans le détailler, vous pouvez utiliser la commande {\tt umlbasic component} , qui est un alias de l'environnnement {\tt umlcomponent}.
+
+\section{Définir une interface requise/offerte}
+
+Dans un composant, vous pouvez définir 2 types d'interfaces : des interfaces requises et des interfaces offertes. Dans ce but, vous pouvez utiliser les commandes {\tt umlprovidedinterface} et/ou {\tt umlrequiredinterface}.
+Ces 2 commandes disposent des mêmes options :
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentinterface.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentinterface}
+\end{center}
+\end{minipage}
+
+\medskip
+
+L'option {\tt interface} est utilisée pour nommer l'interface, le nom apparaissant au-dessus du symbole de l'interface.
+Celui-ci est représenté par un n\oe{}ud nommé X-interface, où X est le nom du composant.
+
+\medskip
+
+L'option {\tt width} permet de définir la taille du symbole de l'interface. Sa valeur par défaut est 1em.
+
+\medskip
+
+L'option {\tt distance} permet de définir la longueur du bras de l'interface, à savoir la distance entre le port du composant et le symbole de l'interface.
+
+\medskip
+
+L'option {\tt with port} permet de tracer le port du composant associé à l'interface.
+
+\medskip
+
+Si vous regardez l'exemple précédent, vous pouvez remarquer le padding entre les interfaces des sous-composants et la frontières du composant parent. Vous pouvez modifier ce padding avec l'option {\tt padding}. Sa valeur par défaut est 1cm. 
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentinterfacepadding.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentinterfacepadding}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Cette option sera très utile pour tracer les connecteurs, comme vous allez le voir dans la section suivante.
+
+\section{Définir un connecteur d'assemblage}
+
+Un connecteur d'assemblage est une relation entre 2 composants différents. Il s'agit d'un lien entre l'interface requise de l'un et l'interface offerte de l'autre.
+Dans ce but, vous pouvez utiliser la commande {\tt umlassemblyconnector} :
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentassemblyconnector.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentassemblyconnector}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Le symbole du connecteur d'assemblage est tracé uniquement si l'option {\tt interface} est donnée. Comme pour les commandes {\tt umlprovidedinterface} et {\tt umlrequiredinterface}, l'option {\tt  with port} permet de tracer les ports associés au connecteur d'assemblage, et l'option {\tt width} permet de spécifier la taille du symbole (la valeur par défaut est 1em).
+
+Vous pouvez également donner un nom au connecteur d'assemblage avec l'option {\tt name}.
+
+\subsection{Définir la géométrie d'un connecteur d'assemblage}
+
+Comme pour la commande {\tt umlrelation}, vous pouvez utiliser l'option {\tt geometry} et les raccourcis associés :
+
+\begin{description}
+\item[umlHVassemblyconnector :] raccourci pour {\tt umlassemblyconnector} avec geometry=-|
+\item[umlVHassemblyconnector :] raccourci pour {\tt umlassemblyconnector} avec geometry=|-
+\item[umlHVHassemblyconnector :] raccourci pour {\tt umlassemblyconnector} avec geometry=-|-
+\item[umlVHVassemblyconnector :] raccourci pour {\tt umlassemblyconnector} avec geometry=|-|
+\end{description}
+
+\subsection{Placer le symbole d'un connecteur d'assemblage}
+
+Pour placer le symbole d'un connecteur d'assemblage, vous pouvez utiliser l'une des options {\tt first arm}, {\tt second arm}, {\tt middle arm} et {\tt last arm} :
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentassemblyconnectorarm.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentassemblyconnectorarm}
+\end{center}
+\end{minipage}
+
+\subsection{Ajuster la géométrie d'un connecteur d'assemblage}
+
+Comme pour la commande {\tt umlrelation}, vous disposez des options {\tt arm1}, {\tt arm2}, {\tt anchor1}, {\tt anchor2} et {\tt anchors} :
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentassemblyconnectoradjust.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentassemblyconnectoradjust}
+\end{center}
+\end{minipage}
+
+\medskip
+
+La position des ports est calculée automatiquement à partir des valeurs données à ces options + {\tt geometry}.
+
+\section{Définir un connecteur de délégation}
+
+Un connecteur de délégation est un connecteur entre un sous-composant et son parent. Pour cela, vous pouvez utiliser la commande {\tt umldelegateconnector}. Elle a toutes les options de la commande {\tt umlrelation} excepté {\tt stereo}, déjà défini à delegate.
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentdelegateconnector.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentdelegateconnector}
+\end{center}
+\end{minipage}
+
+\medskip
+
+\section{Définir le port d'un composant}
+
+Il arrive , comme dans l'exemple précédent, que l'on doive définir manuellement un port. Pour cela, vous pouvez utiiser la commande {\tt umlport}.
+
+Le premier argument est lenom du composant, le second est l'ancre où placer le port. Vous pouvez également définir sa taille avec l'option {\tt width}.
+
+\section{Personnalisation}
+
+Grace à la commande {\tt tikzumlset}, vous pouvez modifier globalement les couleurs par défaut des composants, ports, connecteurs et interfaces :
+
+\begin{description}
+\item[text :] permet de spécifier la couleur du texte (=black par défaut),
+\item[draw :] permet de spécifier la couleur des traits (=black par défaut),
+\item[fill component :] permet de spécifier la couleur de fond des composants (=yellow !20 par défaut),
+\item[fill port :] permet de spécifier la couleur de fond des ports (=yellow !20 par défaut),
+\item[fill assembly connector :] permet de spécifier la couleur de fond des symboles de connecteurs d'assemblage (=white par défaut),
+\item[font :] permet de spécifier le style de fonte du texte (=$\backslash$small par défaut).
+\end{description}
+
+On peut également utiliser les options {\tt text}, {\tt draw} and {\tt fill} sur un élément particulier.
+
+Il y a une exception : {\tt umlassemblyconnector}. L'option {\tt fill assembly connector} définit la couleur de fond du symbole du connecteur d'assemblage, tandis que l'option {\tt fill port} définit celle des ports.
+
+\section{Exemples}
+
+\subsection{Exemple de l'introduction, pas à pas}
+
+\subsubsection{Définition des composants}
+
+Il y a 6 composants A, D, E, F, G et H, et 2 sous-composants de A : B et C.
+
+\medskip
+
+\lstinputlisting{fig/compdiagexstep1.tikz}
+
+\begin{center}
+\inputTikZ{compdiagexstep1}
+\end{center}
+
+\subsubsection{Définition des interfaces}
+
+On définit une interface requise pour le composant B et une interface offerte pour le composant C. On prépare les connecteurs de délégation en définissant le padding.
+
+\medskip
+
+\lstinputlisting[lastline=5]{fig/compdiagexstep2.tikz}\vspace{-0.4cm}
+{\color{red!70!black} \lstinputlisting[firstline=6,lastline=7]{fig/compdiagexstep2.tikz}\vspace{-0.4cm}}
+\lstinputlisting[firstline=8]{fig/compdiagexstep2.tikz}
+
+\begin{center}
+\inputTikZ{compdiagexstep2}
+\end{center}
+
+\subsubsection{Définition des connecteurs}
+
+On définit 5 connecteurs d'assemblage and 1 connecteur de délégation.
+
+\medskip
+
+\lstinputlisting[lastline=13]{fig/compdiagexstep3.tikz}\vspace{-0.4cm}
+{\color{red!70!black}\lstinputlisting[firstline=14]{fig/compdiagexstep3.tikz}}
+
+\begin{center}
+\inputTikZ{compdiagexstep3}
+\end{center}
+
+\subsubsection{Définition des notes}
+
+On ajoute des notes pour expliquer les noms des n\oe{}uds.
+
+\medskip
+
+\lstinputlisting[lastline=20]{fig/compdiagexstep4.tikz}\vspace{-0.4cm}
+{\color{red!70!black}\lstinputlisting[firstline=21]{fig/compdiagexstep4.tikz}}
+
+\begin{center}
+\inputTikZ{compdiagexstep4}
+\end{center}
+
+%\section{Known bugs and perspectives}
+
 \end{document}

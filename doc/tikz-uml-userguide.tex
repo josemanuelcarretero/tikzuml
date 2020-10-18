@@ -18,7 +18,7 @@
 \usepackage{../tikz-uml} % pour les diagrammes de classe
 
 \newif\iffinal % definit un switch entre brouillon et version final
-\finaltrue % a utiliser pour compiler le document en version finale
+%\finaltrue % a utiliser pour compiler le document en version finale
 
 \iffinal
   \newcommand{\inputTikZ}[1]{%
@@ -1157,7 +1157,7 @@ For practical reasons, when you define a transition for instance, you can rename
 
 \medskip
 
-You can also define the maximal width of a state with the  {\tt width} (10ex by default).
+You can also define the maximal width of a state with the  {\tt width} option (10ex by default).
 
 \medskip
 
@@ -1907,4 +1907,276 @@ There is an exception : {\tt umlcreatecall}. The options {\tt text}, {\tt draw} 
 \end{center}
 
 \end{enumerate}
+
+\chapter{Component diagrams}
+
+Here is an example of component diagram you can draw :
+
+\begin{center}
+\inputTikZ{compdiagex}
+\end{center}
+
+Now, we will talk about elements that compose such diagrams :
+
+\section{To define a component}
+
+
+A component can be defined with the {\tt umlcomponent} environment :  
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/component.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{component}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Both options {\tt x} and {\tt y} allow to place the component in the figure, or in another component. The default value is 0. 
+The argument to give is the label of the component. The node representing the state has a default name, based on a global counter. For practical reasons, you can rename it with the {\tt name} option.
+
+\medskip
+
+You can also define the maximal width of a component with the {\tt width} option (10ex by default).
+
+\medskip
+
+You can define a component in another component or in a package. Then, the coordinates of the sub-component are relative to the parent component or package :
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/componentinner.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{componentinner}
+\end{center}
+\end{minipage}
+
+\medskip
+
+If you want to define a component without detailing it, you can use the {\tt umlbasiccomponent} command, that is an alias of the {\tt umlcomponent} environment.
+
+\section{To define a provided/required interface}
+
+On a component, you can define 2 kinds of interfaces : provided interfaces and required interfaces. For that purpose, you can use {\tt umlprovidedinterface} and/or {\tt umlrequiredinterface} commands.
+These 2 commands offers the same list of options :
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentinterface.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentinterface}
+\end{center}
+\end{minipage}
+
+\medskip
+
+The {\tt interface} option is used to give the label of the interface, written above the interface symbol.
+The interface symbol is a node named X-interface, where X is the name of the component.
+
+\medskip
+
+The {\tt width} option is used to size the interface symbol. The default value is 1em.
+
+\medskip
+
+The {\tt distance} option is used to set the distance between the interface symbol and the component port. 
+
+\medskip
+
+The {\tt with port} option is used to draw the port symbol.
+
+\medskip
+
+If you look at the previous example, you can notice the padding between the interface symbols on sub-components, and the boundary of the parent component. You can change it with the {\tt padding} option. The default value is 1cm. 
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentinterfacepadding.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentinterfacepadding}
+\end{center}
+\end{minipage}
+
+\medskip
+
+This option will be very useful whan you draw connectors, as you will see in the next section.
+
+\section{To define an assembly connector}
+
+An assembly connector is a relation between 2 different components. It is graphically the provided interface of one of them with the required interface of the other.
+For that purpose, you can use the {\tt umlassemblyconnector} command :
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentassemblyconnector.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentassemblyconnector}
+\end{center}
+\end{minipage}
+
+\medskip
+
+The assembly connector symbol is drawn only if the {\tt interface} option is given. As for {\tt umlprovidedinterface} and {\tt umlrequiredinterface} commands, the {\tt  with port} option is used to draw ports, and the {\tt width} option is used to set the size of the assembly connector symbol (default is 1em).
+
+You can also name the assembly connector with the option {\tt name}.
+
+\subsection{To define the geometry of an assembly connector}
+
+As for {\tt umlrelation} command, you can use the {\tt geometry} option and shortcuts are defined :
+
+\begin{description}
+\item[umlHVassemblyconnector :] shortcut of {\tt umlassemblyconnector} with geometry=-|
+\item[umlVHassemblyconnector :] shortcut of {\tt umlassemblyconnector} with geometry=|-
+\item[umlHVHassemblyconnector :] shortcut of {\tt umlassemblyconnector} with geometry=-|-
+\item[umlVHVassemblyconnector :] shortcut of {\tt umlassemblyconnector} with geometry=|-|
+\end{description}
+
+\subsection{To place the assembly connector symbol}
+
+To place the assembly connector symbol, you can use the {\tt first arm}, {\tt second arm}, {\tt middle arm} or {\tt last arm} options :
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentassemblyconnectorarm.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentassemblyconnectorarm}
+\end{center}
+\end{minipage}
+
+\subsection{To adjust the geometry of an assembly connector}
+
+As for {\tt umlrelation} command, you can use the {\tt arm1}, {\tt arm2}, {\tt anchor1}, {\tt anchor2} and {\tt anchors} options :
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentassemblyconnectoradjust.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentassemblyconnectoradjust}
+\end{center}
+\end{minipage}
+
+\medskip
+
+The position of the ports is automatically evaluated according to the values given to these options and to the {\tt geometry} option.
+
+\section{To define a delegate connector}
+
+A delegate connector is a connector between a sub-component and its parent component. For this purpose, you can use the {\tt umldelegateconnector} command. It has all options of {\tt umlrelation} command except {\tt stereo}, that is set to delegate.
+
+\medskip
+
+\begin{minipage}{0.45\textwidth}
+\lstinputlisting{fig/componentdelegateconnector.tikz}
+\end{minipage}
+\begin{minipage}{0.55\textwidth}
+\begin{center}
+\inputTikZ{componentdelegateconnector}
+\end{center}
+\end{minipage}
+
+\medskip
+
+\section{To define a port on a component}
+
+Sometimes, as in the previous example, you have to draw manually a port. For this purpose, you can use the {\tt umlport} command.
+
+The first argument is the component name, the second one is the anchor of the component node where you want to draw the port. You can set the size of the port with the {\tt width} option.
+
+\section{To change preferences}
+
+Thanks to the {\tt tikzumlset} command, you can set colors for components, provided/required interfaces, ports and assembly/delegate connectors :
+
+\begin{description}
+\item[text :] allows to set the text color (=black by default),
+\item[draw :] allows to set the color od edges and arrows (=black by default),
+\item[fill component :] allows to set the background color of components (=yellow !20 by default),
+\item[fill port :] allows to set the background color of ports (=yellow !20 by default),
+\item[fill assembly connector :] allows to set the background color for assembly connector symbols (=white by default),
+\item[font :] allows to set the font style (=$\backslash$small by default).
+\end{description}
+
+You can also use the options {\tt text}, {\tt draw} and {\tt fill} on a particular element.
+
+There is an exception : {\tt umlassemblyconnector}. The option {\tt fill assembly connector} sets the colors of the assembly connector symbol, whereas the option {\tt fill port} sets the colors of the port symbol.
+
+\section{Examples}
+
+\subsection{Example from introduction, step by step}
+
+\subsubsection{Definition of the components}
+
+There is 6 components A, D, E, F, G and H, and 2 sub-components of A : B and C.
+
+\medskip
+
+\lstinputlisting{fig/compdiagexstep1.tikz}
+
+\begin{center}
+\inputTikZ{compdiagexstep1}
+\end{center}
+
+\subsubsection{Definition of the interfaces}
+
+We define a required interface for the component B, and a provided interface for the component C. We prepare the delegate connector by setting the padding.
+
+\medskip
+
+\lstinputlisting[lastline=5]{fig/compdiagexstep2.tikz}\vspace{-0.4cm}
+{\color{red!70!black} \lstinputlisting[firstline=6,lastline=7]{fig/compdiagexstep2.tikz}\vspace{-0.4cm}}
+\lstinputlisting[firstline=8]{fig/compdiagexstep2.tikz}
+
+\begin{center}
+\inputTikZ{compdiagexstep2}
+\end{center}
+
+\subsubsection{Definition of the connectors}
+
+We define 5 assembly connectors and 1 delegate connector.
+
+\medskip
+
+\lstinputlisting[lastline=13]{fig/compdiagexstep3.tikz}\vspace{-0.4cm}
+{\color{red!70!black}\lstinputlisting[firstline=14]{fig/compdiagexstep3.tikz}}
+
+\begin{center}
+\inputTikZ{compdiagexstep3}
+\end{center}
+
+\subsubsection{Definition of the notes}
+
+We add notes to explain the node names.
+
+\medskip
+
+\lstinputlisting[lastline=20]{fig/compdiagexstep4.tikz}\vspace{-0.4cm}
+{\color{red!70!black}\lstinputlisting[firstline=21]{fig/compdiagexstep4.tikz}}
+
+\begin{center}
+\inputTikZ{compdiagexstep4}
+\end{center}
+
+%\section{Known bugs and perspectives}
+
 \end{document}
