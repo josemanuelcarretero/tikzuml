@@ -626,6 +626,31 @@ Can both start points go graphically to both end points ? If yes, you will want 
 \end{center}
 \end{minipage}
 
+\subsection{N-ary associations}
+
+Sometimes, you need to draw a relation between more than two classes, namely a n-ary association. To do so, you have to draw the main node of such a relation, ans link it to every class it has to be linked :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/naryassoc.tikz}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\inputTikZ{naryassoc}
+\end{center}
+\end{minipage}
+
+\medskip
+
+The {\tt umlNarynode} command accepts the following options :
+
+\begin{itemize}
+\item {\bf width} : to set the width of the node
+\item {\bf name} : to give a name to the node and use it in others macros
+\item {\bf below}, {\bf below left}, {\bf left}, {\bf above left}, {\bf above}, {\bf above right}, {\bf right}, {\bf below right} : to place the label of the n-ary node. Contrary to their equivalents in \TikZ, these options has to be used without values. The default is {\bf above}.
+\end{itemize}
+
 \section{Comments / constraints note}\label{s.note}
 
 A note is a text comment attached to a class or a relation. The {\tt umlnote} command needs the name of the node as argument :
@@ -1155,7 +1180,7 @@ If you want to define a state without detailing it, you can use the {\tt umlbasi
 
 \medskip
 
-Let's talk about the specific states :
+Let's talk about the pseudo-states :
 
 \medskip
 
@@ -1202,6 +1227,19 @@ These commands take several options : {\tt name}, to rename the node, and {\tt w
 \end{minipage}
 
 \medskip
+
+You can also give actions on a state, through the {\tt entry}, {\tt do} and {\tt exit} options :
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/stateactions.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{stateactions}
+\end{center}
+\end{minipage}
 
 \section{To define a transition}\label{s.trans}
 
@@ -1575,7 +1613,7 @@ You can give the function name in a call and its arguments with the {\tt op} opt
 \begin{minipage}{0.5\textwidth}
 \begin{center}
 \inputTikZ{callop}
-\end{center}
+\end{center} 
 \end{minipage}
 
 \medskip
@@ -1598,6 +1636,34 @@ You can also set the return value with the {\tt return} option, with the same wa
 \end{minipage}
 
 \medskip
+
+In this case, the return arrow is drawn with the return value above. You can draw the return arrow without giving a return value. For this, there is the {\tt with return} option :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/callwithreturn.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{callwithreturn}
+\end{center}
+\end{minipage}
+
+\medskip
+
+In some cases, the call may have multiple return arrows. To draw an additionnal return arrow, you can do as follows :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/callreturnonly.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{callreturnonly}
+\end{center}
+\end{minipage}
 
 \subsection{To define a constructor call}\label{ss.create}
 

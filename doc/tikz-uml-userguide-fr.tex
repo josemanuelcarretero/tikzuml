@@ -605,6 +605,31 @@ Il arrive que dans un diagramme des relations se croisent et se chevauchent. Pre
 \end{center}
 \end{minipage}
 
+\subsection{Associations N-aires}
+
+Il arrive que l'on ait besoin de représenter une relation entre au moins trois classes : on parle de relation n-aire. Pour se faire, on dessine le n\oe{}ud principal d'une telle relation et on le relie aux classes concernées :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/naryassoc.tikz}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\inputTikZ{naryassoc}
+\end{center}
+\end{minipage}
+
+\medskip
+
+La commande {\tt umlNarynode} accepte les options suivantes :
+
+\begin{itemize}
+\item {\bf width} : pour définir la taille du n\oe{}ud
+\item {\bf name} : pour nommer le n\oe{}ud et l'utiliser dans d'autres macros.
+\item {\bf below}, {\bf below left}, {\bf left}, {\bf above left}, {\bf above}, {\bf above right}, {\bf right}, {\bf below right} : pour placer le label de la relation n-aire. Contrairement aux équivalents \TikZ, ces options doivent être utilisées sans valeur. L'option par défaut est {\bf above}.
+\end{itemize}
+
 \section{Note de commentaires / contraintes}\label{s.note}
 
 Une note est un commentaire de texte attaché à une classe ou une relation. La commande {\tt umlnote} demande pour cela le nom du n\oe{}ud auquel il faut se rattacher et le texte du commentaire en argument :
@@ -1177,6 +1202,19 @@ Ces commandes prennent toutes pour options {\tt name}, pour renommer le n\oe{}ud
 
 \medskip
 
+Vous pouvez également définir des actions sur un état, à travers les options {\tt entry}, {\tt do} et {\tt exit} :
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/stateactions.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{stateactions}
+\end{center}
+\end{minipage}
+
 \section{Définir une transition}\label{s.trans}
 
 Les transitions sont les noms des relations dans un diagramme d'états-transitions. On les définit à l'aide de la commande {\tt umltrans} qui dérive de {\tt umlrelation}. On va distinguer le cas des transitions unidirectionnelles et celui des transitions récursives.
@@ -1522,7 +1560,7 @@ On peut également ajuster l'espacement pour des appels imbriqués avec l'option
 \end{center}
 \end{minipage}
 
-\subsection{Appels synchrones/ asynchrones}\label{ss.callsync}
+\subsection{Appels synchrones / asynchrones}\label{ss.callsync}
 
 L'option {\tt type} permet de spécifier s'il s'agit d'un appel synchrone (valeur par défaut) ou asynchrone :
 
@@ -1572,6 +1610,32 @@ On spécifie la valeur de retour avec l'option {\tt return} avec les mêmes pré
 \end{minipage}
 
 \medskip
+
+Dans ce cas, la flèche de retour est déssinée avec lz valeur de retour au-dessus. Vous pouvez dessiner la flèche de retour sans préciser de valeur. Pour cela, il y a l'option {\tt with return} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/callwithreturn.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{callwithreturn}
+\end{center}
+\end{minipage}
+
+Dans certains cas, l'appel de fonction peut avoir plusieurs retours. Pour ajouter une flèche de retour, vous pouvez procéder de la manière suivante :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/callreturnonly.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{callreturnonly}
+\end{center}
+\end{minipage}
 
 \subsection{Définir un appel de constructeur}\label{ss.create}
 

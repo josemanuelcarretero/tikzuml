@@ -105,6 +105,7 @@
 \pgfkeys{/tikzuml/note/.cd, anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2}}%
 
 \tikzstyle{tikzuml class style}=[rectangle split, rectangle split parts=3, minimum height=2em, node distance=2em]%
+\tikzstyle{tikzuml narynode style}=[diamond]%
 \tikzstyle{tikzuml template style}=[dashed, inner ysep=0.5em, inner xsep=1ex]%
 \tikzstyle{tikzuml control nodes style}=[fill=black, inner sep=1.5pt, circle]%
 \tikzstyle{tikzuml inherit style}=[color=\tikzumldrawcolor, -open triangle 45]%
@@ -427,6 +428,85 @@
 
 % define a class operation
 \newcommand{\umlop}[1]{\def\tikzumlClassOperations{#1}}%
+
+% define node for n-ary association
+\newcommand{\umlNarynode}[2][]{%
+  \def\tikzumlNaryNodeAnchor{.north}
+  \def\tikzumlNaryNodeLabelPos{above}
+  \pgfkeys{/tikzuml/narynode/.cd, x/.initial=0, y/.initial=0, width/.initial=6ex, name/.initial={tikzumlEmpty},%
+                               draw/.initial=\tikzumldrawcolor,  fill/.initial=\tikzumlfillclasscolor,%
+                               text/.initial=\tikzumltextcolor, .unknown/.code={%
+                                 \let\keyname=\pgfkeyscurrentname%
+                                 \ifthenelse{\equal{\keyname}{above}}{%
+                                   \def\tikzumlNaryNodeAnchor{.north}%
+                                   \def\tikzumlNaryNodeLabelPos{above}%
+                                 }{%
+                                   \ifthenelse{\equal{\keyname}{above left}}{%
+                                     \def\tikzumlNaryNodeAnchor{.north west}%
+                                     \def\tikzumlNaryNodeLabelPos{above left}%
+                                   }{%
+                                     \ifthenelse{\equal{\keyname}{left}}{%
+                                       \def\tikzumlNaryNodeAnchor{.west}%
+                                       \def\tikzumlNaryNodeLabelPos{left}%
+                                     }{%
+                                       \ifthenelse{\equal{\keyname}{below left}}{%
+                                         \def\tikzumlNaryNodeAnchor{.south west}%
+                                         \def\tikzumlNaryNodeLabelPos{below left}%
+                                       }{%
+                                         \ifthenelse{\equal{\keyname}{below}}{%
+                                           \def\tikzumlNaryNodeAnchor{.south}%
+                                           \def\tikzumlNaryNodeLabelPos{below}%
+                                         }{%
+                                           \ifthenelse{\equal{\keyname}{below right}}{%
+                                             \def\tikzumlNaryNodeAnchor{.south east}%
+                                             \def\tikzumlNaryNodeLabelPos{below right}%
+                                           }{%
+                                             \ifthenelse{\equal{\keyname}{right}}{%
+                                               \def\tikzumlNaryNodeAnchor{.east}%
+                                               \def\tikzumlNaryNodeLabelPos{right}%
+                                             }{%
+                                               \ifthenelse{\equal{\keyname}{above right}}{%
+                                                 \def\tikzumlNaryNodeAnchor{.north east}%
+                                                 \def\tikzumlNaryNodeLabelPos{above right}%
+                                               }{%
+                                                 \errmessage{TIKZUML ERROR : in umlNarynode, invalid option \keyname}%
+					        }%
+                                             }%
+                                           }%
+                                         }%
+                                       }%
+                                     }%
+                                   }%
+                                 }%
+                               }}%
+  \pgfkeys{/tikzuml/narynode/.cd,#1}%
+  \pgfkeys{/tikzuml/narynode/.cd, x/.get=\umlnarynodeX, y/.get=\umlnarynodeY, width/.get=\umlnarynodeMinimumWidth, name/.get=\umlnaryName,%
+                               draw/.get=\tikzumlnarynodedraw, fill/.get=\tikzumlnarynodefill, text/.get=\tikzumlnarynodetext}%
+  %
+  \def\tikzumlNaryName{#2}%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlNaryNodeName{\tikzumlNaryName}}\x%
+  %
+  \ifthenelse{\equal{\umlnaryName}{tikzumlEmpty}}{}{%
+    \def\tikzumlNaryNodeName{\umlnaryName}%
+  }%
+  %
+  \StrSubstitute{\tikzumlNaryNodeName}{:}{@COLON@}[\tikzumlNaryNodeName]
+  %
+  \def\tikzumlNarynodePos{\umlnarynodeX,\umlnarynodeY}%
+  %
+  \node[tikzuml narynode style, draw=\tikzumlnarynodedraw, fill=\tikzumlnarynodefill, text=\tikzumlnarynodetext, font=\tikzumlfont, minimum width=\umlnarynodeMinimumWidth, minimum height=\umlnarynodeMinimumWidth] (\tikzumlNaryNodeName) at (\tikzumlNarynodePos) {};%
+  \draw (\tikzumlNaryNodeName\tikzumlNaryNodeAnchor) node[\tikzumlNaryNodeLabelPos] {\tikzumlNaryName};
+  %
+  % add to fit
+  \ifnum\c@tikzumlPackageLevel>0%
+    \edef\tikzumlPackageFitOld{\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname}%
+    \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname{\tikzumlPackageFitOld (\tikzumlNaryNodeName)}%
+    \stepcounter{tikzumlPackageClassNum}%
+  \fi%
+}%
 
 % main command to define a relation between two classes
 % args : src class
@@ -2572,6 +2652,7 @@
   \stepcounter{tikzumlStateLevel}%
   
   \pgfkeys{/tikzuml/state/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, name/.initial={},%
+                                 entry/.initial={}, do/.initial={}, exit/.initial={},%
                                  draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillstatecolor, text/.initial=\tikzumltextcolor,%
                                  .unknown/.code={%
                                    \let\keyname=\pgfkeyscurrentname%
@@ -2579,7 +2660,8 @@
                                  }}%
   \pgfkeys{/tikzuml/state/.cd, #1}%
   \pgfkeys{/tikzuml/state/.cd, x/.get=\tikzumlstateX, y/.get=\tikzumlstateY, width/.get=\umlstateMinimumWidth, type/.get=\umlstateType, name/.get=\umlstateName,%
-                               draw/.get=\tikzumlstatedraw, fill/.get=\tikzumlstatefill, text/.get=\tikzumlstatetext}%
+                       entry/.get=\umlstateentry, do/.get=\umlstatedo, exit/.get=\umlstateexit,%
+                       draw/.get=\tikzumlstatedraw, fill/.get=\tikzumlstatefill, text/.get=\tikzumlstatetext}%
   %
   \ifthenelse{\equal{\umlstateName}{}}{%
     \edef\tikzumlState@name{#2}%
@@ -2601,15 +2683,45 @@
   \expandafter\gdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{}%
   %
   \setcounter{tikzumlStateSubStateNum}{0}%
-  
+  %
   \begin{scope}[xshift=\tikzumlstateX cm, yshift=\tikzumlstateY cm]%
 }{%
+  %  
+  \def\tikzumlstaterootlabel{\phantom{\tikzumlState@nodeName}}%
+  %
+  \def\tikzumlstateentry{}%
+  \def\tikzumlstatedo{}%
+  \def\tikzumlstateexit{}%
+  \def\tikzumlstaterootinnerysep{0.5ex}%
+  \def\tikzumlstatebodyinnerysep{2ex}%
+  \ifthenelse{\equal{\umlstateentry}{}}{}{%
+    \def\tikzumlstateentry{entry/\umlstateentry}%
+    \ifnum\c@tikzumlStateSubStateNum=0%
+      \def\tikzumlstatebodyinnerysep{0}%
+      \def\tikzumlstaterootinnerysep{0}%
+    \fi%
+  }%
+  \ifthenelse{\equal{\umlstatedo}{}}{}{%
+    \def\tikzumlstatedo{do/\umlstatedo}%
+    \ifnum\c@tikzumlStateSubStateNum=0%
+      \def\tikzumlstatebodyinnerysep{0}%
+      \def\tikzumlstaterootinnerysep{0}%
+    \fi%
+  }%
+  \ifthenelse{\equal{\umlstateexit}{}}{}{%
+    \def\tikzumlstateexit{exit/\umlstateexit}%
+    \ifnum\c@tikzumlStateSubStateNum=0%
+      \def\tikzumlstatebodyinnerysep{0}%
+      \def\tikzumlstaterootinnerysep{0}%
+    \fi%
+  }%
+  %
   \addtocounter{tikzumlStateLevel}{-1}%
   \begin{pgfonlayer}{state\thetikzumlStateLevel}%
   %
   % if contains nothing, one define a fictive node to enable the fit option
   \ifnum\c@tikzumlStateSubStateNum=0%
-    \node[inner ysep=0.5ex] (\tikzumlState@nodeName-root) at (0,0) {\phantom{\tikzumlState@nodeName}};%
+    \node[inner ysep=\tikzumlstaterootinnerysep] (\tikzumlState@nodeName-root) at (0,0) {\tikzumlstaterootlabel};%
     \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{(\tikzumlState@nodeName-root)}%
   \fi%
   %
@@ -2619,9 +2731,31 @@
     \stepcounter{tikzumlStateSubStateNum}%
   \fi%
   %
-  \node[inner sep=2ex, fit = \csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname] (\tikzumlState@nodeName-body) {};%
-  \node[above] (\tikzumlState@nodeName-captiontmp) at (\tikzumlState@nodeName-body.north) {\tikzumlState@caption};%
+  \node[inner xsep=2ex, inner ysep=\tikzumlstatebodyinnerysep, fit = \csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname] (\tikzumlState@nodeName-body) {};%
+  \def\tikzumlState@orig{body}%
+  \ifthenelse{\equal{\umlstateexit}{}}{}{%
+    \node[above=0] (\tikzumlState@nodeName-exittmp) at (\tikzumlState@nodeName-\tikzumlState@orig.north) {\tikzumlstateexit};%
+    \def\tikzumlState@orig{exittmp}%
+  }%
+  \ifthenelse{\equal{\tikzumlstatedo}{}}{}{%
+    \node[above=-0.7em] (\tikzumlState@nodeName-dotmp) at (\tikzumlState@nodeName-\tikzumlState@orig.north) {\tikzumlstatedo};%
+    \def\tikzumlState@orig{dotmp}%
+  }%
+  \ifthenelse{\equal{\tikzumlstateentry}{}}{}{%
+    \node[above=-0.7em] (\tikzumlState@nodeName-entrytmp) at (\tikzumlState@nodeName-\tikzumlState@orig.north) {\tikzumlstateentry};%
+   \def\tikzumlState@orig{entrytmp}%
+  }%
+  \node[above] (\tikzumlState@nodeName-captiontmp) at (\tikzumlState@nodeName-\tikzumlState@orig.north) {\tikzumlState@caption};%
   \node[rounded corners, draw=\tikzumlstatedraw, fill=\tikzumlstatefill, name=\tikzumlState@nodeName, fit=(\tikzumlState@nodeName-body) (\tikzumlState@nodeName-captiontmp)] {};%
+  \ifthenelse{\equal{\tikzumlstateentry}{}}{}{%
+    \node (\tikzumlState@nodeName-entry) at (\tikzumlState@nodeName-entrytmp) {\tikzumlstateentry};%
+  }%
+  \ifthenelse{\equal{\tikzumlstatedo}{}}{}{%
+    \node (\tikzumlState@nodeName-do) at (\tikzumlState@nodeName-dotmp) {\tikzumlstatedo};%
+  }%
+  \ifthenelse{\equal{\tikzumlstateexit}{}}{}{%
+    \node (\tikzumlState@nodeName-exit) at (\tikzumlState@nodeName-exittmp) {\tikzumlstateexit};%
+  }%
   \node (\tikzumlState@nodeName-caption) at (\tikzumlState@nodeName-captiontmp) {\tikzumlState@caption};%
   \draw (\tikzumlState@nodeName-caption.south -| \tikzumlState@nodeName.north west) -- (\tikzumlState@nodeName-caption.south -| \tikzumlState@nodeName.north east);%
   \end{pgfonlayer}%
@@ -3139,7 +3273,12 @@
         \draw[tikzuml call return style, \tikzumldrawcall] (eb-\tikzumlCall@nodeName.east) -- ++(2.5*\tikzumlcallpadding ex,0) -- ++(0,-0.75*\tikzumlcallpadding ex) %
                                                   node[font=\tikzumlfont, text=\tikzumltextcall, midway, right, name=\tikzumlCall@nodeName-return] {\tikzumlcallreturn} %
                                                   -- (sb-\tikzumlCall@nodeName.east);%
-      }{}%
+      }{%
+        \ifnum\c@tikzumlFragmentLevel>0%
+          \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
+          \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCall@nodeName) (et-\tikzumlCall@nodeName) (eb-\tikzumlCall@nodeName) (sb-\tikzumlCall@nodeName) (\tikzumlCall@nodeName-op)}%
+        \fi%
+      }%
     }{%
       \ifnum\c@tikzumlFragmentLevel>0%
         \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
