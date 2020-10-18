@@ -3378,16 +3378,16 @@
 \newcounter{tikzumlConnectorNum}%
 \setcounter{tikzumlConnectorNum}{1}%
 
-\newcommand{\picturedcomponent}[1]{
+\newcommand{\picturedcomponent}[1]{%
   \pgfkeys{/tikzuml/component/picture/.cd, scale/.initial=1, .unknown/.code={}}%
   \pgfkeys{/tikzuml/component/picture/.cd,#1}%
   \pgfkeys{/tikzuml/component/picture/.cd, scale/.get=\tikzumlcomponentscale}%
-  \begin{tikzpicture}[#1]
-  \filldraw (0,0) rectangle (1ex,1.5ex);
-  \filldraw (-0.2ex,0.4ex) rectangle (0.2ex,0.6ex);
-  \filldraw (-0.2ex,0.9ex) rectangle (0.2ex,1.1ex);
-  \end{tikzpicture}
-}
+  \begin{tikzpicture}[#1]%
+  \filldraw (0,0) rectangle (1ex,1.5ex);%
+  \filldraw (-0.2ex,0.4ex) rectangle (0.2ex,0.6ex);%
+  \filldraw (-0.2ex,0.9ex) rectangle (0.2ex,1.1ex);%
+  \end{tikzpicture}%
+}%
 
 % define a uml component
 % args : name of the component
@@ -3402,18 +3402,21 @@
   \else%
     \def\tikzumlComponent@parent{}%
   \fi%
-  
+  %
   \stepcounter{tikzumlComponentLevel}%
-  
-  \pgfkeys{/tikzuml/component/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, name/.initial={},%
-                                 draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillcomponentcolor, text/.initial=\tikzumltextcolor,%
+  %
+  \pgfkeys{/tikzuml/component/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, name/.initial={},%
+                                 draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillcomponentcolor,%
+				  text/.initial=\tikzumltextcolor,%
                                  .unknown/.code={%
                                    \let\keyname=\pgfkeyscurrentname%
                                    \errmessage{TIKZUML ERROR : in umlcomponent, invalid option \keyname}%
                                  }}%
   \pgfkeys{/tikzuml/component/.cd, #1}%
-  \pgfkeys{/tikzuml/component/.cd, x/.get=\tikzumlcomponentX, y/.get=\tikzumlcomponentY, width/.get=\umlcomponentMinimumWidth, type/.get=\umlcomponentType, name/.get=\umlcomponentName,%
-                               draw/.get=\tikzumlcomponentdraw, fill/.get=\tikzumlcomponentfill, text/.get=\tikzumlcomponenttext}%
+  \pgfkeys{/tikzuml/component/.cd, x/.get=\tikzumlcomponentX, y/.get=\tikzumlcomponentY,%
+				width/.get=\umlcomponentMinimumWidth, name/.get=\umlcomponentName,%
+                               draw/.get=\tikzumlcomponentdraw, fill/.get=\tikzumlcomponentfill,%
+				text/.get=\tikzumlcomponenttext}%
   %
   \ifthenelse{\equal{\umlcomponentName}{}}{%
     \edef\tikzumlComponent@name{#2}%
@@ -3435,7 +3438,7 @@
   \expandafter\gdef\csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname{}%
   %
   \setcounter{tikzumlComponentSubComponentNum}{0}%
-  
+  %
   \begin{scope}[xshift=\tikzumlcomponentX cm, yshift=\tikzumlcomponentY cm]%
 }{%
   \addtocounter{tikzumlComponentLevel}{-1}%
@@ -3468,59 +3471,42 @@
 \newcommand{\umlbasiccomponent}[2][]{\begin{umlcomponent}[#1]{#2} \end{umlcomponent}}%
 
 \newcommand{\umlprovidedinterface}[2][]{%
-  %\xdef\tikzumlprovidedinterfaceunknownoptions{}
   \def\tikzumlInterfaceWithPort{tikzumlFalse}%
   \pgfkeys{/tikzuml/providedinterfacerelation/.cd, interface/.initial={}, distance/.initial=2cm,%
 			     width/.initial=1em, padding/.initial=1cm,%
                             draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillcomponentcolor}%
-  %\pgfkeys{/tikzuml/providedinterfacerelation/group/.is family}%
-  %\pgfkeys{/tikzuml/providedinterfacerelation/interface/.belongs to family=/tikzuml/providedinterfacerelation/group}%
-  %\pgfkeys{/pgf/key filters/active families/.install key filter}%
-  %\pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
   \pgfkeys{/tikzuml/providedinterfacerelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{with port}}{%
         \def\tikzumlInterfaceWithPort{tikzumlTrue}%
-      }{%
-%        \ifthenelse{\equal{\keyname}{geometry}}{%
-          %\errmessage{TIKZUML ERROR : forbidden option \keyname}%
-%        }{}%
-      }%
+      }{}%
     }%
   }%
-  %
-  %\pgfkeys{/tikzuml/providedinterfacerelation/group/.activate family}%
-  %\def\remainingoptions{}%
-  %\pgfkeysfiltered{/tikzuml/providedinterfacerelation/.cd, #1}%
   \pgfkeys{/tikzuml/providedinterfacerelation/.cd, #1}%
-  %\message{@@ toto @@}%
-  %\pgfkeysalsofrom{\remainingoptions}%
-  %\message{toto \remainingoptions tata}%
   \pgfkeys{/tikzuml/providedinterfacerelation/.cd, interface/.get=\tikzumlProvidedInterfaceLabel,%
 			distance/.get=\tikzumlProvidedInterfaceDistance,%
 			width/.get=\tikzumlProvidedInterfaceWidth,%
 			padding/.get=\tikzumlProvidedInterfacePadding,%
                        	draw/.get=\tikzumlprovidedinterfacedraw, fill/.get=\tikzumlprovidedinterfacefill,}%
+  %
   \edef\tikzumlProvidedInterface@name{#2}%
   %
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlProvidedInterface@nodeName{\tikzumlProvidedInterface@name}}\x%
   %
-  %\message{toto \tikzumlProvidedInterfaceWithPort tata}
   \ifthenelse{\equal{\tikzumlInterfaceWithPort}{tikzumlTrue}}{%
     \node[inner sep=0.5*\tikzumlProvidedInterfaceWidth, rectangle, draw=\tikzumlprovidedinterfacedraw, fill=\tikzumlprovidedinterfacefill] (\tikzumlProvidedInterface@nodeName-east-port) at (\tikzumlProvidedInterface@nodeName.east) {};%
   }{%
     \node[inner sep=0] (\tikzumlProvidedInterface@nodeName-east-port) at (\tikzumlProvidedInterface@nodeName.east) {};%
   }%
-  \begin{scope}
+  \begin{scope}%
   \draw (\tikzumlProvidedInterface@nodeName)+(\tikzumlProvidedInterfaceDistance,0) node[inner sep=0, text width=\tikzumlProvidedInterfaceWidth, circle, name=\tikzumlProvidedInterface@nodeName-east-interface-tmp] {};%
-  \clip (\tikzumlProvidedInterface@nodeName-east-interface-tmp.north) rectangle (\tikzumlProvidedInterface@nodeName-east-interface-tmp.south -| \tikzumlProvidedInterface@nodeName-east-interface-tmp.west);
-  \node[inner sep=0, text width=\tikzumlProvidedInterfaceWidth, circle, draw=\tikzumlprovidedinterfacedraw] (\tikzumlProvidedInterface@nodeName-east-interface) at (\tikzumlProvidedInterface@nodeName-east-interface-tmp)
- {};%
-  \end{scope}
+  \clip (\tikzumlProvidedInterface@nodeName-east-interface-tmp.north) rectangle (\tikzumlProvidedInterface@nodeName-east-interface-tmp.south -| \tikzumlProvidedInterface@nodeName-east-interface-tmp.west);%
+  \node[inner sep=0, text width=\tikzumlProvidedInterfaceWidth, circle, draw=\tikzumlprovidedinterfacedraw] (\tikzumlProvidedInterface@nodeName-east-interface) at (\tikzumlProvidedInterface@nodeName-east-interface-tmp) {};%
+  \end{scope}%
   \node[above] at (\tikzumlProvidedInterface@nodeName-east-interface.north) {\tikzumlProvidedInterfaceLabel};%
-  %\message{toto \remainingoptions tata}%
+  %
   \umlrelation[style={tikzuml connector style}, #1]{\tikzumlProvidedInterface@nodeName-east-port}{\tikzumlProvidedInterface@nodeName-east-interface}%
 
   % add to fit
@@ -3532,46 +3518,30 @@
 }%
 
 \newcommand{\umlrequiredinterface}[2][]{%
-  %\xdef\tikzumlrequiredinterfaceunknownoptions{}
   \def\tikzumlInterfaceWithPort{tikzumlFalse}%
   \pgfkeys{/tikzuml/requiredinterfacerelation/.cd, interface/.initial={}, distance/.initial=3cm,%
                             width/.initial=1em, padding/.initial=1cm,%
                             draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillcomponentcolor}%
-  %\pgfkeys{/tikzuml/requiredinterfacerelation/group/.is family}%
-  %\pgfkeys{/tikzuml/requiredinterfacerelation/interface/.belongs to family=/tikzuml/requiredinterfacerelation/group}%
-  %\pgfkeys{/pgf/key filters/active families/.install key filter}%
-  %\pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
   \pgfkeys{/tikzuml/requiredinterfacerelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{with port}}{%
         \def\tikzumlInterfaceWithPort{tikzumlTrue}%
-      }{%
-%        \ifthenelse{\equal{\keyname}{geometry}}{%
-          %\errmessage{TIKZUML ERROR : forbidden option \keyname}%
-%        }{}%
-      }%
+      }{}%
     }%
   }%
-  %
-  %\pgfkeys{/tikzuml/requiredinterfacerelation/group/.activate family}%
-  %\def\remainingoptions{}%
-  %\pgfkeysfiltered{/tikzuml/requiredinterfacerelation/.cd, #1}%
   \pgfkeys{/tikzuml/requiredinterfacerelation/.cd, #1}%
-  %\message{@@ toto @@}%
-  %\pgfkeysalsofrom{\remainingoptions}%
-  %\message{toto \remainingoptions tata}%
   \pgfkeys{/tikzuml/requiredinterfacerelation/.cd, interface/.get=\tikzumlRequiredInterfaceLabel,%
  			distance/.get=\tikzumlRequiredInterfaceDistance,%
  			padding/.get=\tikzumlRequiredInterfacePadding,%
  			width/.get=\tikzumlRequiredInterfaceWidth,%
                        	draw/.get=\tikzumlrequiredinterfacedraw, fill/.get=\tikzumlrequiredinterfacefill,}%
+  %
   \edef\tikzumlRequiredInterface@name{#2}%
   %
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlRequiredInterface@nodeName{\tikzumlRequiredInterface@name}}\x%
   %
-  %\message{toto \tikzumlRequiredInterfaceWithPort tata}
   \ifthenelse{\equal{\tikzumlInterfaceWithPort}{tikzumlTrue}}{%
     \node[inner sep=0.5*\tikzumlRequiredInterfaceWidth, rectangle, draw=\tikzumlrequiredinterfacedraw, fill=\tikzumlrequiredinterfacefill] (\tikzumlRequiredInterface@nodeName-west-port) at (\tikzumlRequiredInterface@nodeName.west) {};%
   }{%
@@ -3580,7 +3550,7 @@
   \draw (\tikzumlRequiredInterface@nodeName)+(-\tikzumlRequiredInterfaceDistance,0) node[inner sep=0, text width=\tikzumlRequiredInterfaceWidth, circle, draw=\tikzumlrequiredinterfacedraw, fill=\tikzumlrequiredinterfacefill, name=\tikzumlRequiredInterface@nodeName-west-interface] {};%
   \node[above] at (\tikzumlRequiredInterface@nodeName-west-interface.north)
  {\tikzumlRequiredInterfaceLabel};%
-  %\message{toto \remainingoptions tata}%
+  %
   \umlrelation[style={tikzuml connector style}, #1]{\tikzumlRequiredInterface@nodeName-west-port}{\tikzumlRequiredInterface@nodeName-west-interface}%
 
    % add to fit
@@ -3726,7 +3696,6 @@
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlAssemblyConnectorEnd@nodeName{\tikzumlAssemblyConnectorEnd@name}}\x%
   %
-
   \pgfextractx{\tikzuml@AC@xa}{\pgfpointanchor{\tikzumlAssemblyConnectorStart@nodeName}{center}}%
   \pgfextracty{\tikzuml@AC@ya}{\pgfpointanchor{\tikzumlAssemblyConnectorStart@nodeName}{center}}%
   \pgfextractx{\tikzuml@AC@xb}{\pgfpointanchor{\tikzumlAssemblyConnectorEnd@nodeName}{center}}%
@@ -3738,36 +3707,36 @@
   \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-|}%
               \OR\equal{\tikzumlAssemblyConnectorGeometry}{|-}}{%
     \ifthenelse{\tikzuml@AC@ya<\tikzuml@AC@yb}{%
-      \def\tikzumlAssemblyConnectorStartAnchor{north}
+      \def\tikzumlAssemblyConnectorStartAnchor{north}%
     }{%
-      \def\tikzumlAssemblyConnectorStartAnchor{south}
+      \def\tikzumlAssemblyConnectorStartAnchor{south}%
     }%
   }{}%
   %
   \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|-}%
               \OR\equal{\tikzumlAssemblyConnectorGeometry}{-|}}{%
     \ifthenelse{\tikzuml@AC@xa<\tikzuml@AC@xb}{%
-      \def\tikzumlAssemblyConnectorStartAnchor{east}
+      \def\tikzumlAssemblyConnectorStartAnchor{east}%
     }{%
-      \def\tikzumlAssemblyConnectorStartAnchor{west}
+      \def\tikzumlAssemblyConnectorStartAnchor{west}%
     }%
   }{}%
   %
   \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|-}%
               \OR\equal{\tikzumlAssemblyConnectorGeometry}{|-}}{%
     \ifthenelse{\tikzuml@AC@xa<\tikzuml@AC@xb}{%
-      \def\tikzumlAssemblyConnectorEndAnchor{west}
+      \def\tikzumlAssemblyConnectorEndAnchor{west}%
     }{%
-      \def\tikzumlAssemblyConnectorEndAnchor{east}
+      \def\tikzumlAssemblyConnectorEndAnchor{east}%
     }%
   }{}%
   %
   \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-|}%
               \OR\equal{\tikzumlAssemblyConnectorGeometry}{-|}}{%
     \ifthenelse{\tikzuml@AC@ya<\tikzuml@AC@yb}{%
-      \def\tikzumlAssemblyConnectorEndAnchor{south}
+      \def\tikzumlAssemblyConnectorEndAnchor{south}%
     }{%
-      \def\tikzumlAssemblyConnectorEndAnchor{north}
+      \def\tikzumlAssemblyConnectorEndAnchor{north}%
     }%
   }{}%
   %
@@ -3778,6 +3747,7 @@
     \node[inner sep=0] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorStartAnchor-port) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
     \node[inner sep=0] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorEndAnchor-port) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
   }%
+  %
   \umlrelation[style={tikzuml connector style}, #1]{\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorStartAnchor-port}{\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorEndAnchor-port}%
   %
   \addtocounter{tikzumlRelationNum}{-1}%
@@ -3789,7 +3759,7 @@
   }%
   %
   \stepcounter{tikzumlRelationNum}%
-
+  %
   \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{--}}{%
     \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorStart@nodeName}{\tikzumlAssemblyConnectorEnd@nodeName}%
   }{%
