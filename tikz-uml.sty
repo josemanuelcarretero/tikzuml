@@ -14,7 +14,7 @@
 \RequirePackage{tikz}%
 \RequirePackage{calc}%
 \RequirePackage{pgfopts}%
-\usetikzlibrary{arrows,shapes,fit,shadows,decorations.markings}%
+\usetikzlibrary{backgrounds,arrows,shapes,fit,shadows,decorations.markings}%
 
 \def\tikzumlPackageLayersNum{2}%
 \pgfkeys{/tikzuml/options/.cd, packageLayers/.initial=3}%
@@ -2662,41 +2662,53 @@
 
 % define the actor symbol
 % optional : global tikzpicture styles
-\newcommand{\pictureddatabase}[1]{
+\newcommand{\pictureddatabase}[1]{%
+  \pgfkeys{/tikzuml/database/.cd, scale/.initial=1, .unknown/.code={}}%
+  \pgfkeys{/tikzuml/database/.cd,#1}%
+  \pgfkeys{/tikzuml/database/.cd, scale/.get=\tikzumldatabasescale}%
+  %
   \begin{tikzpicture}[#1]
-  \node[fill, draw, ellipse, minimum width=0.6cm, minimum height=0.3cm, inner sep=0] (bottom) at (0,-0.3) {};
-  \node[fill, draw, ellipse, minimum width=0.6cm, minimum height=0.3cm, inner sep=0] (top) at (0,0.6) {};
+  \node[fill, draw, ellipse, minimum width=\tikzumldatabasescale*4ex, minimum height=\tikzumldatabasescale*2ex, inner sep=0] (bottom) at (0,-2ex) {};
+  \node[fill, draw, ellipse, minimum width=\tikzumldatabasescale*4ex, minimum height=\tikzumldatabasescale*2ex, inner sep=0] (top) at (0,4ex) {};
   \fill (bottom.west) rectangle (top.east);
   \begin{scope}
-  \clip (-0.5,-0.1) rectangle (0.5,0.4);
-  \node[draw, dashed, ellipse, minimum width=0.6cm, minimum height=0.3cm, inner sep=0] (bottom2) at (0,-0.3) {};
+  \clip (-3.5ex,-0.5ex) rectangle (3.5ex,2.5ex);
+  \node[draw, dashed, ellipse, minimum width=\tikzumldatabasescale*4ex, minimum height=\tikzumldatabasescale*2ex, inner sep=0] (bottom2) at (0,-2ex) {};
   \end{scope}
-  \node[draw, ellipse, minimum width=0.6cm, minimum height=0.3cm, inner sep=0] (top2) at (0,0.6) {};
+  \node[draw, ellipse, minimum width=\tikzumldatabasescale*4ex, minimum height=\tikzumldatabasescale*2ex, inner sep=0] (top2) at (0,4ex) {};
   \draw (bottom.west) -- (top.west) (bottom.east) -- (top.east);
   \end{tikzpicture}
 }%
 
 % define the actor symbol
 % optional : global tikzpicture styles
-\newcommand{\picturedentity}[1]{
-  \begin{tikzpicture}[#1]
-  \node[fill, draw, circle, inner sep=0, minimum size=0.6cm] (center) at (0,0) {};
-  \draw (center.south) node[coordinate, name=bottom] {};
-  \draw (bottom)+(-0.3,0) node[coordinate, name=bottom-left] {};
-  \draw (bottom)+(0.3,0) node[coordinate, name=bottom-right] {};
-  \draw (center) -- (bottom);
-  \draw (bottom-left) -- (bottom-right);
-  \end{tikzpicture}
+\newcommand{\picturedentity}[1]{%
+  \pgfkeys{/tikzuml/entity/.cd, scale/.initial=1, .unknown/.code={}}%
+  \pgfkeys{/tikzuml/entity/.cd,#1}%
+  \pgfkeys{/tikzuml/entity/.cd, scale/.get=\tikzumlentityscale}%
+  %
+  \begin{tikzpicture}[#1]%
+  \node[fill, draw, circle, inner sep=0, minimum size=\tikzumlentityscale*5ex] (center) at (0,0) {};%
+  \draw (center.south) node[coordinate, name=bottom] {};%
+  \draw (bottom)+(-2ex,0) node[coordinate, name=bottom-left] {};%
+  \draw (bottom)+(2ex,0) node[coordinate, name=bottom-right] {};%
+  \draw (center) -- (bottom);%
+  \draw (bottom-left) -- (bottom-right);%
+  \end{tikzpicture}%
 }%
 
 % define the actor symbol
 % optional : global tikzpicture styles
-\newcommand{\picturedboundary}[1]{
+\newcommand{\picturedboundary}[1]{%
+  \pgfkeys{/tikzuml/boundary/.cd, scale/.initial=1, .unknown/.code={}}%
+  \pgfkeys{/tikzuml/boundary/.cd,#1}%
+  \pgfkeys{/tikzuml/boundary/.cd, scale/.get=\tikzumlboundaryscale}%
+  %
   \begin{tikzpicture}[#1]
-  \node[fill, draw, circle, inner sep=0, minimum size=0.6cm] (center) at (0,0) {};
-  \draw (center.west)+(-0.1,0) node[coordinate, name=left] {};
-  \draw (left)+(0,0.25) node[coordinate, name=left-top] {};
-  \draw (left)+(0,-0.25) node[coordinate, name=left-bottom] {};
+  \node[fill, draw, circle, inner sep=0, minimum size=\tikzumlboundaryscale*5ex] (center) at (0,0) {};
+  \draw (center.west)+(-0.8ex,0) node[coordinate, name=left] {};
+  \draw (left)+(0,0.2ex) node[coordinate, name=left-top] {};
+  \draw (left)+(0,-0.2ex) node[coordinate, name=left-bottom] {};
   \draw (center) -- (left);
   \draw (left-top) -- (left-bottom);
   \end{tikzpicture}
@@ -2704,9 +2716,13 @@
 
 % define the actor symbol
 % optional : global tikzpicture styles
-\newcommand{\picturedcontrol}[1]{
+\newcommand{\picturedcontrol}[1]{%
+  \pgfkeys{/tikzuml/control/.cd, scale/.initial=1, .unknown/.code={}}%
+  \pgfkeys{/tikzuml/control/.cd,#1}%
+  \pgfkeys{/tikzuml/control/.cd, scale/.get=\tikzumlcontrolscale}%
+  %
   \begin{tikzpicture}[#1, decoration={markings, mark=at position 0.25 with {\arrow{>}}}]
-  \node[fill, draw, circle, inner sep=0, minimum size=0.6cm, postaction={decorate}] (center) at (0,0) {};
+  \node[fill, draw, circle, inner sep=0, minimum size=\tikzumlcontrolscale*5ex, postaction={decorate}] (center) at (0,0) {};
   \end{tikzpicture}
 }% 
 
@@ -2866,6 +2882,7 @@
   \edef\tikzumlfillcall{\tikzumlcallfill}%
   \edef\tikzumldrawcall{\tikzumlcalldraw}%
   \edef\tikzumltextcall{\tikzumlcalltext}%
+  \edef\tikzumltypecall{\tikzumlcalltype}%
   \ifthenelse{\equal{\tikzumlcallDT}{tikzumlEmpty}}{%
     \ifnum\thetikzumlCallNum=1%
       \def\tikzumlcallDT{2}%
@@ -2947,14 +2964,14 @@
   \end{pgfonlayer}%
   %
   \stepcounter{tikzumlCallLevel}%
-}%
-{%
+}{%
   \addtocounter{tikzumlCallLevel}{-1}%
   %
   % bottom nodes of activity periods of call sender and receiver
   \begin{pgfonlayer}{connections}%
   \ifnum\tikzumlCall@lastchildNum=\thetikzumlCallNum%
     %
+    % this test occurs a bug with latex package preview
     \ifthenelse{\equal{\tikzumlCallStartNodeName}{\tikzumlCallEndNodeName}}{%
       \draw (\tikzumlCallBottomSrc)+(0,-\tikzumlcallpadding ex) node[coordinate, name=tikzumlTmpNode] {};%
       \node[tikzuml activity style] (eb-\tikzumlCall@nodeName) at (\tikzumlCallEndNodeName |- tikzumlTmpNode) {};% 
@@ -3029,8 +3046,8 @@
   }%
   \end{pgfonlayer}%
   \ifthenelse{\equal{\tikzumlfillcallcolor}{\tikzumlcallfill}}{}{%
-    \fill[fill=\tikzumlfillcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
-    \draw[draw=\tikzumldrawcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south west) (st-\tikzumlCall@nodeName.north east) rectangle (sb-\tikzumlCall@nodeName.south east);
+    \fill[\tikzumlfillcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
+    \draw[\tikzumldrawcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south west) (st-\tikzumlCall@nodeName.north east) rectangle (sb-\tikzumlCall@nodeName.south east);
   }%
   %
   % update last nodes drawn on sender and receiver lifelines
@@ -3040,36 +3057,46 @@
   % draw call arrows
   \begin{pgfonlayer}{connections}%
   \ifthenelse{\equal{\tikzumlCallStartNodeName}{\tikzumlCallEndNodeName}}{%
-    \draw[\tikzumlcallstyle, draw=\tikzumldrawcall] (st-\tikzumlCall@nodeName.east) -- ++(2.5*\tikzumlcallpadding ex,0) -- ++(0,-0.75*\tikzumlcallpadding ex) %
-                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, right, name=\tikzumlCall@nodeName-op] {\tikzumlcallop} -- (et-\tikzumlCall@nodeName.east);%
+    \draw[\tikzumlcallstyle, \tikzumldrawcall] (st-\tikzumlCall@nodeName.east) -- ++(2.5*\tikzumlcallpadding ex,0) %
+                                                    -- ++(0,-0.75*\tikzumlcallpadding ex) %
+                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, right, name=\tikzumlCall@nodeName-op] {\tikzumlcallop} %
+                                                    -- (et-\tikzumlCall@nodeName.east);%
     %
     % draw return arrow and update fit for parent fragment
-    \ifnum\c@tikzumlFragmentLevel>0%
-      \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
-      \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCall@nodeName) (et-\tikzumlCall@nodeName) (eb-\tikzumlCall@nodeName) (sb-\tikzumlCall@nodeName) (\tikzumlCall@nodeName-op)}%
-    \fi%
-    %
-    \draw[tikzuml call return style, draw=\tikzumldrawcall] (eb-\tikzumlCall@nodeName.east) -- ++(2.5*\tikzumlcallpadding ex,0) -- ++(0,-0.75*\tikzumlcallpadding ex) %
-                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, right, name=\tikzumlCall@nodeName-return] {\tikzumlcallreturn} %
-                                                    -- (sb-\tikzumlCall@nodeName.east);%
-  }{%
-    % draw call arrows
-    \draw[\tikzumlcallstyle, draw=\tikzumldrawcall] (st-\tikzumlCall@nodeName.east) -- (et-\tikzumlCall@nodeName.west) %
-                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, above=-0.4ex, name=\tikzumlCall@nodeName-op] {\tikzumlcallop};%
-    % draw return arrow and update fit for parent fragment
-    \ifthenelse{\equal{\tikzumlcallreturn}{tikzumlEmpty}}{%
-      \ifnum\c@tikzumlFragmentLevel>0%
-        \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
-        \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCall@nodeName) (et-\tikzumlCall@nodeName) (eb-\tikzumlCall@nodeName) (sb-\tikzumlCall@nodeName) (\tikzumlCall@nodeName-op)}%
-      \fi%
-    }{%
+    \ifthenelse{\equal{\tikzumltypecall}{synchron}}{%
       \ifnum\c@tikzumlFragmentLevel>0%
         \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
         \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCall@nodeName) (et-\tikzumlCall@nodeName) (eb-\tikzumlCall@nodeName) (sb-\tikzumlCall@nodeName) (\tikzumlCall@nodeName-op) (\tikzumlCall@nodeName-return)}%
       \fi%
       %
-      \draw[tikzuml call return style, draw=\tikzumldrawcall] (eb-\tikzumlCall@nodeName.west) -- (sb-\tikzumlCall@nodeName.east) %
-                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, above=-0.4ex, name=\tikzumlCall@nodeName-return] {\tikzumlcallreturn};%
+      \draw[tikzuml call return style, \tikzumldrawcall] (eb-\tikzumlCall@nodeName.east) -- ++(2.5*\tikzumlcallpadding ex,0) -- ++(0,-0.75*\tikzumlcallpadding ex) %
+                                                  node[font=\tikzumlfont, text=\tikzumltextcall, midway, right, name=\tikzumlCall@nodeName-return] {\tikzumlcallreturn} %
+                                                  -- (sb-\tikzumlCall@nodeName.east);%
+    }{%
+      \ifnum\c@tikzumlFragmentLevel>0%
+        \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
+        \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCall@nodeName) (et-\tikzumlCall@nodeName) (eb-\tikzumlCall@nodeName) (sb-\tikzumlCall@nodeName) (\tikzumlCall@nodeName-op)}%
+      \fi%
+      %
+    }%
+  }{%
+    % draw call arrows
+    \draw[\tikzumlcallstyle, \tikzumldrawcall] (st-\tikzumlCall@nodeName.east) -- (et-\tikzumlCall@nodeName.west) %
+                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, above=-0.4ex, name=\tikzumlCall@nodeName-op] {\tikzumlcallop};%
+    % draw return arrow and update fit for parent fragment
+    \ifthenelse{\equal{\tikzumltypecall}{synchron}}{%
+      \ifnum\c@tikzumlFragmentLevel>0%
+        \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
+        \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCall@nodeName) (et-\tikzumlCall@nodeName) (eb-\tikzumlCall@nodeName) (sb-\tikzumlCall@nodeName) (\tikzumlCall@nodeName-op) (\tikzumlCall@nodeName-return)}%
+      \fi%
+      %
+      \draw[tikzuml call return style, \tikzumldrawcall] (eb-\tikzumlCall@nodeName.west) -- (sb-\tikzumlCall@nodeName.east) %
+                                       node[font=\tikzumlfont, text=\tikzumltextcall, midway, above=-0.4ex, name=\tikzumlCall@nodeName-return] {\tikzumlcallreturn};%
+    }{%
+      \ifnum\c@tikzumlFragmentLevel>0%
+        \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
+        \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCall@nodeName) (et-\tikzumlCall@nodeName) (eb-\tikzumlCall@nodeName) (sb-\tikzumlCall@nodeName) (\tikzumlCall@nodeName-op)}%
+      \fi%
     }%
   }%
   \end{pgfonlayer}%
@@ -3093,10 +3120,10 @@
     %
     \node[outer sep=0, inner xsep=\tikzumlfragmentxsep ex, inner ysep=\tikzumlfragmentysep ex, fit=\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname, name=\tikzumlFragment@name-Part-tmp] {};%
     \node[anchor=east, name=\tikzumlFragment@name-PartType-\thetikzumlFragmentPartNum] at (\tikzumlFragment@name-Part-tmp.north west |- \tikzumlCallBottomSrc) {\phantom{\tikzumlfragmenttype}};
-    \draw (\tikzumlFragment@name-PartType-\thetikzumlFragmentPartNum.north west |- \tikzumlCallBottomSrc)+(0,-\tikzumlcallpadding ex) node[name=\tikzumlFragment@name-PartWest-\thetikzumlFragmentPartNum] {};
-    \draw (\tikzumlFragment@name-Part-tmp.north east |- \tikzumlCallBottomSrc)+(0,-\tikzumlcallpadding ex) node[name=\tikzumlFragment@name-PartEast-\thetikzumlFragmentPartNum] {};
+    \draw (\tikzumlFragment@name-PartType-\thetikzumlFragmentPartNum.north west |- \tikzumlCallBottomSrc)+(0,-0.4*\tikzumlFragment@paddingy ex) node[name=\tikzumlFragment@name-PartWest-\thetikzumlFragmentPartNum] {};
+    \draw (\tikzumlFragment@name-Part-tmp.north east |- \tikzumlCallBottomSrc)+(0,-0.4*\tikzumlFragment@paddingy ex) node[name=\tikzumlFragment@name-PartEast-\thetikzumlFragmentPartNum] {};
     \draw[dashed] (\tikzumlFragment@name-PartWest-\thetikzumlFragmentPartNum) -- (\tikzumlFragment@name-PartEast-\thetikzumlFragmentPartNum);
-    \draw (\tikzumlFragment@name-PartType-\thetikzumlFragmentPartNum)+(0,-\tikzumlcallpadding ex) node[name=tikzumlTmpNode] {\phantom{\tikzumlfragmenttype}};
+    \draw (\tikzumlFragment@name-PartType-\thetikzumlFragmentPartNum)+(0,-0.4*\tikzumlFragment@paddingy ex) node[name=tikzumlTmpNode] {\phantom{\tikzumlfragmenttype}};
     \node[anchor=north west] at (tikzumlTmpNode.south west) {[##1]};%
   }%
   
@@ -3158,29 +3185,29 @@
   %
   \ifnum\thetikzumlFragmentLevel>0%
     \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@parent \endcsname}%
-    \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@parent \endcsname{\tikzumlFragmentFitOld (\tikzumlFragment@name-back)}%
+    \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@parent \endcsname{\tikzumlFragmentFitOld (\tikzumlFragment@name)}%
   \fi%
   %
   % draw working fragment box
   \begin{pgfonlayer}{fragment\thetikzumlFragmentLevel}%
-  \node[outer sep=0, inner xsep=\tikzumlfragmentxsep ex, inner ysep=\tikzumlfragmentysep ex, fit=\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname, name=\tikzumlFragment@name-backtmp] {};%
+  \node[outer sep=0, inner xsep=\tikzumlfragmentxsep ex, inner ysep=\tikzumlfragmentysep ex, fit=\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname, name=\tikzumlFragment@name-back] {};%
   \end{pgfonlayer}%
   %
   % draw type and label
   \node[text=\tikzumlfragmenttext, font=\tikzumlfont, anchor=north east, name=\tikzumlFragment@name-type] %
-                                   at (\tikzumlFragment@name-backtmp.north west) {\tikzumlfragmenttype};%
+                                   at (\tikzumlFragment@name-back.north west) {\tikzumlfragmenttype};%
   \node[text=\tikzumlfragmenttext, font=\tikzumlfont, anchor=north west, name=\tikzumlFragment@name-label] %
                                    at (\tikzumlFragment@name-type.south west) {\tikzumlfragmentlabel};%
   %
   % draw final fragment box
   \begin{pgfonlayer}{fragment\thetikzumlFragmentLevel}%
-  \node[draw=\tikzumlfragmentdraw, fill=\tikzumlfragmentfill, outer sep=0, inner sep=0, font=\tikzumlfont, fit=(\tikzumlFragment@name-backtmp) (\tikzumlFragment@name-type) (\tikzumlFragment@name-label), name=\tikzumlFragment@name-back] {};%
+  \node[draw=\tikzumlfragmentdraw, fill=\tikzumlfragmentfill, outer sep=0, inner sep=0, font=\tikzumlfont, fit=(\tikzumlFragment@name-back) (\tikzumlFragment@name-type) (\tikzumlFragment@name-label), name=\tikzumlFragment@name] {};%
   \end{pgfonlayer}%
   %
-  \draw[draw=\tikzumlfragmentdraw] (\tikzumlFragment@name-back.north west) rectangle (\tikzumlFragment@name-back.south east);%
+  \draw[draw=\tikzumlfragmentdraw] (\tikzumlFragment@name.north west) rectangle (\tikzumlFragment@name.south east);%
   \draw (\tikzumlFragment@name-type.south east)+(0,1ex) node[name=\tikzumlFragment@name-typetop, inner sep=0] {};%
   \draw (\tikzumlFragment@name-type.south east)+(-1ex,0) node[name=\tikzumlFragment@name-typeleft, inner sep=0] {};%
-  \draw (\tikzumlFragment@name-back.north west) -| (\tikzumlFragment@name-typetop.center) -- (\tikzumlFragment@name-typeleft.center) -| (\tikzumlFragment@name-back.north west);%
+  \draw (\tikzumlFragment@name.north west) -| (\tikzumlFragment@name-typetop.center) -- (\tikzumlFragment@name-typeleft.center) -| (\tikzumlFragment@name.north west);%
   %
   \ifnum\thetikzumlCallLevel>0%
     \stepcounter{tikzumlCallEndFragmentNum}%
@@ -3268,7 +3295,7 @@
   \xdef\tikzumlCallBottomSrc{sb-\tikzumlCreateCall@nodeName}%
   %
   \begin{pgfonlayer}{connections}%
-  \draw[tikzuml synchron-msg style] (st-\tikzumlCreateCall@nodeName) -- (#3) node[midway, above, font=\tikzumlfont, text=\tikzumlcalltext, name=\tikzumlCreateCall@nodeName-op] {create};%
+  \draw[tikzuml synchron-msg style, \tikzumlcalldraw] (st-\tikzumlCreateCall@nodeName) -- (#3) node[midway, above, font=\tikzumlfont, text=\tikzumlcalltext, name=\tikzumlCreateCall@nodeName-op] {create};%
   \end{pgfonlayer}%
   %
   \ifnum\thetikzumlCallLevel=0%
