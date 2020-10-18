@@ -116,11 +116,11 @@ Nous allons maintenant vous présenter les différentes fonctionnalités offerte
 
 \tableofcontents
 
-\chapter{Diagrammes de classes}
+\chapter{Diagrammes de classes}\label{c.class}
 
-\section{Package, classe, attributs et opérations}
+\section{Package, classe, attributs et opérations}\label{s.packageclass}
 
-\subsection{Définir un package}
+\subsection{Définir un package}\label{ss.package}
 
 Un package est défini par l'environnement {\tt umlpackage} :
 
@@ -145,7 +145,7 @@ Les options {\tt x} et {\tt y} permettent de définir la position du package dan
 \item Il existe un raccourci pour définir un package qui sera vide (on ne définira pas de classes à l'intérieur) : la commande {\tt umlemptypackage} qui prend les mêmes arguments que l'environnement {\tt umlpackage}
 \end{itemize}
 
-\subsection{Définir une classe}
+\subsection{Définir une classe}\label{ss.class}
 
 Pour définir une classe, on utilise l'environnement {\tt umlclass}, de la même manière que l'environnement {\tt umlpackage} :
 
@@ -207,7 +207,7 @@ La classe peut être un template. On spécifie la liste des paramètres avec l'o
 \end{center}
 \end{minipage}
 
-\subsection{Définir des attributs et des opérations}
+\subsection{Définir des attributs et des opérations}\label{ss.attrop}
 
 On définit les attributs à l'intérieur d'un environnement {\tt umlclass} à l'aide de la commande {\tt umlattr}. On lui passe en argument la liste des arguments en les séparants par $\backslash\backslash$. On procède de même pour les opérations avec la commande {\tt umlop} :
 
@@ -226,9 +226,9 @@ On définit les attributs à l'intérieur d'un environnement {\tt umlclass} à l
 
 Pour définir un attribut ou une méthode statique, on peut utiliser la commande {\tt umlstatic}. De même, la commande {\tt umlvirt} permet de spécifier des fonctions virtuelles.
 
-\section{Relations entre classes}
+\section{Relations entre classes}\label{s.rel}
 
-\subsection{Commande générale}
+\subsection{Commande générale}\label{ss.relgen}
 
 Chaque classe et chaque package sont représentés par un n\oe{}ud ayant le même nom. Pour définir une relation entre 2 classes, on va donc spécifier le nom de la classe de départ, le nom de la classe d'arrivée et un certain nombre d'options propres à la relation.
 
@@ -261,9 +261,9 @@ D'un point de vue sémantique, il existe 11 relations différentes, toutes prés
 
 Ces 11 commandes sont basées sur le même schéma (la commande {\tt umlrelation}) et prennent en théorie exactement le même jeu d'options. En pratique, certaines options concernent certains types de relations.
 
-\subsection{Définir la géométrie de la relation}
+\subsection{Définir la géométrie de la relation}\label{ss.relgeom}
 
-Comme vous avez pu le voir dans les exemples précédents, on peut spécifier la forme géométrique de la relation à l'aide de l'option {\tt geometry}. Cette option demande un argument parmi la liste -~- (ligne droite), -| (horizontal puis vertical), |- (vertical puis horizontal), -|- (chicane horizontale) ou |-| (chicane verticale), ces arguments étant largement inspirés de la philosophie TikZ.
+Comme vous avez pu le voir dans les exemples précédents, on peut spécifier la forme géométrique de la relation à l'aide de l'option \hypertarget{geometry}{{\tt geometry}}. Cette option demande un argument parmi la liste -~- (ligne droite), -| (horizontal puis vertical), |- (vertical puis horizontal), -|- (chicane horizontale) ou |-| (chicane verticale), ces arguments étant largement inspirés de la philosophie TikZ.
 
 Il apparaît à l'utilisation que cette option est très souvent utilisée. C'est la raison pour laquelle un alias de la commande {\tt umlrelation} a été défini pour chacune des valeurs possibles de l'option {\tt geometry} :
 
@@ -279,7 +279,7 @@ Il apparaît à l'utilisation que cette option est très souvent utilisée. C'es
 \remarque{Il n'y a pas d'alias dans le cas de la valeur -~- pour la seule raison qu'il s'agit de la valeur par défaut.}
 
 
-\subsection{Ajuster la géométrie de la relation}
+\subsection{Ajuster la géométrie de la relation}\label{ss.relfitgeom}
 
 Lorsque la géométrie de la relation contient 2 segments, on peut spécifier les coordonnées du point intermédiaire, ou n\oe{}ud de contrôle. Plutôt que la commande {\tt umlrelation}, on utilisera {\tt umlCNrelation}, elle aussi déclinée en 11 alias :
 
@@ -296,7 +296,7 @@ Lorsque la géométrie de la relation contient 2 segments, on peut spécifier le
 
 \medskip
 
-Lorsque la géométrie de la relation contient 3 segments, la position relative du segment central entre les classes est défini comme passant par le milieu entre les classes reliées. On peut ajuster ce paramètre à l'aide de l'option {\tt weight} :
+Lorsque la géométrie de la relation contient 3 segments, la position relative du segment central entre les classes est défini comme passant par le milieu entre les classes reliées. On peut ajuster ce paramètre à l'aide de l'option \hypertarget{weight}{{\tt weight}} :
 
 \medskip
 
@@ -309,7 +309,7 @@ Lorsque la géométrie de la relation contient 3 segments, la position relative 
 \end{center}
 \end{minipage}
 
-Dans certains cas, cette option est peu pratique, car elle demande de calculer la valeur à passer à l'option. On peut alors procéder autrement en utilisant les options {\tt arm1} et {\tt arm2} qui fixent la taille respectivement du premier et dernier segment. Regardons ici les deux exemples utilisant respectivement l'option {\tt weight} et l'option {\tt arm1} :
+Dans certains cas, cette option est peu pratique, car elle demande de calculer la valeur à passer à l'option. On peut alors procéder autrement en utilisant les options \hypertarget{arm1}{{\tt arm1}} et \hypertarget{arm2}{{\tt arm2}} qui fixent la taille respectivement du premier et dernier segment. Regardons ici les deux exemples utilisant respectivement l'option {\tt weight} et l'option {\tt arm1} :
 
 \medskip
 
@@ -350,7 +350,7 @@ Si l'on passe une valeur positive, alors le bras sera orienté dans le sens norm
 \end{minipage}
 
 
-\subsection{Définir des informations sur les attributs associés à une relation}
+\subsection{Définir des informations sur les attributs associés à une relation}\label{ss.relattr}
 
 Une relation visualise la dépendance entre deux classes et se traduit généralement sous la forme d'un attribut. On peut spécifier son nom avec l'option {\tt arg1} ou {\tt arg2}, et sa multiplicité avec {\tt mult1} ou {\tt mult2} :
 
@@ -399,7 +399,7 @@ L'avantage de cette forme contractée est de pouvoir s'affranchir de la sémanti
 
 \medskip
 
-\subsection{Positionner les informations sur les attributs associés à une relation}
+\subsection{Positionner les informations sur les attributs associés à une relation}\label{ss.relposattr}
 
 On peut positionner les informations définies dans la section précédente à l'aide des options {\tt pos1}, {\tt pos2} et {\tt pos}.
 La commande {\tt umlrelation} détermine elle-même si le nom et la multiplicité doivent être respectivement à gauche et à droite, ou au-dessus et au-dessous, de la flèche, selon sa géométrie et leur position. Pour les initiés à TikZ, elle se base sur les options {\tt auto} et {\tt swap}.
@@ -419,9 +419,9 @@ La commande {\tt umlrelation} détermine elle-même si le nom et la multiplicit�
 
 Il est à noter que l'intervalle de valeurs de la position d'un nom d'argument dépend du nombre de segments constituants la flèche de relation. Si la flèche est droite, alors la position doit être comprise entre 0 (classe de départ) et 1 (classe d'arrivée). Si la flèche comporte un seul angle droit, alors la position varie entre 0 et 2 (point d'arrivée), la valeur 1 correspondant à l'angle. Dans les deux autres possibilités, la position varie entre 0 et 3 (point d'arrivée), les valeurs 1 et 2 correspondant respectivement au premier et au deuxième angle.
 
-\subsection{Ajuster l'alignement des informations sur les attributs associés à une relation}
+\subsection{Ajuster l'alignement des informations sur les attributs associés à une relation}\label{ss.relalign}
 
-Par défault, nom et multiplicité de l'argument, quand ils sont affichés l'un au dessus de l'autre, sont centrés. Les options {\tt align1}, {\tt align2} et {\tt } permettent de les justifier à gauche ou à droite.
+Par défault, nom et multiplicité de l'argument, quand ils sont affichés l'un au dessus de l'autre, sont centrés. Les options {\tt align1}, {\tt align2} et {\tt align} permettent de les justifier à gauche ou à droite.
 
 \medskip
 
@@ -434,9 +434,9 @@ Par défault, nom et multiplicité de l'argument, quand ils sont affichés l'un 
 \end{center}
 \end{minipage}
 
-\subsection{Définir et positionner le stéréotype d'une relation}
+\subsection{Définir et positionner le stéréotype d'une relation}\label{ss.relstereo}
 
-Le stéréotype d'une relation est un mot clé contenu entre $<<$ et $>>$. On peut le définir à l'aide de l'opération {\tt stereo}
+Le stéréotype d'une relation est un mot clé contenu entre $<<$ et $>>$. On peut le définir à l'aide de l'option {\tt stereo} et le positionner à l'aide de l'option \hypertarget{posstereo}{{\tt pos stereo}}.
 
 \medskip
 
@@ -449,9 +449,9 @@ Le stéréotype d'une relation est un mot clé contenu entre $<<$ et $>>$. On pe
 \end{center}
 \end{minipage}
 
-\subsection{Modifier les points d'ancrage d'une relation}
+\subsection{Modifier les points d'ancrage d'une relation}\label{ss.relanchor}
 
-Le paragraphe qui vient concerne les relations dont la géométrie est à base de flèches segmentées. Par défaut, elles partent du centre du n\oe{}ud de la classe d'origine et vont au centre du n\oe{}ud de la classe cible. Il est possible d'ajuster ce comportement avec la paire d'options {\tt anchor1}, {\tt anchor2}.
+Le paragraphe qui vient concerne les relations dont la géométrie est à base de flèches segmentées. Par défaut, elles partent du centre du n\oe{}ud de la classe d'origine et vont au centre du n\oe{}ud de la classe cible. Il est possible d'ajuster ce comportement avec la paire d'options \hypertarget{anchor1}{{\tt anchor1}}, \hypertarget{anchor2}{{\tt anchor2}}.
 
 \medskip
 
@@ -472,7 +472,7 @@ Les arguments que l'on donne sont des angles dont la valeur est en degré et peu
 \inputTikZ{figure21}
 \end{center}
 
-Il arrive finalement très souvent que l'on définisse les deux options {\tt anchor1} et {\tt anchor2} simultanément. On peut donc utiliser une forme contractée : l'option {\tt anchors} qui s'utilise de la manière suivante, en reprenant l'exemple précédent :
+Il arrive finalement très souvent que l'on définisse les deux options {\tt anchor1} et {\tt anchor2} simultanément. On peut donc utiliser une forme contractée : l'option \hypertarget{anchors}{{\tt anchors}} qui s'utilise de la manière suivante, en reprenant l'exemple précédent :
 
 \medskip
 
@@ -485,7 +485,7 @@ Il arrive finalement très souvent que l'on définisse les deux options {\tt anc
 \end{center}
 \end{minipage}
 
-\subsection{Relation récursive}
+\subsection{Relation récursive}\label{ss.relrec}
 
 Il est possible de définir une relation récursive, c'est-à-dire une relation d'une classe à elle-même. Dans ce cas, l'option {\tt geometry} doit être ignorée, mais 3 options deviennent très utiles : {\tt angle1} détermine l'angle de départ, {\tt angle2} détermine l'angle d'arrivée, et {\tt loopsize} donne une idée de la taille de la boucle.
 
@@ -515,7 +515,7 @@ Il est possible de définir une relation récursive, c'est-à-dire une relation 
 \end{center}
 \end{minipage}
 
-\subsection{Nom des points de construction d'une relation}
+\subsection{Nom des points de construction d'une relation}\label{ss.relptname}
 
 Pour voir l'importance de la possibilité de donner un nom à une relation et son utilité, il nous faut d'abord ici répondre à la question technique suivante : comment les flèches sont-elles concrètement définies ?
 
@@ -543,7 +543,7 @@ Le premier n\oe{}ud défini est le milieu de la relation, il s'appelle {\it reln
 
 Il faut toutefois reconnaître que la définition par défaut de {\it relname} est non seulement peu pratique puisqu'on n'a pas vraiment accès à la numérotation, mais aussi fortement sujette à l'ordre dans lequel on définit les relations, donc peu portable en cas de modification de diagrammes. Pour simplifier cela, on va pouvoir définir {\it relname} à l'aide de l'option {\tt name}. Et la raison pour laquelle cette option existe va être expliquée dans les 2 sections suivantes.
 
-\subsection{Tracer un point à une intersection de relations}
+\subsection{Tracer un point à une intersection de relations}\label{ss.relpt}
 
 Il arrive que dans un diagramme des relations se croisent et se chevauchent. Prenons 2 flèches qui se croisent. Est-ce que les 2 points de départ peuvent aller aux deux points d'arrivée ? Si oui, alors on va vouloir tracer un point à l'intersection des deux flèches, qui vraisemblablement va être un des n\oe{}uds de contrôle définis sur la relation. On utilisera pour cela la commande {\tt umlpoint}.
 
@@ -558,7 +558,7 @@ Il arrive que dans un diagramme des relations se croisent et se chevauchent. Pre
 \end{center}
 \end{minipage}
 
-\section{Note de commentaires / contraintes}
+\section{Note de commentaires / contraintes}\label{s.note}
 
 Une note est un commentaire de texte attaché à une classe ou une relation. La commande {\tt umlnote} demande pour cela le nom du n\oe{}ud auquel il faut se rattacher et le texte du commentaire en argument :
 
@@ -625,19 +625,19 @@ Puisque l'option {\tt geometry} est présente, de la même manière que pour {\t
 
 \remarque{Il n'y a pas d'alias dans le cas de la valeur -~- pour la seule raison qu'il s'agit de la valeur par défaut.}
 
-\section{Personnaliser l'apparence}
+\section{Personnaliser l'apparence}\label{s.classset}
 
 Grâce à la commande {\tt tikzumlset}, il est possible de modifier l'apparence par défaut des packages, des classes et des notes. Les options que l'on peut personnaliser sont :
 
 \begin{description}
 \item[text : ] permet de spécifier la couleur du texte (=black par défaut),
-\item[draw :] permet de spécifier la couleur des bords (=black par défaut),
+\item[draw :] permet de spécifier la couleur des traits (=black par défaut),
 \item[fill class :] permet de spécifier la couleur de fond des classes (=yellow!20 par défaut),
 \item[fill template :] permet de spécifier la couleur de fond des boites templates (=yellow!2 par défaut),
 \item[fill package :] permet de spécifier la couleur de fond des packages (=blue!20 par défaut),
 \item[fill subpackage :] permet de spécifier la couleur de fond des sous-packages (=blue!20 par défaut),
 \item[fill note :] permet de spécifier la couleur de fond des notes (=green!20 par défaut),
-\item[font :] permet de définir le style de fonte du texte contenu dans tous les éléments d'un diagramme (=\small par défaut).
+\item[font :] permet de définir le style de fonte du texte contenu dans tous les éléments d'un diagramme (=$\backslash$small par défaut).
 \end{description}
 
 Par ailleurs, les commandes de relation disposent toutes d'une option {\tt style} prenant en argument un nom de style au sens de TikZ.
@@ -763,7 +763,7 @@ Une spécialisation de classe est de l'héritage d'un patron de classe dans lequ
 \end{center}
 \end{minipage}
 
-\section{Règles de priorité des options et bugs identifiés}
+\section{Règles de priorité des options et bugs identifiés}\label{s.classbug}
 
 \begin{enumerate}
 \item L'option {\tt geometry} prime toujours sur les autres arguments. Cela signifie en particulier que si elle n'a pas sa valeur par défaut (--~--), alors les options {\tt angle1}, {\tt angle2} et {\tt loopsize}, paramétrant les relations récursives, seront ignorées.
@@ -803,51 +803,204 @@ On peut toutefois corriger partiellement ce problème en reliant la flèche dire
 
 \end{enumerate}
 
-%\chapter{Diagrammes de cas d'utilisation}
-%
-%\begin{center}
-%\begin{tikzpicture}
-%\begin{umlsystem}[x=4, fill=red!10]{Le système}
-%\umlusecase{use case1}
-%\umlusecase[y=-2]{use case2}
-%\umlusecase[y=-4]{use case3}
-%\umlusecase[x=4, y=-2]{use case4}
-%\umlusecase[x=6, fill=green!20]{use case5}
-%\umlusecase[x=6, y=-4]{use case6}
-%\end{umlsystem}
-%
-%% revoir la specification de \umlactor incoherente avec l'autre specification (gestion du name + class)
-%\umlactor[name=user]{user}
-%\umlactor[y=-3, name=subuser]{subuser}
-%\umlactor[x=14, y=-1.5, name=admin]{admin}
-%
-%\umlinherit{subuser}{user}
-%\umlassoc{user}{usecase-1}
-%\umlassoc{subuser}{usecase-2}
-%\umlassoc{subuser}{usecase-3}
-%\umlassoc{admin}{usecase-5}
-%\umlassoc{admin}{usecase-6}
-%\umlinherit{usecase-2}{usecase-1}
-%\umlVHextend{usecase-5}{usecase-4}
-%\umlinclude[name=incl]{usecase-3}{usecase-4}
-%
-%\umlnote[x=7, y=-7]{incl-1}{note on include dependency}
-%\end{tikzpicture}
-%\end{center}
-%
-%\section{Système}
-%
-%\section{Acteur et cas d'utilisation}
-%
-%\section{Relations}
-%
-%\section{Personnalisation}
-%
-%\section{Exemples}
-%
-%\section{Règles de priorité des options et bugs identifiés}
-%
-%\chapter{Diagrammes d'états-transitions}
+\chapter{Diagrammes de cas d'utilisation}\label{c.usecase}
+
+Voici un exemple de diagramme de cas d'utilisation que l'on peut réaliser :
+
+\begin{center}
+\inputTikZ{usecaseex}
+\end{center}
+
+Nous allons voir successivement comment définir les 4 éléments constitutifs d'un tel diagramme : le système, les acteurs, les cas d'utilisation et les relations.
+
+\section{Système}\label{s.system}
+
+Un système est défini à l'aide de l'environnement {\tt umlsystem} :
+
+\medskip
+
+\begin{minipage}{0.6\textwidth}
+\lstinputlisting{fig/figure41.tikz}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\inputTikZ{figure41}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Les options {\tt x} et {\tt y} permettent de positionner le système dans la figure. Elles valent toutes deux 0 par défaut. A l'intérieur de cet environnement, on définira les cas d'utilisation, tandis qu'à l'extérieur, on définira les acteurs.
+
+\section{Acteur}\label{s.actor}
+
+Un acteur est défini par la commande {\tt umlactor} :
+
+\medskip
+
+\begin{minipage}{0.6\textwidth}
+\lstinputlisting{fig/figure42.tikz}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\inputTikZ{figure42}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Les options {\tt x} et {\tt y} permettent de positionner l'acteur dans la figure. Elles valent toutes deux 0 par défaut. On peut également redimensionner le symbole de l'acteur avec l'option {\tt scale}. Cela adapte également la position du texte en dessous :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/figure43.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{figure43}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Le symbole de l'acteur est défini en unités relatives de la taille de fonte (unité en ex). Ce n'est par contre pas le cas de la distance séparant le symbole du texte en dessous. On peut alors corriger cela en fixant cette distance avec l'option {\tt below} (0.5cm par défaut).
+
+\medskip
+ 
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/figure44.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{figure44}
+\end{center}
+\end{minipage}
+
+\section{Cas d'utilisation}\label{s.usecase}
+
+Un cas d'utilisation est défini avec la commande {\tt umlusecase} :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/figure45.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{figure45}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Les options {\tt x} et {\tt y} permettent de positionner le cas d'utilisation dans la figure ou dans le système le contenant. Elles valent toutes deux 0 par défaut. Le texte passé en argument obligatore est l'intitulé du cas d'utilisation. Le n\oe{}ud le représentant possède un nom par défaut, basé sur un compteur global, de la forme usecase-17. Pour des raisons pratiques, on peut renommer un cas d'utilisation à l'aide de l'option {\tt name}.
+
+Par ailleurs, on peut fixer la taille du n\oe{}ud avec l'option {\tt width}.
+
+\medskip
+
+Maintenant que nous avons vu tous les éléments constitutifs d'un diagramme de cas d'utilisation, nous allons pouvoir aborder les relations entre ces éléments.
+
+\section{Relations}\label{s.userel}
+
+Les relations dans un diagramme de cas d'utilisation sont de 4 natures :
+
+\begin{itemize}
+\item Des relations d'héritage, entre acteurs, ou entre cas d'utilisation. On utilisera pour cela la commande {\tt umlinherit} et ses dérivées, abordées en \autoref{ss.relgen}.
+\item Des relations d'association, entre un acteur et un cas d'utilisation. On utilisera pour cela la commande {\tt umlassoc} et ses dérivées, abordées en \autoref{ss.relgen}.
+\item Des relations d'inclusion ou d'extension. Graphiquement, ce sont des flèches de dépendance, au sens des diagrammes de classes, avec le stéréotype {\tt extend} ou {\tt include}. Des alias de la commande {\tt umlrelation}, nommés {\tt umlinclude}, {\tt umlHVinclude}, \ldots, {\tt umlextend}, {\tt umlHVextend}, \ldots, sont disponibles pour définir de telles flèches.
+\end{itemize}
+
+Les options \hyperlink{anchor1}{{\tt anchor1}}, \hyperlink{anchor2}{{\tt anchor2}}, \hyperlink{anchors}{{\tt anchors}}, \hyperlink{arm1}{{\tt arm1}}, \hyperlink{arm2}{{\tt arm2}}, \hyperlink{weight}{{\tt weight}}, \hyperlink{geometry}{{\tt geometry}} (uniquement pour {\tt umlinclude} et {\tt umlextend}), et \hyperlink{posstereo}{{\tt pos stereo}} sont toujours utilisables.
+
+\medskip
+
+\begin{minipage}{0.51\textwidth}
+\lstinputlisting{fig/figure46.tikz}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{center}
+\inputTikZ{figure46}
+\end{center}
+\end{minipage}
+
+\medskip
+
+\section{Personnalisation}\label{s.fitusecase}
+
+Grace à la commande {\tt tikzumlset}, on peut modifier globalement les couleurs par défaut des cas d'utilisation, systèmes, acteurs et relations :
+
+\begin{description}
+\item[text :] permet de spécifier la couleur du texte (=black par défaut),
+\item[draw :] permet de spécifier la couleur des traits (=black par défaut),
+\item[fill usecase :] permet de spécifier la couleur de fond des cas d'utilisation (=blue!20 par défaut),
+\item[fill system :] permet de spécifier la couleur de fond des systèmes (=white par défaut),
+\item[font :] permet de spécifier le style de fonte du texte (=$\backslash$small par défaut).
+\end{description}
+
+On peut également utiliser les options {\tt text}, {\tt draw} et {\tt fill} sur un élément particulier pour lui modifier ses couleurs, comme illustré dans l'exemple d'introduction.
+
+\section{Exemples}
+
+\subsection{Exemple de l'introduction, pas à pas}
+
+\subsubsection{Définition des acteurs}
+
+{\color{red!70!black}
+\lstinputlisting[firstline=11, lastline=13]{fig/usecaseex.tikz}
+}
+
+\begin{center}
+\inputTikZ{figure47}
+\end{center}
+
+\subsubsection{Définition des cas d'utilisation}
+
+En plus de définir les cas d'utilisation, on illustre l'utilisation locale de l'option {\tt fill}.
+
+{\color{red!70!black}
+\lstinputlisting[firstline=3, lastline=8]{fig/usecaseex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=11, lastline=13]{fig/usecaseex.tikz}
+
+\begin{center}
+\inputTikZ{figure48}
+\end{center}
+
+\subsubsection{Définition du système}
+
+Le système étant défini comme une boîte dont servant de nouveau repère de coordonnées, on va devoir modifier les coordonnées des cas d'utilisation relativement à celles du système.
+
+{\color{red!70!black}
+\lstinputlisting[firstline=2, lastline=2]{fig/usecaseex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=3, lastline=8]{fig/usecaseex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=9, lastline=9]{fig/usecaseex.tikz}\vspace{-0.4cm}
+}
+\lstinputlisting[firstline=10, lastline=13]{fig/usecaseex.tikz}
+
+\begin{center}
+\inputTikZ{figure49}
+\end{center}
+
+\subsubsection{Définition des relations et de la note}
+
+On remarquera l'utilisation de l'option {\tt name} pour s'assurer simplement de la bonne définition de la note, et son intérêt également pour les cas d'utilisation, afin de ne pas avoir à se rappeler de l'ordre dans lequel ils sont définis, comme c'est le cas dans cet exemple simple :
+
+\lstinputlisting[firstline=2, lastline=13]{fig/usecaseex.tikz}\vspace{-0.4cm}
+{\color{red!70!black}
+\lstinputlisting[firstline=14, lastline=25]{fig/usecaseex.tikz}
+}
+
+\begin{center}
+\inputTikZ{figure50}
+\end{center}
+
+%\section{Règles de priorité des options et bugs identifiés}\label{s.usecasebug}
+
+%\chapter{Diagrammes d'états-transitions}\label{c.statetrans}
 %
 %\begin{center}
 %\begin{tikzpicture}
@@ -879,37 +1032,37 @@ On peut toutefois corriger partiellement ce problème en reliant la flèche dire
 %\end{tikzpicture}
 %\end{center}
 %
-%\section{Les états}
+%\section{Les états}\label{s.state}
 %
-%\subsection{Etat}
+%\subsection{Etat}\label{ss.state}
 %
-%\subsection{Etat initial}
+%\subsection{Etat initial}\label{ss.initial}
 %
-%\subsection{Etat final}
+%\subsection{Etat final}\label{ss.final}
 %
-%\subsection{Etat joint}
+%\subsection{Etat joint}\label{ss.join}
 %
-%\subsection{Etat de décision}
+%\subsection{Etat de décision}\label{ss.decision}
 %
-%\subsection{Etat d'entrée}
+%\subsection{Etat d'entrée}\label{ss.enter}
 %
-%\subsection{Etat de sortie}
+%\subsection{Etat de sortie}\label{ss.exit}
 %
-%\subsection{Etat de fin}
+%\subsection{Etat de fin}\label{ss.end}
 %
-%\subsection{Etat d'historique}
+%\subsection{Etat d'historique}\label{ss.hist}
 %
-%\subsection{Etat d'historique profond}
+%\subsection{Etat d'historique profond}\label{ss.deephist}
 %
-%\section{Les transitions}
+%\section{Les transitions}\label{s.trans}
 %
-%\section{Personnalisation}
+%\section{Personnalisation}\label{s.fitstatetrans}
 %
 %\section{Exemples}
 %
-%\section{Règles de priorité des options et bugs identifiés}
+%\section{Règles de priorité des options et bugs identifiés}\label{s.statetransbug}
 %
-%\chapter{Diagrammes de séquence}
+%\chapter{Diagrammes de séquence}\label{c.seq}
 %
 %\begin{lstlisting}
 %\begin{umlseqdiag}
@@ -986,35 +1139,35 @@ On peut toutefois corriger partiellement ce problème en reliant la flèche dire
 %\end{umlseqdiag}
 %\end{tikzpicture}
 %
-%\section{Les objets}
+%\section{Les objets}\label{s.objs}
 %
-%\subsection{Objet}
+%\subsection{Objet}\label{ss.obj}
 %
-%\subsection{Acteur}
+%\subsection{Acteur}\label{ss.actorobj}
 %
-%\subsection{Base de donnée}
+%\subsection{Base de donnée}\label{ss.database}
 %
-%\subsection{Frontière}
+%\subsection{Frontière}\label{ss.boundary}
 %
-%\subsection{Contrôle}
+%\subsection{Contrôle}\label{ss.control}
 %
-%\subsection{Entité}
+%\subsection{Entité}\label{ss.entity}
 %
-%\subsection{Collection d'objets}
+%\subsection{Collection d'objets}\label{ss.multi}
 %
-%\section{Appels de fonctions}
+%\section{Appels de fonctions}\label{s.calls}
 %
-%\subsection{Appels simples}
+%\subsection{Appels simples}\label{ss.call}
 %
-%\subsection{Appels récursifs}
+%\subsection{Appels récursifs}\label{ss.callself}
 %
-%\subsection{Création d'objets}
+%\subsection{Création d'objets}\label{ss.create}
 %
-%\section{Fragments combinés}
+%\section{Fragments combinés}\label{s.fragments}
 %
-%\section{Personnalisation}
+%\section{Personnalisation}\label{s.fitseq}
 %
 %\section{Exemples}
 %
-%\section{Règles de priorité des options et bugs identifiés}
+%\section{Règles de priorité des options et bugs identifiés}\label{s.seqbug}
 \end{document}

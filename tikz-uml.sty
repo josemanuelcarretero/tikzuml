@@ -14,7 +14,7 @@
 \RequirePackage{tikz}%
 \RequirePackage{calc}%
 \RequirePackage{pgfopts}%
-\usetikzlibrary{arrows,shapes,fit,shadows, decorations.markings}%
+\usetikzlibrary{arrows,shapes,fit,shadows,decorations.markings}%
 
 \def\tikzumlPackageLayersNum{2}%
 \pgfkeys{/tikzuml/options/.cd, packageLayers/.initial=3}%
@@ -29,22 +29,15 @@
 \ProcessPgfOptions{/tikzuml/options}%
 
 \def\pgfsetlayersArg{background}%
-\newcounter{tikzumlStateLayers}%
-\newcounter{tikzumlPackageLayers}%
-\newcounter{tikzumlFragmentLayers}%
 \pgfdeclarelayer{background}%
-\loop \pgfdeclarelayer{state\thetikzumlStateLayers}%
-  \xdef\pgfsetlayersArg{\pgfsetlayersArg,state\thetikzumlStateLayers}%
-  \ifnum\tikzumlStateLayersNum>\thetikzumlStateLayers%
-    \stepcounter{tikzumlStateLayers}%
-\repeat%
-%
+\newcounter{tikzumlPackageLayers}%
 \loop \pgfdeclarelayer{package\thetikzumlPackageLayers}%
   \xdef\pgfsetlayersArg{\pgfsetlayersArg,package\thetikzumlPackageLayers}%
   \ifnum\tikzumlPackageLayersNum>\thetikzumlPackageLayers%
     \stepcounter{tikzumlPackageLayers}%
 \repeat%
 %
+\newcounter{tikzumlFragmentLayers}%
 \loop \pgfdeclarelayer{fragment\thetikzumlFragmentLayers}%
   \xdef\pgfsetlayersArg{\pgfsetlayersArg,fragment\thetikzumlFragmentLayers}%
   \ifnum\tikzumlFragmentLayersNum>\thetikzumlFragmentLayers%
@@ -54,8 +47,15 @@
 \pgfdeclarelayer{lifelines}%
 \pgfdeclarelayer{activity}%
 \pgfdeclarelayer{connections}%
-\pgfdeclarelayer{threadground}%
-\xdef\pgfsetlayersArg{\pgfsetlayersArg,lifelines,activity,connections,threadground,main}%
+\xdef\pgfsetlayersArg{\pgfsetlayersArg,lifelines,activity,connections}%
+\newcounter{tikzumlStateLayers}%
+\loop \pgfdeclarelayer{state\thetikzumlStateLayers}%
+  \xdef\pgfsetlayersArg{\pgfsetlayersArg,state\thetikzumlStateLayers}%
+  \ifnum\tikzumlStateLayersNum>\thetikzumlStateLayers%
+    \stepcounter{tikzumlStateLayers}%
+\repeat%
+%
+\xdef\pgfsetlayersArg{\pgfsetlayersArg,main}%
 \pgfsetlayers{\pgfsetlayersArg}%
 
 \pgfkeys{/tikzuml/.cd, text/.initial=black, draw/.initial=black, font/.initial=\small,%
@@ -90,7 +90,7 @@
                                 recursive direction/.style args={#1 to #2}{recursive direction start=#1, recursive direction end=#2}}%
 \pgfkeys{/tikzuml/note/.cd, anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2}}%
 
-\tikzstyle{tikzuml class style}=[rectangle split, rectangle split parts=3, minimum height=2em, minimum width=10ex, node distance=2em]%
+\tikzstyle{tikzuml class style}=[rectangle split, rectangle split parts=3, minimum height=2em, node distance=2em]%
 \tikzstyle{tikzuml template style}=[dashed, inner ysep=0.7em, inner xsep=1ex]%
 \tikzstyle{tikzuml control nodes style}=[fill=black, inner sep=1.5pt, circle]%
 \tikzstyle{tikzuml inherit style}=[color=\tikzumldrawcolor, -open triangle 45]%
@@ -337,8 +337,8 @@
     \def\tikzumlClassVPadding{}%
     \def\tikzumlClassHPadding{}%
   }{%
-    \def\tikzumlClassVPadding{\vspace{0.6em} \\}%
-    \def\tikzumlClassHPadding{\hspace{0.1em} $ $}%
+    \def\tikzumlClassVPadding{\vspace{-0.5ex} \\}%
+    \def\tikzumlClassHPadding{\hspace{0.5ex} $ $}%
   }%
   %
   \def\tikzumlClassName{#2}%
@@ -1596,10 +1596,11 @@
 %                     use case diagrams                   %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\tikzstyle{tikzuml usecase style}=[ellipse, minimum height=2em, minimum width=10ex, node distance=2em]%
+\tikzstyle{tikzuml usecase style}=[ellipse, text centered]%
 \tikzstyle{tikzuml actor style}=[ellipse, inner sep=0, outer sep=0]%
 
 \newcounter{tikzumlSystemUseCaseNum}%
+\newcounter{tikzumlSystemLevel}%
 \newcounter{tikzumlUseCaseNum}%
 \newcounter{tikzumlActorNum}%
 
@@ -1608,9 +1609,9 @@
 % optional : x, y coordinates of the system
 %            draw, fill, text colors
 \newenvironment{umlsystem}[2][]{%
-  \def\tikzumlSystemFit{}%
+  \gdef\tikzumlSystemFit{}%
   \def\tikzumlSystemName{#2}%
-  \xdef\tikzumlInSystem{1}%
+  \setcounter{tikzumlSystemUseCaseNum}{0}%
   %
   \pgfkeys{/tikzuml/system/.cd, x/.initial=0, y/.initial=0, x/.default=0, y/.default=0,%
                                 draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillsystemcolor, text/.initial=\tikzumltextcolor,%
@@ -1622,21 +1623,23 @@
   \pgfkeys{/tikzuml/system/.cd, #1}%
   \pgfkeys{/tikzuml/system/.cd, x/.get=\xshift, y/.get=\yshift, draw/.get=\tikzumlsystemdraw, fill/.get=\tikzumlsystemfill, text/.get=\tikzumlsystemtext}%
   %
+  \stepcounter{tikzumlSystemLevel}%
+  %
   \begin{scope}[xshift=\xshift cm, yshift=\yshift cm]%
 }{%
+  \addtocounter{tikzumlSystemLevel}{-1}%
   % if contains no usecase, one define a fictive node to enable the fit option
   \ifnum\c@tikzumlSystemUseCaseNum=0%
     \node[inner xsep=10ex, inner ysep=1em] (\tikzumlSystemName-root) at (0,0) {};%
-    \def\tikzumlSystemFit{(\tikzumlSystemName-root)}%
+    \xdef\tikzumlSystemFit{(\tikzumlSystemName-root)}%
   \fi%
   %
   \begin{pgfonlayer}{background}%
-  \node[draw=\tikzumlsystemdraw, fill=\tikzumlsystemfill, text=\tikzumlsystemtext, font=\tikzumlfont, inner ysep=0.7cm, inner xsep=0.5cm, fit = \tikzumlSystemFit] (\tikzumlSystemName) {};%
+  \node[draw=\tikzumlsystemdraw, fill=\tikzumlsystemfill, text=\tikzumlsystemtext, font=\tikzumlfont, inner ysep=1em, inner xsep=2ex, fit = \tikzumlSystemFit] (\tikzumlSystemName) {};%
   \node[text=\tikzumlsystemtext, font=\tikzumlfont, below=0.05cm] (\tikzumlSystemName-caption) at (\tikzumlSystemName.north) {\tikzumlSystemName};%
   \end{pgfonlayer}%
   \end{scope}%
   %
-  \xdef\tikzumlInSystem{0}%
 }%
 
 % define a use case
@@ -1646,7 +1649,7 @@
 %            draw, fill, text colors
 \newcommand{\umlusecase}[2][]{%
   \stepcounter{tikzumlUseCaseNum}%
-  \pgfkeys{/tikzuml/usecase/.cd, x/.initial=0, y/.initial=0, name/.initial=usecase-\thetikzumlUseCaseNum,%
+  \pgfkeys{/tikzuml/usecase/.cd, x/.initial=0, y/.initial=0, width/.initial=auto, name/.initial=usecase-\thetikzumlUseCaseNum,%
                                  draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillusecasecolor, text/.initial=\tikzumltextcolor,%
                                  .unknown/.code={%
                                    \let\keyname=\pgfkeyscurrentname%
@@ -1660,10 +1663,14 @@
   %
   \def\tikzumlUseCasePos{\posx,\posy}%
   %
-  \node[tikzuml usecase style, draw=\tikzumlusecasedraw, fill=\tikzumlusecasefill, text=\tikzumlusecasetext, font=\tikzumlfont] (\usecaseName) at (\tikzumlUseCasePos) {\tikzumlUseCaseText};%
+  \ifthenelse{\equal{\tikzumlusecasetextwidth}{auto}}{%
+    \node[tikzuml usecase style, draw=\tikzumlusecasedraw, fill=\tikzumlusecasefill, text=\tikzumlusecasetext, font=\tikzumlfont] (\usecaseName) at (\tikzumlUseCasePos) {\tikzumlUseCaseText};%
+  }{%
+    \node[tikzuml usecase style, draw=\tikzumlusecasedraw, fill=\tikzumlusecasefill, text=\tikzumlusecasetext, font=\tikzumlfont, text width=\tikzumlusecasetextwidth] (\usecaseName) at (\tikzumlUseCasePos) {\tikzumlUseCaseText};%
+  }%
   %
   % add to fit
-  \ifnum\tikzumlInSystem=1%
+  \ifnum\c@tikzumlSystemLevel>0%
     \let\tikzumlSystemFitOld\tikzumlSystemFit%
     \xdef\tikzumlSystemFit{\tikzumlSystemFitOld (\usecaseName)}%
     \stepcounter{tikzumlSystemUseCaseNum}%
@@ -1672,18 +1679,22 @@
 
 % define the actor symbol
 % optional : global tikzpicture styles
-\newcommand{\picturedactor}[1]{
+\newcommand{\picturedactor}[1]{%
+  \pgfkeys{/tikzuml/picactor/.cd, scale/.initial=1, .unknown/.code={}}%
+  \pgfkeys{/tikzuml/picactor/.cd,#1}%
+  \pgfkeys{/tikzuml/picactor/.cd, scale/.get=\tikzumlpicactorscale}%
+  %
   \begin{tikzpicture}[#1]
-  \coordinate (head) at (0,0.6) {};
-  \coordinate (left-hand) at (-0.3,0.3);
-  \coordinate (right-hand) at (0.3,0.3);
-  \coordinate (left-foot) at (-0.3,-0.3);
-  \coordinate (right-foot) at (0.3,-0.3);
-  \coordinate (empty) at (0,-0.5);
+  \coordinate (head) at (0,4ex);
+  \coordinate (left-hand) at (-2ex,2ex);
+  \coordinate (right-hand) at (2ex,2ex);
+  \coordinate (left-foot) at (-2ex,-2ex);
+  \coordinate (right-foot) at (2ex,-2ex);
+  \coordinate (empty) at (0,-3ex);
   \draw (empty) (0,0) -- (head);
   \draw (left-hand) -- (right-hand);
   \draw (0,0) -- (left-foot) (0,0) -- (right-foot);
-  \node[fill, draw, circle, inner sep=0.3333em, minimum size=4pt] at (head) {};
+  \node[fill, draw, circle, inner sep=\tikzumlpicactorscale*0.3333ex, minimum size=\tikzumlpicactorscale*2ex] at (head) {};
   \end{tikzpicture}
 }%
 
@@ -1694,21 +1705,26 @@
 %            draw, text colors
 \newcommand{\umlactor}[2][]{%
   \stepcounter{tikzumlActorNum}%
-  \pgfkeys{/tikzuml/actor/.cd, x/.initial=0, y/.initial=0, scale/.initial=1, name/.initial=actor-\thetikzumlActorNum,%
+  \pgfkeys{/tikzuml/actor/.cd, x/.initial=0, y/.initial=0, scale/.initial=1, below/.initial=0.5cm,%
                               draw/.initial=\tikzumldrawcolor, text/.initial=\tikzumltextcolor,%
                               .unknown/.code={%
                                 \let\keyname=\pgfkeyscurrentname%
                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlactor}%
                               }}%
   \pgfkeys{/tikzuml/actor/.cd, #1}%
-  \pgfkeys{/tikzuml/actor/.cd, x/.get=\posx, y/.get=\posy, scale/.get=\tikzumlactorscale, name/.get=\actorName,%
+  \pgfkeys{/tikzuml/actor/.cd, x/.get=\posx, y/.get=\posy, scale/.get=\tikzumlactorscale, below/.get=\tikzumlactorbelow,%
                                draw/.get=\tikzumlactordraw, text/.get=\tikzumlactortext}%
   %
-  \def\tikzumlActorText{#2}%
+  \def\tikzumlActorName{#2}%
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlActorNodeName{\tikzumlActorName}}\x%
+  %
   \def\tikzumlActorPos{\posx,\posy}%
   %
-  \node[tikzuml actor style, text=\tikzumlactortext, font=\tikzumlfont] (\actorName) at (\tikzumlActorPos) {\picturedactor{scale=\tikzumlactorscale, fill=white, draw=\tikzumlactordraw, thick}};%
-  \node[text=\tikzumlactortext, font=\tikzumlfont, below=0.45cm] at (\actorName) {\actorName};%
+  \ifthenelse{\equal{}{tikzumlEmpty}}{}{}
+  \node[tikzuml actor style, text=\tikzumlactortext, font=\tikzumlfont] (\tikzumlActorNodeName) at (\tikzumlActorPos) {\picturedactor{scale=\tikzumlactorscale, fill=white, draw=\tikzumlactordraw, thick}};%
+  \node[text=\tikzumlactortext, font=\tikzumlfont, below=\tikzumlactorscale*\tikzumlactorbelow] at (\tikzumlActorNodeName) {\tikzumlActorName};%
   %
 }%
 
