@@ -63,7 +63,7 @@
 \pgfkeys{/tikzuml/.cd, text/.initial=black, draw/.initial=black, font/.initial=\small,%
                        fill class/.initial=yellow!20, fill template/.initial=yellow!2, fill package/.initial=blue!20, fill note/.initial=green!20,%
                        fill usecase/.initial=blue!20, fill system/.initial=white,%
-                       fill state/.initial={yellow!20, yellow!5},%
+                       fill state/.initial=yellow!20,%
                        fill object/.initial=yellow!20,%
                        fill call/.initial=white,%
                        fill fragment/.initial= none,%
@@ -88,7 +88,7 @@
                                 attr2/.style args={#1|#2}{arg2=#1, mult2=#2},%
                                 attr/.style args={#1|#2}{arg=#1, mult=#2},%
                                 recursive/.style args={#1|#2|#3}{angle1=#1, angle2=#2, loopsize=#3},%
-                                anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2}}%
+                                anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2},%
 
 \tikzstyle{tikzuml class style}=[rectangle split, rectangle split parts=3, minimum height=2em, minimum width=10ex, node distance=2em]%
 \tikzstyle{tikzuml template style}=[dashed, inner ysep=0.7em, inner xsep=1ex]%
@@ -149,8 +149,7 @@
 %  arg : package name
 %  optional : x, y coordinates of the package
 %             draw, fill, text colors
-\newenvironment{umlpackage}[2][]%
-{%
+\newenvironment{umlpackage}[2][] {%
   \ifnum\thetikzumlPackageLevel>0%
     \let\tikzumlPackage@nameold\tikzumlPackage@fitname%
     \def\tikzumlPackage@name{#2}%
@@ -207,7 +206,7 @@
     \expandafter\xdef\csname tikzumlPackageFit\tikzumlPackage@parent\endcsname{\tikzumlPackageFitTmp (\tikzumlPackage@nodeName) (\tikzumlPackage@nodeName-caption)}%
     \stepcounter{tikzumlPackageSubPackageNum}%
   \fi%
-  %  
+  %
   \node[draw=\tikzumlpackagedraw, fill=\tikzumlpackagefill, text=\tikzumlpackagetext, font=\tikzumlfont, inner sep=1.5ex, fit = \csname tikzumlPackageFit\tikzumlPackage@parent @@\tikzumlPackage@fitname\endcsname] (\tikzumlPackage@nodeName) {};%
   \node[draw=\tikzumlpackagedraw, fill=\tikzumlpackagefill, text=\tikzumlpackagetext, font=\tikzumlfont, minimum height=1.5em, outer ysep=-0.3, anchor=south west] (\tikzumlPackage@nodeName-caption) at (\tikzumlPackage@nodeName.north west) {\tikzumlPackage@name};%
   \end{pgfonlayer}%
@@ -224,8 +223,7 @@
 %            type of class (class, interface, typedef, enum)
 %            template parameters
 %            draw, fill, text colors
-\newenvironment{umlclassenv}[2][]%
-{%
+\newenvironment{umlclassenv}[2][]{%
   \pgfkeys{/tikzuml/class/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, template/.initial={},%
                                draw/.initial=\tikzumldrawcolor, fill template/.initial=\tikzumlfilltemplatecolor, fill/.initial=\tikzumlfillclasscolor,%
                                text/.initial=\tikzumltextcolor, .unknown/.code={%
@@ -814,8 +812,8 @@
               \node (\relationName-4) at (\relationName-2 |- \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
               \node (\relationName-3) at (barycentric cs:\relationName-2=0.5,\relationName-4=0.5) {};%
             }%
-          \end{pgfonlayer}%
-          %
+            \end{pgfonlayer}%
+            %
             %
             \ifnum\theposStereo>200%
               \pgfmathsetmacro{\posStereo}{(\theposStereo-200)/100}%
@@ -1718,35 +1716,73 @@
 %         content of the state
 % optional args : x,y coordinates of the state
 %                 width of the state node
-\newcommand{\umlstate}[3][]{%
-  \pgfkeys{/tikzuml/state/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class,%
-                               draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillstatecolor,%
-                               text/.initial=\tikzumltextcolor, .unknown/.code={%
-                                 \let\keyname=\pgfkeyscurrentname%
-                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlstate}%
-                               }}%
-  \pgfkeys{/tikzuml/state/.cd,#1}%
-  \pgfkeys{/tikzuml/state/.cd, x/.get=\umlstateX, y/.get=\umlstateY, width/.get=\umlstateMinimumWidth, type/.get=\umlstateType,%
+\newenvironment{umlstate}[2][]{%
+  \ifnum\thetikzumlStateLevel>0%
+    \let\tikzumlState@nameold\tikzumlState@fitname%
+    \let\tikzumlState@parentold\tikzumlState@parent%
+    \edef\tikzumlState@parent{\tikzumlState@parentold @@\tikzumlState@nameold}%
+  \else%
+    \def\tikzumlState@parent{}%
+  \fi%
+  
+  \stepcounter{tikzumlStateLevel}%
+  
+  \pgfkeys{/tikzuml/state/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, name/.initial={},%
+                                 draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillstatecolor, text/.initial=\tikzumltextcolor,%
+                                 .unknown/.code={%
+                                   \let\keyname=\pgfkeyscurrentname%
+                                   \errmessage{TIKZUML ERROR : invalid option \keyname in umlstate}%
+                                 }}%
+  \pgfkeys{/tikzuml/state/.cd, #1}%
+  \pgfkeys{/tikzuml/state/.cd, x/.get=\tikzumlstateX, y/.get=\tikzumlstateY, width/.get=\umlstateMinimumWidth, type/.get=\umlstateType, name/.get=\umlstateName,%
                                draw/.get=\tikzumlstatedraw, fill/.get=\tikzumlstatefill, text/.get=\tikzumlstatetext}%
   %
-  \def\tikzumlStateName{#2}%
+  \edef\tikzumlState@name{\umlstateName}%
+  \begingroup%
+    \def\_{@}\edef\x{\endgroup%
+      \def\noexpand\tikzumlState@fitname{\umlstateName}}\x%
   %
+  \let\tikzumlState@nodeNameold\tikzumlState@nodeName%
+  \def\tikzumlState@caption{#2}%
+  %  
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
-      \def\noexpand\tikzumlStateNodeName{\tikzumlStateName}}\x%
+      \def\noexpand\tikzumlState@nodeName{\umlstateName}}\x%
   %
-  \def\tikzumlStatePos{\umlstateX,\umlstateY}%
+  \expandafter\gdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{}%
   %
-  \node[tikzuml state style, draw=\tikzumlstatedraw, rectangle split part fill={\tikzumlstatefill}, text=\tikzumlstatetext, font=\tikzumlfont, minimum width=\umlstateMinimumWidth] (\tikzumlStateNodeName) at (\tikzumlStatePos) {\textbf{\tikzumlStateName}%
-  \nodepart{second}%
-  \begin{tikzpicture}%
-  #3 %
-  \end{tikzpicture}%
-  };%
+  \setcounter{tikzumlStateSubStateNum}{0}%
+  
+  \begin{scope}[xshift=\tikzumlstateX cm, yshift=\tikzumlstateY cm]%
+}{%
+  \addtocounter{tikzumlStateLevel}{-1}%
+  \begin{pgfonlayer}{state\thetikzumlStateLevel}%
+  %
+  % if contains nothing, one define a fictive node to enable the fit option
+  \ifnum\c@tikzumlStateSubStateNum=0%
+    \node[inner ysep=0.5ex] (\tikzumlState@nodeName-root) at (0,0) {\phantom{\tikzumlState@nodeName}};%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{(\tikzumlState@nodeName-root)}%
+  \fi%
+  %
+  \ifnum\c@tikzumlStateLevel>0%
+    \def\tikzumlStateFitTmp{\csname tikzumlStateFit\tikzumlState@parent\endcsname}%
+    \expandafter\xdef\csname tikzumlStateFit\tikzumlState@parent\endcsname{\tikzumlStateFitTmp (\tikzumlState@nodeName-body) (\tikzumlState@nodeName-caption)}%
+    \stepcounter{tikzumlStateSubStateNum}%
+  \fi%
+  %
+  \node[inner sep=2ex, fit = \csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname] (\tikzumlState@nodeName-body) {};%
+  \node[above] (\tikzumlState@nodeName-captiontmp) at (\tikzumlState@nodeName-body.north) {\tikzumlState@caption};%
+%  \end{pgfonlayer}
+%  \begin{pgfonlayer}{background}
+  \node[rounded corners, draw=\tikzumlstatedraw, fill=\tikzumlstatefill, name=\tikzumlState@nodeName, fit=(\tikzumlState@nodeName-body) (\tikzumlState@nodeName-captiontmp)] {};%
+  \node (\tikzumlState@nodeName-caption) at (\tikzumlState@nodeName-captiontmp) {\tikzumlState@caption};%
+  \draw (\tikzumlState@nodeName-caption.south -| \tikzumlState@nodeName.north west) -- (\tikzumlState@nodeName-caption.south -| \tikzumlState@nodeName.north east);%
+  \end{pgfonlayer}%
+  \end{scope}%
 }%
 
 % shortcut for empty state
-\newcommand{\umlbasicstate}[2][]{\umlstate[#1]{#2}{}}%
+\newcommand{\umlbasicstate}[2][]{\begin{umlstate}[#1]{#2} \end{umlstate}}%
 
 % shortcuts for state transitions macros
 \newcommand{\umltrans}[3][]{\umlrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
@@ -1929,12 +1965,12 @@
   \fi%
   %
   \ifthenelse{\equal{\tikzumlobjectstereo}{multi}}{%
-    \draw (\tikzumlObjectName.north east)+(0.05,0.05) node[name=\tikzumlObjectName-tr, coordinate] {};
-    \draw (\tikzumlObjectName.north west)+(0.05,0.05) node[name=\tikzumlObjectName-tl, coordinate] {};
-    \draw (\tikzumlObjectName.south east)+(0.05,0.05) node[name=\tikzumlObjectName-br, coordinate] {};
-    \draw (\tikzumlObjectName.north east)+(0.1,0.1) node[name=\tikzumlObjectName-ttr, coordinate] {};
-    \draw (\tikzumlObjectName.north west)+(0.1,0.1) node[name=\tikzumlObjectName-ttl, coordinate] {};
-    \draw (\tikzumlObjectName.south east)+(0.1,0.1) node[name=\tikzumlObjectName-tbr, coordinate] {};
+    \draw (\tikzumlObjectName.north east)+(0.4ex,0.4ex) node[name=\tikzumlObjectName-tr, coordinate] {};
+    \draw (\tikzumlObjectName.north west)+(0.4ex,0.4ex) node[name=\tikzumlObjectName-tl, coordinate] {};
+    \draw (\tikzumlObjectName.south east)+(0.4ex,0.4ex) node[name=\tikzumlObjectName-br, coordinate] {};
+    \draw (\tikzumlObjectName-tr)+(0.4ex,0.4ex) node[name=\tikzumlObjectName-ttr, coordinate] {};
+    \draw (\tikzumlObjectName-tl)+(0.4ex,0.4ex) node[name=\tikzumlObjectName-ttl, coordinate] {};
+    \draw (\tikzumlObjectName-br)+(0.4ex,0.4ex) node[name=\tikzumlObjectName-tbr, coordinate] {};
     \fill[fill=\tikzumlobjectfill] (\tikzumlObjectName-ttl |- \tikzumlObjectName.north) -- (\tikzumlObjectName-ttl) -- (\tikzumlObjectName-ttr) -- (\tikzumlObjectName-tbr) -- (\tikzumlObjectName-tbr -| \tikzumlObjectName.east) -- (\tikzumlObjectName.north east) -- (\tikzumlObjectName-ttl |- \tikzumlObjectName.north);
     \draw[draw=\tikzumlobjectdraw] (\tikzumlObjectName-ttl |- \tikzumlObjectName.north) -- (\tikzumlObjectName-ttl) -- (\tikzumlObjectName-ttr) -- (\tikzumlObjectName-tbr) -- (\tikzumlObjectName-tbr -| \tikzumlObjectName.east);
     \fill[fill=\tikzumlobjectfill] (\tikzumlObjectName-tl |- \tikzumlObjectName.north) -- (\tikzumlObjectName-tl) -- (\tikzumlObjectName-tr) -- (\tikzumlObjectName-br) -- (\tikzumlObjectName-br -| \tikzumlObjectName.east) -- (\tikzumlObjectName.north east) -- (\tikzumlObjectName-tl |- \tikzumlObjectName.north);
@@ -1942,7 +1978,7 @@
     \draw[draw=\tikzumlobjectdraw] (\tikzumlObjectName.north west) rectangle (\tikzumlObjectName.south east);
   }{%
     \ifthenelse{\equal{\tikzumlobjectstereo}{object}}{}{%
-      \node[above, name=\tikzumlObjectName-picture] at (\tikzumlObjectName) {\csname pictured\tikzumlobjectstereo \endcsname{draw=\tikzumlobjectdraw, fill=\tikzumlobjectfill, scale=\tikzumlobjectscale}};
+      \node[above=1ex, name=\tikzumlObjectName-picture] at (\tikzumlObjectName) {\csname pictured\tikzumlobjectstereo \endcsname{draw=\tikzumlobjectdraw, fill=\tikzumlobjectfill, scale=\tikzumlobjectscale}};
     }%
   }%
 }
@@ -1992,7 +2028,7 @@
   \pgfkeys{/tikzuml/boundaryobj/.cd, #1}%
   \umlobject[stereo=boundary, #1]{#2}%
 }%
-\newcommand{\umlmultiobj}[2][]{%
+\newcommand{\umlmulti}[2][]{%
   \pgfkeys{/tikzuml/multiobj/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
@@ -2031,20 +2067,19 @@
                              padding/.get=\tikzumlcallpadding,%
                              draw/.get=\tikzumlcalldraw, fill/.get=\tikzumlcallfill, text/.get=\tikzumlcalltext}%
   %
+  \edef\tikzumlfillcall{\tikzumlcallfill}%
+  \edef\tikzumldrawcall{\tikzumlcalldraw}%
+  \edef\tikzumltextcall{\tikzumlcalltext}%
   \ifthenelse{\equal{\tikzumlcallDT}{tikzumlEmpty}}{%
     \ifnum\thetikzumlCallNum=1%
-      \def\tikzumlcallDT{4}%
-      \def\tikzumlcallSrc{4}%
+      \def\tikzumlcallDT{2}%
+      \def\tikzumlcallSrc{2}%
     \else%
-      \def\tikzumlcallDT{3}%
-      \def\tikzumlcallSrc{3}%
+      \def\tikzumlcallDT{2}%
+      \def\tikzumlcallSrc{1}%
     \fi%
   }{
-    \ifthenelse{\equal{\tikzumlCallStartNodeName}{\tikzumlCallEndNodeNameold}}{%
-      \def\tikzumlcallSrc{4}%
-    }{%
-      \def\tikzumlcallSrc{2}%
-    }%
+    \def\tikzumlcallSrc{0}%
   }%
   %
   \let\tikzumlCallStartNodeNameold\tikzumlCallStartNodeName%
@@ -2056,19 +2091,19 @@
   % managing time delays from previous/parent fragments 
   \ifnum\thetikzumlCallStartFragmentNum>0%
     \let\tikzumlcallDTold\tikzumlcallDT%
-    \pgfmathparse{2*\tikzumlFragment@paddingy+\tikzumlcallDTold}%
+    \pgfmathparse{0.5*\tikzumlFragment@paddingy+\tikzumlcallDTold}%
     \edef\tikzumlcallDT{\pgfmathresult}%
     \addtocounter{tikzumlCallStartFragmentNum}{-1}
   \fi%
   \ifnum\thetikzumlCallEndFragmentNum>0%
     \let\tikzumlcallDTold\tikzumlcallDT%
-    \pgfmathparse{\tikzumlFragment@paddingy+\tikzumlcallDTold}%
+    \pgfmathparse{0.5*\tikzumlFragment@paddingy+\tikzumlcallDTold}%
     \edef\tikzumlcallDT{\pgfmathresult}%
     \addtocounter{tikzumlCallEndFragmentNum}{-1}
   \fi%
   \ifnum\thetikzumlFragmentPartNum>0%
     \let\tikzumlcallDTold\tikzumlcallDT%
-    \pgfmathparse{\tikzumlFragment@paddingy+\tikzumlcallDTold}%
+    \pgfmathparse{0.5*\tikzumlFragment@paddingy+\tikzumlcallDTold}%
     \edef\tikzumlcallDT{\pgfmathresult}%
 %    \addtocounter{tikzumlCallEndFragmentNum}{-1}
   \fi%
@@ -2096,7 +2131,8 @@
   %
   % top node of activity period of call sender
   \begin{pgfonlayer}{connections}%
-  \draw (\csname tikzumlLastChild@\tikzumlCallStartNodeName \endcsname)+(0,-\tikzumlcallDT -\tikzumlcallSrc ex) node[coordinate, name=tikzumlTmpNode] {};%
+  \pgfmathparse{\tikzumlcallDT+\tikzumlcallSrc}%
+  \draw (\csname tikzumlLastChild@\tikzumlCallStartNodeName \endcsname)+(0,-\pgfmathresult ex) node[coordinate, name=tikzumlTmpNode] {};%
   \node[tikzuml activity style] (st-\tikzumlCall@nodeName) at (\tikzumlCallStartNodeName |- tikzumlTmpNode) {};%
   %
   % update last node drawn on sender lifeline
@@ -2130,7 +2166,14 @@
       \draw (eb-\tikzumlCall@nodeName)+(0,-0.75*\tikzumlcallpadding ex) node[coordinate, name=tikzumlTmpNode] {};%
       \node[tikzuml activity style] (sb-\tikzumlCall@nodeName) at (\tikzumlCallStartNodeName |- tikzumlTmpNode) {};% 
     }{%
-      \draw (\tikzumlCallBottomSrc)+(0,-\tikzumlcallpadding ex) node[coordinate, name=tikzumlTmpNode] {};%
+      \ifthenelse{\equal{\tikzumlcallreturn}{tikzumlEmpty}}{%
+        \pgfmathparse{0.5*\tikzumlcallpadding}%
+        \def\tikzumlcallpaddingd{\pgfmathresult}%
+      }{%
+        \pgfmathparse{1.2*\tikzumlcallpadding}%
+        \edef\tikzumlcallpaddingd{\pgfmathresult}%
+      }%
+      \draw (\tikzumlCallBottomSrc)+(0,-\tikzumlcallpaddingd ex) node[coordinate, name=tikzumlTmpNode] {};%
       \node[tikzuml activity style] (eb-\tikzumlCall@nodeName) at (\tikzumlCallEndNodeName |- tikzumlTmpNode) {};%
       \node[tikzuml activity style] (sb-\tikzumlCall@nodeName) at (\tikzumlCallStartNodeName |- eb-\tikzumlCall@nodeName) {};%
     }%
@@ -2171,27 +2214,31 @@
   \ifthenelse{\equal{\tikzumlCallStartNodeName}{\tikzumlCallEndNodeName}}{%
     % draw root activity period only
     \ifnum\thetikzumlCallLevel=0%
-      \draw[draw=\tikzumlcalldraw, fill=\tikzumlcallfill] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
+      \draw[draw=\tikzumldrawcall, fill=\tikzumlfillcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
     \else%
       % draw root activity from inner call
       \ifthenelse{\equal{\tikzumlCallStartNodeName}{\tikzumlCallEndNodeNameold}}{}{%
-        \draw[draw=\tikzumlcalldraw, fill=\tikzumlcallfill] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
+        \draw[draw=\tikzumldrawcall, fill=\tikzumlfillcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
       }%
     \fi%
   }{%
     % draw root activity period
     \ifnum\thetikzumlCallLevel=0%
-      \draw[draw=\tikzumlcalldraw, fill=\tikzumlcallfill] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
+      \draw[draw=\tikzumldrawcall, fill=\tikzumlfillcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
     \else%
       % draw root activity from inner call
       \ifthenelse{\equal{\tikzumlCallStartNodeName}{\tikzumlCallEndNodeNameold}}{}{%
-        \draw[draw=\tikzumlcalldraw, fill=\tikzumlcallfill] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
+        \draw[draw=\tikzumldrawcall, fill=\tikzumlfillcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
       }%
     \fi%
     % draw receiver activity period
-    \draw[draw=\tikzumlcalldraw, fill=\tikzumlcallfill] (et-\tikzumlCall@nodeName.north west) rectangle (eb-\tikzumlCall@nodeName.south east);%
+    \draw[draw=\tikzumldrawcall, fill=\tikzumlfillcall] (et-\tikzumlCall@nodeName.north west) rectangle (eb-\tikzumlCall@nodeName.south east);%
   }%
   \end{pgfonlayer}%
+  \ifthenelse{\equal{\tikzumlfillcallcolor}{\tikzumlcallfill}}{}{%
+    \fill[fill=\tikzumlfillcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south east);%
+    \draw[draw=\tikzumldrawcall] (st-\tikzumlCall@nodeName.north west) rectangle (sb-\tikzumlCall@nodeName.south west) (st-\tikzumlCall@nodeName.north east) rectangle (sb-\tikzumlCall@nodeName.south east);
+  }%
   %
   % update last nodes drawn on sender and receiver lifelines
   \expandafter\xdef\csname tikzumlLastChild@\tikzumlCallEndNodeName \endcsname{eb-\tikzumlCall@nodeName}%
@@ -2200,8 +2247,8 @@
   % draw call arrows
   \begin{pgfonlayer}{connections}%
   \ifthenelse{\equal{\tikzumlCallStartNodeName}{\tikzumlCallEndNodeName}}{%
-    \draw[\tikzumlcallstyle, draw=\tikzumlcalldraw] (st-\tikzumlCall@nodeName.east) -- ++(2.5*\tikzumlcallpadding ex,0) -- ++(0,-0.75*\tikzumlcallpadding ex) %
-                                                    node[font=\tikzumlfont, text=\tikzumlcalltext, midway, right, name=\tikzumlCall@nodeName-op] {\tikzumlcallop} -- (et-\tikzumlCall@nodeName.east);%
+    \draw[\tikzumlcallstyle, draw=\tikzumldrawcall] (st-\tikzumlCall@nodeName.east) -- ++(2.5*\tikzumlcallpadding ex,0) -- ++(0,-0.75*\tikzumlcallpadding ex) %
+                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, right, name=\tikzumlCall@nodeName-op] {\tikzumlcallop} -- (et-\tikzumlCall@nodeName.east);%
     %
     % draw return arrow and update fit for parent fragment
     \ifnum\c@tikzumlFragmentLevel>0%
@@ -2209,13 +2256,13 @@
       \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCall@nodeName) (et-\tikzumlCall@nodeName) (eb-\tikzumlCall@nodeName) (sb-\tikzumlCall@nodeName) (\tikzumlCall@nodeName-op)}%
     \fi%
     %
-    \draw[tikzuml call return style, draw=\tikzumlcalldraw] (eb-\tikzumlCall@nodeName.east) -- ++(2.5*\tikzumlcallpadding ex,0) -- ++(0,-0.75*\tikzumlcallpadding ex) %
-                                                    node[font=\tikzumlfont, text=\tikzumlcalltext, midway, right, name=\tikzumlCall@nodeName-return] {\tikzumlcallreturn} %
+    \draw[tikzuml call return style, draw=\tikzumldrawcall] (eb-\tikzumlCall@nodeName.east) -- ++(2.5*\tikzumlcallpadding ex,0) -- ++(0,-0.75*\tikzumlcallpadding ex) %
+                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, right, name=\tikzumlCall@nodeName-return] {\tikzumlcallreturn} %
                                                     -- (sb-\tikzumlCall@nodeName.east);%
   }{%
     % draw call arrows
-    \draw[\tikzumlcallstyle, draw=\tikzumlcalldraw] (st-\tikzumlCall@nodeName.east) -- (et-\tikzumlCall@nodeName.west) %
-                                                    node[font=\tikzumlfont, text=\tikzumlcalltext, midway, above, name=\tikzumlCall@nodeName-op] {\tikzumlcallop};%
+    \draw[\tikzumlcallstyle, draw=\tikzumldrawcall] (st-\tikzumlCall@nodeName.east) -- (et-\tikzumlCall@nodeName.west) %
+                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, above=-0.4ex, name=\tikzumlCall@nodeName-op] {\tikzumlcallop};%
     % draw return arrow and update fit for parent fragment
     \ifthenelse{\equal{\tikzumlcallreturn}{tikzumlEmpty}}{%
       \ifnum\c@tikzumlFragmentLevel>0%
@@ -2228,8 +2275,8 @@
         \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCall@nodeName) (et-\tikzumlCall@nodeName) (eb-\tikzumlCall@nodeName) (sb-\tikzumlCall@nodeName) (\tikzumlCall@nodeName-op) (\tikzumlCall@nodeName-return)}%
       \fi%
       %
-      \draw[tikzuml call return style, draw=\tikzumlcalldraw] (eb-\tikzumlCall@nodeName.west) -- (sb-\tikzumlCall@nodeName.east) %
-                                                    node[font=\tikzumlfont, text=\tikzumlcalltext, midway, above, name=\tikzumlCall@nodeName-return] {\tikzumlcallreturn};%
+      \draw[tikzuml call return style, draw=\tikzumldrawcall] (eb-\tikzumlCall@nodeName.west) -- (sb-\tikzumlCall@nodeName.east) %
+                                                    node[font=\tikzumlfont, text=\tikzumltextcall, midway, above=-0.4ex, name=\tikzumlCall@nodeName-return] {\tikzumlcallreturn};%
     }%
   }%
   \end{pgfonlayer}%
@@ -2302,7 +2349,7 @@
     \stepcounter{tikzumlCallStartFragmentNum}%
   \fi%
   %
-  \pgfmathparse{6.0*\tikzumlfragmentysep}%
+  \pgfmathparse{6*\tikzumlfragmentysep}%
   \xdef\tikzumlFragment@paddingy{\pgfmathresult}%
   \if\c@tikzumlFragmentLevelNum=0%
     \setcounter{tikzumlFragmentLevelNum}{\thetikzumlFragmentLevel}%
@@ -2363,6 +2410,7 @@
   \pgfkeys{/tikzuml/createcall/.cd, x/.initial={tikzumlEmpty}, stereo/.initial=object, class/.initial={},%
                                     dt/.initial=4, name/.initial={call-\thetikzumlCallNum},%
                                     draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillcallcolor, text/.initial=\tikzumltextcolor,%
+                                    draw obj/.initial=\tikzumldrawcolor, fill obj/.initial=\tikzumlfillobjectcolor, text obj/.initial=\tikzumltextcolor,%
                                     .unknown/.code={%
                                       \let\keyname=\pgfkeyscurrentname%
                                       \errmessage{TIKZUML ERROR : invalid option \keyname in umlcreatecall}%
@@ -2370,7 +2418,8 @@
   \pgfkeys{/tikzuml/createcall/.cd, #1}%
   \pgfkeys{/tikzuml/createcall/.cd, x/.get=\tikzumlcallX, stereo/.get=\tikzumlcallstereo, class/.get=\tikzumlcallclass,%
                                     dt/.get=\tikzumlcallDT, name/.get=\tikzumlcallname,%
-                                    draw/.get=\tikzumlcalldraw, fill/.get=\tikzumlcallfill, text/.get=\tikzumlcalltext}%
+                                    draw/.get=\tikzumlcalldraw, fill/.get=\tikzumlcallfill, text/.get=\tikzumlcalltext,%
+                                    draw obj/.get=\tikzumlcallobjdraw, fill obj/.get=\tikzumlcallobjfill, text obj/.get=\tikzumlcallobjtext}%
   %
   \def\tikzumlCreateCallSrc@name{#2}%
   %
@@ -2381,19 +2430,19 @@
   % managing time delays from previous/parent fragments 
   \ifnum\thetikzumlCallStartFragmentNum>0%
     \let\tikzumlcallDTold\tikzumlcallDT%
-    \pgfmathparse{\tikzumlFragment@paddingy+\tikzumlcallDTold}%
+    \pgfmathparse{0.5*\tikzumlFragment@paddingy+\tikzumlcallDTold}%
     \edef\tikzumlcallDT{\pgfmathresult}%
     \addtocounter{tikzumlCallStartFragmentNum}{-1}
   \fi%
   \ifnum\thetikzumlCallEndFragmentNum>0%
     \let\tikzumlcallDTold\tikzumlcallDT%
-    \pgfmathparse{\tikzumlFragment@paddingy+\tikzumlcallDTold}%
+    \pgfmathparse{0.5*\tikzumlFragment@paddingy+\tikzumlcallDTold}%
     \edef\tikzumlcallDT{\pgfmathresult}%
     \addtocounter{tikzumlCallEndFragmentNum}{-1}
   \fi%
   \ifnum\thetikzumlFragmentPartNum>0%
     \let\tikzumlcallDTold\tikzumlcallDT%
-    \pgfmathparse{\tikzumlFragment@paddingy+\tikzumlcallDTold}%
+    \pgfmathparse{0.5*\tikzumlFragment@paddingy+\tikzumlcallDTold}%
     \edef\tikzumlcallDT{\pgfmathresult}%
 %    \addtocounter{tikzumlCallEndFragmentNum}{-1}
   \fi%
@@ -2419,18 +2468,27 @@
   %
   \xdef\tikzumlCreateCallObjectSrc{st-\tikzumlCreateCall@nodeName}%
   %
-  \umlobject[x=\tikzumlcallX, stereo=\tikzumlcallstereo, class=\tikzumlcallclass]{#3}%
+  \umlobject[x=\tikzumlcallX, stereo=\tikzumlcallstereo, class=\tikzumlcallclass, draw=\tikzumlcallobjdraw, fill=\tikzumlcallobjfill, text=\tikzumlcallobjtext]{#3}%
   %
-  \draw (\csname tikzumlLastChild@\tikzumlCreateCallSrc@nodeName \endcsname |- #3)+(0,-\tikzumlcallDT ex) node[name=sb-\tikzumlCreateCall@nodeName, tikzuml activity style] {};%
+  \draw (\csname tikzumlLastChild@\tikzumlCreateCallSrc@nodeName \endcsname |- #3)+(0,-0.5*\tikzumlcallDT ex) node[name=sb-\tikzumlCreateCall@nodeName, tikzuml activity style] {};%
   %
   \expandafter\xdef\csname tikzumlLastChild@\tikzumlCreateCallSrc@nodeName \endcsname{sb-\tikzumlCreateCall@nodeName}%
   \xdef\tikzumlCallBottomSrc{sb-\tikzumlCreateCall@nodeName}%
   %
-  \draw[tikzuml synchron-msg style] (st-\tikzumlCreateCall@nodeName) -- (#3) node[midway, above, font=\tikzumlfont, text=\tikzumlcalltext] {create};%
+  \begin{pgfonlayer}{connections}%
+  \draw[tikzuml synchron-msg style] (st-\tikzumlCreateCall@nodeName) -- (#3) node[midway, above, font=\tikzumlfont, text=\tikzumlcalltext, name=\tikzumlCreateCall@nodeName-op] {create};%
+  \end{pgfonlayer}%
   %
   \ifnum\thetikzumlCallLevel=0%
+    \begin{pgfonlayer}{activity}%
     \draw[draw=\tikzumlcalldraw, fill=\tikzumlcallfill] (st-\tikzumlCreateCall@nodeName.north west) rectangle (sb-\tikzumlCreateCall@nodeName.south east);%
+    \end{pgfonlayer}%
   \fi%
+  % add to fit fragment
+  \ifnum\c@tikzumlFragmentLevel>0%
+        \edef\tikzumlFragmentFitOld{\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname}%
+        \expandafter\xdef\csname tikzumlFragmentFit\tikzumlFragment@name \endcsname{\tikzumlFragmentFitOld (st-\tikzumlCreateCall@nodeName) (sb-\tikzumlCreateCall@nodeName) (\tikzumlCreateCall@nodeName-op) (#3) }%
+      \fi%
 }
 
 %%% End of tikz-uml.sty
