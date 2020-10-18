@@ -26,6 +26,9 @@
 \def\tikzumlFragmentLayersNum{3}%
 \pgfkeys{/tikzuml/options/.cd, fragmentLayers/.initial=3}%
 \pgfkeys{/tikzuml/options/.cd, fragmentLayers/.store in=\tikzumlFragmentLayersNum}%
+\def\tikzumlComponentLayersNum{3}%
+\pgfkeys{/tikzuml/options/.cd, componentLayers/.initial=3}%
+\pgfkeys{/tikzuml/options/.cd, componentLayers/.store in=\tikzumlComponentLayersNum}%
 
 \ProcessPgfOptions{/tikzuml/options}%
 
@@ -52,6 +55,13 @@
     \stepcounter{tikzumlStateLayers}%
 \repeat%
 %
+\newcounter{tikzumlComponentLayers}%
+\loop \pgfdeclarelayer{component\thetikzumlComponentLayers}%
+  \xdef\pgfsetlayersArg{\pgfsetlayersArg,component\thetikzumlComponentLayers}%
+  \ifnum\tikzumlComponentLayersNum>\thetikzumlComponentLayers%
+    \stepcounter{tikzumlComponentLayers}%
+\repeat%
+%
 \pgfdeclarelayer{lifelines}%
 \pgfdeclarelayer{activity}%
 \pgfdeclarelayer{connections}%
@@ -65,9 +75,11 @@
                        fill object/.initial=yellow!20,%
                        fill call/.initial=white,%
                        fill fragment/.initial= none,%
+			fill component/.initial= yellow!20,%
+			fill assembly connector/.initial= white,%
                        .unknown/.code={%
                          \let\keyname=\pgfkeyscurrentname%
-                         \errmessage{TIKZUML ERROR : invalid option \keyname in tikzuml global pgfkeys}%
+                         \errmessage{TIKZUML ERROR : in tikzuml global, invalid option \keyname}%
                        }}%
 \pgfkeys{/tikzuml/.cd, text/.get=\tikzumltextcolor, draw/.get=\tikzumldrawcolor, font/.get=\tikzumlfont,%
                        fill class/.get=\tikzumlfillclasscolor, fill template/.get=\tikzumlfilltemplatecolor,%
@@ -76,7 +88,9 @@
                        fill state/.get=\tikzumlfillstatecolor,%
                        fill object/.get=\tikzumlfillobjectcolor,%
                        fill call/.get=\tikzumlfillcallcolor,%
-                       fill fragment/.get=\tikzumlfillfragmentcolor}%
+                       fill fragment/.get=\tikzumlfillfragmentcolor,%
+			fill component/.get=\tikzumlfillcomponentcolor,%
+			fill assembly connector/.get=\tikzumlfillassemblyconnectorcolor}%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                       class diagrams                    %
@@ -103,6 +117,8 @@
 \tikzstyle{tikzuml unidirectional composition style}=[color=\tikzumldrawcolor, diamond-angle 45]%
 \tikzstyle{tikzuml dependency style}=[color=\tikzumldrawcolor, -angle 45, dashed]%
 \tikzstyle{tikzuml import style}=[color=\tikzumldrawcolor, -angle 45, dashed]%
+
+\pgfkeys{/tikzuml/assemblyconnectorrelation/.cd, anchors/.style args={#1 and #2}{anchor1=#1, anchor2=#2}}%
 
 \newcounter{tikzumlPackageClassNum}%
 \newcounter{tikzumlPackageSubPackageNum}%
@@ -149,7 +165,7 @@
 %  arg : package name
 %  optional : x, y coordinates of the package
 %             draw, fill, text colors
-\newenvironment{umlpackage}[2][] {%
+\newenvironment{umlpackage}[2][]{%
   \ifnum\thetikzumlPackageLevel>0%
     \let\tikzumlPackage@nameold\tikzumlPackage@fitname%
     \def\tikzumlPackage@name{#2}%
@@ -182,7 +198,7 @@
                                  draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillpackagecolor, text/.initial=\tikzumltextcolor,%
                                  .unknown/.code={%
                                    \let\keyname=\pgfkeyscurrentname%
-                                   \errmessage{TIKZUML ERROR : invalid option \keyname in umlpackage}%
+                                   \errmessage{TIKZUML ERROR : in umlpackage, invalid option \keyname}%
                                  }}%
   \pgfkeys{/tikzuml/package/.cd, #1}%
   \pgfkeys{/tikzuml/package/.cd, x/.get=\xshift, y/.get=\yshift, draw/.get=\tikzumlpackagedraw, fill/.get=\tikzumlpackagefill, text/.get=\tikzumlpackagetext}%
@@ -228,7 +244,7 @@
                                draw/.initial=\tikzumldrawcolor, fill template/.initial=\tikzumlfilltemplatecolor, fill/.initial=\tikzumlfillclasscolor,%
                                text/.initial=\tikzumltextcolor, .unknown/.code={%
                                  \let\keyname=\pgfkeyscurrentname%
-                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlclass}%
+                                 \errmessage{TIKZUML ERROR : in umlclassenv, invalid option \keyname}%
                                }}%
   \pgfkeys{/tikzuml/class/.cd,#1}%
   \pgfkeys{/tikzuml/class/.cd, x/.get=\umlclassX, y/.get=\umlclassY, width/.get=\umlclassMinimumWidth, type/.get=\umlclassType, template/.get=\umlclassTemplateParam,%
@@ -269,19 +285,6 @@
     \let\tikzumlClassNameOld\tikzumlClassName%
     \def\tikzumlClassName{{\it \tikzumlClassNameOld}}%
   }{}%
-  %
-%  \edef\tikzumlClassNodeName{\detokenize\expandafter{\tikzumlClassName}}
-%  \def\tikzumlClassNodeName{#2}
-  
-%  \begingroup 
-%    \catcode`\_ \active 
-%    \lccode`\~`\_ 
-%    \lowercase{\def~{\noexpand\_}} 
-%    \endlinechar-1 
-%    \scantokens\expandafter{\expandafter\def\expandafter 
-%        \x\expandafter{\tikzumlClassNodeName}}% 
-%           \edef\x{\endgroup 
-%              \def\noexpand\tikzumlClassName{\x}}\x
   %
   \def\tikzumlClassPos{\umlclassX,\umlclassY}%
   \def\tikzumlClassAttributes{}%
@@ -332,27 +335,22 @@
 %            type of class (class, interface, typedef, enum)
 %            template parameters
 %            draw, fill, text colors
-\newcommand{\umlclass}[4][]%
-{%
+\newcommand{\umlclass}[4][]{%
   \pgfkeys{/tikzuml/class/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, template/.initial={}, name/.initial={tikzumlEmpty},%
                                draw/.initial=\tikzumldrawcolor, fill template/.initial=\tikzumlfilltemplatecolor, fill/.initial=\tikzumlfillclasscolor,%
                                text/.initial=\tikzumltextcolor, .unknown/.code={%
                                  \let\keyname=\pgfkeyscurrentname%
-                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlclass}%
+                                 \errmessage{TIKZUML ERROR : in umlclass, invalid option \keyname}%
                                }}%
   \pgfkeys{/tikzuml/class/.cd,#1}%
   \pgfkeys{/tikzuml/class/.cd, x/.get=\umlclassX, y/.get=\umlclassY, width/.get=\umlclassMinimumWidth, type/.get=\umlclassType, template/.get=\umlclassTemplateParam,%
                                name/.get=\umlclassName,%
                                draw/.get=\tikzumlclassdraw, fill/.get=\tikzumlclassfill, text/.get=\tikzumlclasstext, fill template/.get=\tikzumlclasstemplate}%
   %
-  \ifthenelse{\equal{\umlclassType}{class}}{%
+  \ifthenelse{\equal{\umlclassType}{class}\OR\equal{\umlclassType}{abstract}}{%
     \def\tikzumlClassType{}%
   }{%
-    \ifthenelse{\equal{\umlclassType}{abstract}}{%
-      \def\tikzumlClassType{}%
-    }{%
-      \def\tikzumlClassType{$<<$\umlclassType$>>$ \\}%
-    }%
+    \def\tikzumlClassType{$<<$\umlclassType$>>$ \\}%
   }%
   %
   \ifthenelse{\equal{\umlclassTemplateParam}{}}{%
@@ -447,8 +445,7 @@
 %            start angle, end angle and size of the relation (only if recursive)
 %            stereotype of the relation
 %            style of the relation (association, aggregation, composition, inherit, ...)
-\newcommand{\umlrelation}[3][]%
-{%
+\newcommand{\umlrelation}[3][]{%
   \pgfkeys{/tikzuml/relation/.cd, geometry/.initial=--, weight/.initial=0.5, arm1/.initial={auto}, arm2/.initial={auto},%
                                   arg1/.initial={}, arg2/.initial={}, arg/.initial={},%
                                   mult1/.initial={}, mult2/.initial={}, mult/.initial={},%
@@ -462,7 +459,17 @@
                                   recursive direction end/.initial=bottom,%
                                   .unknown/.code={%
                                     \let\keyname=\pgfkeyscurrentname%
-                                    \errmessage{TIKZUML ERROR : invalid option \keyname in umlrelation}%
+                                    \ifthenelse{\equal{\keyname}{with port}%
+						\OR\equal{\keyname}{interface}%
+						\OR\equal{\keyname}{padding}%
+						\OR\equal{\keyname}{width}%
+						\OR\equal{\keyname}{first arm}%
+						\OR\equal{\keyname}{second arm}%
+						\OR\equal{\keyname}{middle arm}%
+						\OR\equal{\keyname}{last arm}%
+						\OR\equal{\keyname}{distance}}{}{%
+                                      \errmessage{TIKZUML ERROR : in umlrelation, invalid option \keyname}%
+                                    }%
                                   }}%
   \pgfkeys{/tikzuml/relation/.cd,#1}%
   \pgfkeys{/tikzuml/relation/.cd, geometry/.get=\geometry, weight/.get=\weight, arm1/.get=\armO, arm2/.get=\armT,%
@@ -474,11 +481,13 @@
                                   angle1/.get=\startangle, angle2/.get=\endangle, loopsize/.get=\loopsize,%
                                   stereo/.get=\stereo, pos stereo/.get=\positionStereotype,%
                                   style/.get=\style, name/.get=\relationName,%
-                                  recursive mode/.get=\tikzumlrecmode, recursive direction start/.get=\tikzumlrecdirstart,%
+                                  recursive mode/.get=\tikzumlrecmode,%
+                                  recursive direction start/.get=\tikzumlrecdirstart,%
                                   recursive direction end/.get=\tikzumlrecdirend}%
   %
   % managing \_ in class names for node names
   \def\tikzumlSrcClassName{#2}%
+  %
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlSrcClassNodeName{\tikzumlSrcClassName}}\x%
@@ -566,7 +575,7 @@
   \def\posT{\positionT}%
   \def\posStereo{\positionStereotype}%
   %
-  \node (\relationName-middle) at (barycentric cs:\tikzumlSrcClassNodeName=\weightT,\tikzumlDestClassNodeName=\weight) {};%
+  \node[inner sep=0] (\relationName-middle) at (barycentric cs:\tikzumlSrcClassNodeName=\weightT,\tikzumlDestClassNodeName=\weight) {};%
   %
   % straight line
   \ifthenelse{\equal{\geometry}{--}}{%
@@ -581,41 +590,41 @@
                              node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT}%
                              node[pos=\positionStereotype, anchor=center] {\stereotype} }%
         \xdef\tikzumlPath{(\tikzumlSrcClassNodeName) edge[in=\endangle, out=\startangle, distance=\loopsize] \tikzumlLastArc%
-                                                          node[midway, name=\relationName-1, anchor=center] {} (\tikzumlDestClassNodeName) }%
+                                                          node[midway, inner sep=0, name=\relationName-1, anchor=center] {} (\tikzumlDestClassNodeName) }%
       }{%
         \ifthenelse{\equal{\tikzumlrecmode}{transition}}{%
-          \xdef\tikzumlFirstArc{node[midway, name=\relationName-1, anchor=center] {}}%
-          \xdef\tikzumlMidOneArc{node[midway, name=\relationName-3, anchor=center] {}}%
+          \xdef\tikzumlFirstArc{node[midway, inner sep=0, name=\relationName-1, anchor=center] {}}%
+          \xdef\tikzumlMidOneArc{node[midway, inner sep=0, name=\relationName-3, anchor=center] {}}%
           %
           \ifthenelse{\equal{\tikzumlrecdirstart}{\tikzumlrecdirend}}{%
             \def\numArcs{3}%
-            \xdef\tikzumlLastArc{node[midway, name=\relationName-5, anchor=center] {}}%
+            \xdef\tikzumlLastArc{node[midway, inner sep=0, name=\relationName-5, anchor=center] {}}%
             %
             \begin{pgfonlayer}{connections}%
             \draw (\tikzumlSrcClassNodeName) edge[in=\endangle, out=\startangle, distance=\loopsize, draw=none] %
-                                                  node[midway, name=\relationName-tmp, anchor=center] {} (\tikzumlDestClassNodeName);%
+                                                  node[midway, inner sep=0, name=\relationName-tmp, anchor=center] {} (\tikzumlDestClassNodeName);%
             \ifthenelse{\equal{\tikzumlrecdirstart}{right}\OR\equal{\tikzumlrecdirstart}{left}}{%
-              \node[name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle -| \relationName-tmp) {};%
-              \node[name=\relationName-4] at (\tikzumlDestClassNodeName.\endangle -| \relationName-tmp) {};%
+              \node[inner sep=0, name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle -| \relationName-tmp) {};%
+              \node[inner sep=0, name=\relationName-4] at (\tikzumlDestClassNodeName.\endangle -| \relationName-tmp) {};%
             }{%
-              \node[name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle |- \relationName-tmp) {};%
-              \node[name=\relationName-4] at (\tikzumlDestClassNodeName.\endangle |- \relationName-tmp) {};%
+              \node[inner sep=0, name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle |- \relationName-tmp) {};%
+              \node[inner sep=0, name=\relationName-4] at (\tikzumlDestClassNodeName.\endangle |- \relationName-tmp) {};%
             }%
             \end{pgfonlayer}%
           }{%
             \def\numArcs{4}%
-            \xdef\tikzumlMidTwoArc{node[midway, name=\relationName-5, anchor=center] {}}%
-            \xdef\tikzumlLastArc{node[midway, name=\relationName-7, anchor=center] {}}%
+            \xdef\tikzumlMidTwoArc{node[midway, inner sep=0, name=\relationName-5, anchor=center] {}}%
+            \xdef\tikzumlLastArc{node[midway, inner sep=0, name=\relationName-7, anchor=center] {}}%
             %
             \begin{pgfonlayer}{connections}%
             \draw (\tikzumlSrcClassNodeName) edge[in=\endangle, out=\startangle, distance=\loopsize, draw=none] %
                                                   node[midway, name=\relationName-4, anchor=center] {} (\tikzumlDestClassNodeName);%
             \ifthenelse{\equal{\tikzumlrecdirstart}{right}\OR\equal{\tikzumlrecdirstart}{left}}{%
-              \node[name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle -| \relationName-4) {};%
-              \node[name=\relationName-6] at (\tikzumlDestClassNodeName.\endangle |- \relationName-4) {};%
+              \node[inner sep=0, name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle -| \relationName-4) {};%
+              \node[inner sep=0, name=\relationName-6] at (\tikzumlDestClassNodeName.\endangle |- \relationName-4) {};%
             }{%
-              \node[name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle |- \relationName-4) {};%
-              \node[name=\relationName-6] at (\tikzumlDestClassNodeName.\endangle -| \relationName-4) {};%
+              \node[inner sep=0, name=\relationName-2] at (\tikzumlSrcClassNodeName.\startangle |- \relationName-4) {};%
+              \node[inner sep=0, name=\relationName-6] at (\tikzumlDestClassNodeName.\endangle -| \relationName-4) {};%
             }%
             \end{pgfonlayer}%
           }%
@@ -1075,7 +1084,7 @@
       \def\arcNum{1}%
       \def\arcNumT{1}%
       %
-      \node (\relationName-1) at (\relationName-middle) {};%
+      \node[inner sep=0] (\relationName-1) at (\relationName-middle) {};%
       \xdef\tikzumlLastArc{node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
                            node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity}%
                            node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
@@ -1093,11 +1102,11 @@
     {%
       \def\tikzumlControlNodesNum{1}%
       %
-      \def\tikzumlFirstArc{node[midway, name=\relationName-1, anchor=center] {} }%
-      \def\tikzumlLastArc{node[midway, name=\relationName-3, anchor=center]{} }%
+      \def\tikzumlFirstArc{node[midway, inner sep=0, name=\relationName-1, anchor=center] {} }%
+      \def\tikzumlLastArc{node[midway, inner sep=0, name=\relationName-3, anchor=center]{} }%
       %
       \begin{pgfonlayer}{connections}%
-      \node (\relationName-2) at (\tikzumlSrcClassNodeName\tikzumlSrcAnchor |- \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
+      \node[inner sep=0] (\relationName-2) at (\tikzumlSrcClassNodeName\tikzumlSrcAnchor |- \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
       \end{pgfonlayer}%
       %
       \ifnum\theposStereo>100%
@@ -1157,11 +1166,11 @@
       \ifthenelse{\equal{\geometry}{-|}}{%
         \def\tikzumlControlNodesNum{1}%
         %
-        \def\tikzumlFirstArc{node[midway, name=\relationName-1, anchor=center]{} }%
-        \def\tikzumlLastArc{node[midway, name=\relationName-3, anchor=center] {} }%
+        \def\tikzumlFirstArc{node[midway, inner sep=0, name=\relationName-1, anchor=center]{} }%
+        \def\tikzumlLastArc{node[midway, inner sep=0, name=\relationName-3, anchor=center] {} }%
         %
         \begin{pgfonlayer}{connections}%
-        \node (\relationName-2) at (\tikzumlSrcClassNodeName\tikzumlSrcAnchor -| \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
+        \node[inner sep=0] (\relationName-2) at (\tikzumlSrcClassNodeName\tikzumlSrcAnchor -| \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
         \end{pgfonlayer}%
         %
         \ifnum\theposStereo>100%
@@ -1221,26 +1230,26 @@
         \ifthenelse{\equal{\geometry}{|-|}}{%
           \def\tikzumlControlNodesNum{2}%
           %
-          \def\tikzumlFirstArc{node[midway, name=\relationName-1, anchor=center] {} }%
-          \def\tikzumlLastArc{node[midway, name=\relationName-5, anchor=center] {} }%
+          \def\tikzumlFirstArc{node[midway, inner sep=0, name=\relationName-1, anchor=center] {} }%
+          \def\tikzumlLastArc{node[midway, inner sep=0, name=\relationName-5, anchor=center] {} }%
           \def\tikzumlMidOneArc{ }%
           %
           \begin{pgfonlayer}{connections}%
           %
           \ifthenelse{\equal{\armO}{auto}}{%
             \ifthenelse{\equal{\armT}{auto}}{%
-              \node (\relationName-3) at (\relationName-middle) {};%
-              \node (\relationName-2) at (\tikzumlSrcClassNodeName\tikzumlSrcAnchor |- \relationName-3) {};%
-              \node (\relationName-4) at (\relationName-3 -| \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
+              \node[inner sep=0] (\relationName-3) at (\relationName-middle) {};%
+              \node[inner sep=0] (\relationName-2) at (\tikzumlSrcClassNodeName\tikzumlSrcAnchor |- \relationName-3) {};%
+              \node[inner sep=0] (\relationName-4) at (\relationName-3 -| \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
             }{%
-              \draw (\tikzumlDestClassNodeName\tikzumlDestAnchor)+(0,\armT) node[name=\relationName-4] {};%
-              \node (\relationName-2) at (\relationName-4 -| \tikzumlSrcClassNodeName\tikzumlSrcAnchor) {};%
-              \node (\relationName-3) at (barycentric cs:\relationName-2=0.5,\relationName-4=0.5) {};%
+              \draw (\tikzumlDestClassNodeName\tikzumlDestAnchor)+(0,\armT) node[inner sep=0, name=\relationName-4] {};%
+              \node[inner sep=0] (\relationName-2) at (\relationName-4 -| \tikzumlSrcClassNodeName\tikzumlSrcAnchor) {};%
+              \node[inner sep=0] (\relationName-3) at (barycentric cs:\relationName-2=0.5,\relationName-4=0.5) {};%
             }%
           }{%
-            \draw (\tikzumlSrcClassNodeName\tikzumlSrcAnchor)+(0,\armO) node[name=\relationName-2] {};%
-            \node (\relationName-4) at (\relationName-2 -| \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
-            \node (\relationName-3) at (barycentric cs:\relationName-2=0.5,\relationName-4=0.5) {};%
+            \draw (\tikzumlSrcClassNodeName\tikzumlSrcAnchor)+(0,\armO) node[inner sep=0, name=\relationName-2] {};%
+            \node[inner sep=0] (\relationName-4) at (\relationName-2 -| \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
+            \node[inner sep=0] (\relationName-3) at (barycentric cs:\relationName-2=0.5,\relationName-4=0.5) {};%
           }%
           \end{pgfonlayer}%
           %
@@ -1326,26 +1335,26 @@
           \ifthenelse{\equal{\geometry}{-|-}}{%
             \def\tikzumlControlNodesNum{2}%
             %
-            \def\tikzumlFirstArc{node[midway, name=\relationName-1, anchor=center] {} }%
-            \def\tikzumlLastArc{node[midway, name=\relationName-5, anchor=center] {} }%
+            \def\tikzumlFirstArc{node[midway, inner sep=0, name=\relationName-1, anchor=center] {} }%
+            \def\tikzumlLastArc{node[midway, inner sep=0, name=\relationName-5, anchor=center] {} }%
             \def\tikzumlMidOneArc{}%
             %
             \begin{pgfonlayer}{connections}%
             %
             \ifthenelse{\equal{\armO}{auto}}{%
               \ifthenelse{\equal{\armT}{auto}}{%
-                \node (\relationName-3) at (\relationName-middle) {};%
-                \node (\relationName-2) at (\tikzumlSrcClassNodeName\tikzumlSrcAnchor -| \relationName-3) {};%
-                \node (\relationName-4) at (\relationName-3 |- \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
+                \node[inner sep=0] (\relationName-3) at (\relationName-middle) {};%
+                \node[inner sep=0] (\relationName-2) at (\tikzumlSrcClassNodeName\tikzumlSrcAnchor -| \relationName-3) {};%
+                \node[inner sep=0] (\relationName-4) at (\relationName-3 |- \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
               }{%
-                \draw (\tikzumlDestClassNodeName\tikzumlDestAnchor)+(\armT,0) node[name=\relationName-4] {};%
-                \node (\relationName-2) at (\relationName-4 |- \tikzumlSrcClassNodeName\tikzumlSrcAnchor) {};%
-                \node (\relationName-3) at (barycentric cs:\relationName-2=0.5,\relationName-4=0.5) {};%
+                \draw (\tikzumlDestClassNodeName\tikzumlDestAnchor)+(\armT,0) node[inner sep=0, name=\relationName-4] {};%
+                \node[inner sep=0] (\relationName-2) at (\relationName-4 |- \tikzumlSrcClassNodeName\tikzumlSrcAnchor) {};%
+                \node[inner sep=0] (\relationName-3) at (barycentric cs:\relationName-2=0.5,\relationName-4=0.5) {};%
               }%
             }{%
-              \draw (\tikzumlSrcClassNodeName\tikzumlSrcAnchor)+(\armO,0) node[name=\relationName-2] {};%
-              \node (\relationName-4) at (\relationName-2 |- \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
-              \node (\relationName-3) at (barycentric cs:\relationName-2=0.5,\relationName-4=0.5) {};%
+              \draw (\tikzumlSrcClassNodeName\tikzumlSrcAnchor)+(\armO,0) node[inner sep=0, name=\relationName-2] {};%
+              \node[inner sep=0] (\relationName-4) at (\relationName-2 |- \tikzumlDestClassNodeName\tikzumlDestAnchor) {};%
+              \node[inner sep=0] (\relationName-3) at (barycentric cs:\relationName-2=0.5,\relationName-4=0.5) {};%
             }%
             \end{pgfonlayer}%
             %
@@ -1447,7 +1456,7 @@
   \pgfkeys{/tikzuml/HVrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{geometry}}{%
-        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        \errmessage{TIKZUML ERROR : in umlHVrelation, forbidden option geometry}%
       }{}%
     }%
   }%
@@ -1459,7 +1468,7 @@
   \pgfkeys{/tikzuml/VHrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{geometry}}{%
-        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        \errmessage{TIKZUML ERROR : in umlVHrelation, forbidden option geometry}%
       }{}%
     }%
   }%
@@ -1471,7 +1480,7 @@
   \pgfkeys{/tikzuml/HVHrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{geometry}}{%
-        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        \errmessage{TIKZUML ERROR : in umlHVHrelation, forbidden option geometry}%
       }{}%
     }%
   }%
@@ -1483,7 +1492,7 @@
   \pgfkeys{/tikzuml/VHVrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{geometry}}{%
-        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        \errmessage{TIKZUML ERROR : in umlVHVrelation, forbidden option geometry}%
       }{}%
     }%
   }%
@@ -1507,7 +1516,7 @@
   \pgfkeys{/tikzuml/friendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlfriend, forbidden option stereo}%
       }{}%
     }%
   }%
@@ -1530,10 +1539,10 @@
   \pgfkeys{/tikzuml/friendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlHVfriend, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlHVfriend, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -1557,10 +1566,10 @@
   \pgfkeys{/tikzuml/friendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlVHfriend, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlVHfriend, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -1584,10 +1593,10 @@
   \pgfkeys{/tikzuml/friendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlHVHfriend, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlHVHfriend, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -1611,10 +1620,10 @@
   \pgfkeys{/tikzuml/friendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlVHVfriend, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlVHVfriend, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -1657,7 +1666,7 @@
                                   style/.initial=->, name/.initial=relation-\thetikzumlRelationNum,%
                                   .unknown/.code={%
                                     \let\keyname=\pgfkeyscurrentname%
-                                    \errmessage{TIKZUML ERROR : invalid option \keyname}%
+                                    \errmessage{TIKZUML ERROR : in umlCNrelation, invalid option \keyname}%
                                   }}%
   \pgfkeys{/tikzuml/relation/.cd,#1}%
   \pgfkeys{/tikzuml/relation/.cd, arg1/.get=\attrName, arg2/.get=\attrNameTO, arg/.get=\attrNameTT,%
@@ -1836,7 +1845,7 @@
   \pgfkeys{/tikzuml/friendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlCNfriend, forbidden option stereo}%
       }{}%
     }%
   }%
@@ -1856,7 +1865,7 @@
                               draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillnotecolor, text/.initial=\tikzumltextcolor,%
                               .unknown/.code={%
                                 \let\keyname=\pgfkeyscurrentname%
-                                \errmessage{TIKZUML ERROR : invalid option \keyname in umlnote}%
+                                \errmessage{TIKZUML ERROR : in umlnote, invalid option \keyname}%
                               }}%
   \pgfkeys{/tikzuml/note/.cd, #1}%
   \pgfkeys{/tikzuml/note/.cd, x/.get=\tikzumlnoteX, y/.get=\tikzumlnoteY, width/.get=\notetextwidth, geometry/.get=\tikzumlnotegeometry,%
@@ -1932,7 +1941,7 @@
   \pgfkeys{/tikzuml/note/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{geometry}}{%
-        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        \errmessage{TIKZUML ERROR : in umlHVnote, forbidden option geometry}%
       }{}%
     }%
   }%
@@ -1943,7 +1952,7 @@
   \pgfkeys{/tikzuml/note/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{geometry}}{%
-        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        \errmessage{TIKZUML ERROR : in umlVHnote, forbidden option geometry}%
       }{}%
     }%
   }%
@@ -1954,7 +1963,7 @@
   \pgfkeys{/tikzuml/note/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{geometry}}{%
-        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        \errmessage{TIKZUML ERROR : in umlVHVnote, forbidden option geometry}%
       }{}%
     }%
   }%
@@ -1965,7 +1974,7 @@
   \pgfkeys{/tikzuml/note/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{geometry}}{%
-        \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        \errmessage{TIKZUML ERROR : in umlHVHnote, forbidden option geometry}%
       }{}%
     }%
   }%
@@ -1998,7 +2007,7 @@
                                 draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillsystemcolor, text/.initial=\tikzumltextcolor,%
                                 .unknown/.code={%
                                   \let\keyname=\pgfkeyscurrentname%
-                                  \errmessage{TIKZUML ERROR : invalid option \keyname in umlsystem}%
+                                  \errmessage{TIKZUML ERROR : in umlsystem, invalid option \keyname}%
                                 }}%
   %
   \pgfkeys{/tikzuml/system/.cd, #1}%
@@ -2034,7 +2043,7 @@
                                  draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillusecasecolor, text/.initial=\tikzumltextcolor,%
                                  .unknown/.code={%
                                    \let\keyname=\pgfkeyscurrentname%
-                                   \errmessage{TIKZUML ERROR : invalid option \keyname in umlusecase}%
+                                   \errmessage{TIKZUML ERROR : in umlusecase, invalid option \keyname}%
                                  }}%
   \pgfkeys{/tikzuml/usecase/.cd, #1}%
   \pgfkeys{/tikzuml/usecase/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlusecasetextwidth, name/.get=\usecaseName,%
@@ -2090,7 +2099,7 @@
                               draw/.initial=\tikzumldrawcolor, text/.initial=\tikzumltextcolor,%
                               .unknown/.code={%
                                 \let\keyname=\pgfkeyscurrentname%
-                                \errmessage{TIKZUML ERROR : invalid option \keyname in umlactor}%
+                                \errmessage{TIKZUML ERROR : in umlactor, invalid option \keyname}%
                               }}%
   \pgfkeys{/tikzuml/actor/.cd, #1}%
   \pgfkeys{/tikzuml/actor/.cd, x/.get=\posx, y/.get=\posy, scale/.get=\tikzumlactorscale, below/.get=\tikzumlactorbelow,%
@@ -2114,10 +2123,10 @@
   \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlinclude, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlinclude, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2129,10 +2138,10 @@
   \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlextend, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlextend, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2145,10 +2154,10 @@
   \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlHVinclude, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlHVinclude, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2160,10 +2169,10 @@
   \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlHVextend, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlHVextend, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2176,10 +2185,10 @@
   \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlVHinclude, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlVHinclude, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2191,10 +2200,10 @@
   \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR :in umlVHextend,  forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlVHextend, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2207,10 +2216,10 @@
   \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlHVHinclude, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlHVHinclude, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2222,10 +2231,10 @@
   \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlHVHextend, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlHVHextend, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2238,10 +2247,10 @@
   \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlVHVinclude, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlVHVinclude, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2253,10 +2262,10 @@
   \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlVHVextend, forbidden option stereo}%
       }{%
         \ifthenelse{\equal{\keyname}{geometry}}{%
-          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+          \errmessage{TIKZUML ERROR : in umlVHVextend, forbidden option geometry}%
         }{}%
       }%
     }%
@@ -2269,7 +2278,7 @@
   \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlCNinclude, forbidden option stereo}%
       }{}%
     }%
   }%
@@ -2281,7 +2290,7 @@
   \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlCNextend, forbidden option stereo}%
       }{}%
     }%
   }%
@@ -2314,7 +2323,7 @@
                                    name/.initial=statejoin-\thetikzumlStateJoinNum, color/.initial=\tikzumldrawcolor,%
                                    .unknown/.code={%
                                      \let\keyname=\pgfkeyscurrentname%
-                                     \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatejoin}%
+                                     \errmessage{TIKZUML ERROR : in umlstatejoin, invalid option \keyname}%
                                    }}%
   \pgfkeys{/tikzuml/statejoin/.cd, #1}%
   \pgfkeys{/tikzuml/statejoin/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatejoinwidth,%
@@ -2338,7 +2347,7 @@
                                        name/.initial=statedecision-\thetikzumlStateDecisionNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
-                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatedecision}%
+                                        \errmessage{TIKZUML ERROR : in umlstatedecision, invalid option \keyname}%
                                       }}%
   \pgfkeys{/tikzuml/statedecision/.cd, #1}%
   \pgfkeys{/tikzuml/statedecision/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatedecisionwidth,%
@@ -2362,7 +2371,7 @@
                                        name/.initial=stateinitial-\thetikzumlStateInitialNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
-                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstateinitial}%
+                                        \errmessage{TIKZUML ERROR : in umlstateinitial, invalid option \keyname}%
                                       }}%
   \pgfkeys{/tikzuml/stateinitial/.cd, #1}%
   \pgfkeys{/tikzuml/stateinitial/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstateinitialwidth,%
@@ -2386,7 +2395,7 @@
                                        name/.initial=statefinal-\thetikzumlStateFinalNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
-                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatefinal}%
+                                        \errmessage{TIKZUML ERROR : in umlstatefinal, invalid option \keyname}%
                                       }}%
   \pgfkeys{/tikzuml/statefinal/.cd, #1}%
   \pgfkeys{/tikzuml/statefinal/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatefinalwidth,%
@@ -2410,7 +2419,7 @@
                                        name/.initial=stateenter-\thetikzumlStateEnterNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
-                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstateenter}%
+                                        \errmessage{TIKZUML ERROR : in umlstateenter, invalid option \keyname}%
                                       }}%
   \pgfkeys{/tikzuml/stateenter/.cd, #1}%
   \pgfkeys{/tikzuml/stateenter/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstateenterwidth,%
@@ -2434,7 +2443,7 @@
                                        name/.initial=stateexit-\thetikzumlStateExitNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
-                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstateexit}%
+                                        \errmessage{TIKZUML ERROR : in umlstateexit, invalid option \keyname}%
                                       }}%
   \pgfkeys{/tikzuml/stateexit/.cd, #1}%
   \pgfkeys{/tikzuml/stateexit/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstateexitwidth,%
@@ -2459,7 +2468,7 @@
                                        name/.initial=stateend-\thetikzumlStateEndNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
-                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstateend}%
+                                        \errmessage{TIKZUML ERROR : in umlstateend, invalid option \keyname}%
                                       }}%
   \pgfkeys{/tikzuml/stateend/.cd, #1}%
   \pgfkeys{/tikzuml/stateend/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstateendwidth,%
@@ -2492,7 +2501,7 @@
                                        name/.initial=statehistory-\thetikzumlStateHistoryNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
-                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatehistory}%
+                                        \errmessage{TIKZUML ERROR : in umlstatehistory, invalid option \keyname}%
                                       }}%
   \pgfkeys{/tikzuml/statehistory/.cd, #1}%
   \pgfkeys{/tikzuml/statehistory/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatehistorywidth,%
@@ -2527,7 +2536,7 @@
                                        name/.initial=statedeephistory-\thetikzumlStateDeepHistoryNum, color/.initial=\tikzumldrawcolor,%
                                       .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
-                                        \errmessage{TIKZUML ERROR : invalid option \keyname in umlstatedeephistory}%
+                                        \errmessage{TIKZUML ERROR : in umlstatedeephistory, invalid option \keyname}%
                                       }}%
   \pgfkeys{/tikzuml/statedeephistory/.cd, #1}%
   \pgfkeys{/tikzuml/statedeephistory/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlstatedeephistorywidth,%
@@ -2566,23 +2575,28 @@
                                  draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillstatecolor, text/.initial=\tikzumltextcolor,%
                                  .unknown/.code={%
                                    \let\keyname=\pgfkeyscurrentname%
-                                   \errmessage{TIKZUML ERROR : invalid option \keyname in umlstate}%
+                                   \errmessage{TIKZUML ERROR : in umlstate, invalid option \keyname}%
                                  }}%
   \pgfkeys{/tikzuml/state/.cd, #1}%
   \pgfkeys{/tikzuml/state/.cd, x/.get=\tikzumlstateX, y/.get=\tikzumlstateY, width/.get=\umlstateMinimumWidth, type/.get=\umlstateType, name/.get=\umlstateName,%
                                draw/.get=\tikzumlstatedraw, fill/.get=\tikzumlstatefill, text/.get=\tikzumlstatetext}%
   %
-  \edef\tikzumlState@name{\umlstateName}%
+  \ifthenelse{\equal{\umlstateName}{}}{%
+    \edef\tikzumlState@name{#2}%
+  }{%
+    \edef\tikzumlState@name{\umlstateName}%
+  }%
+  %
   \begingroup%
     \def\_{@}\edef\x{\endgroup%
-      \def\noexpand\tikzumlState@fitname{\umlstateName}}\x%
+      \def\noexpand\tikzumlState@fitname{\tikzumlState@name}}\x%
   %
   \let\tikzumlState@nodeNameold\tikzumlState@nodeName%
   \def\tikzumlState@caption{#2}%
-  %  
+  % 
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
-      \def\noexpand\tikzumlState@nodeName{\umlstateName}}\x%
+      \def\noexpand\tikzumlState@nodeName{\tikzumlState@name}}\x%
   %
   \expandafter\gdef\csname tikzumlStateFit\tikzumlState@parent @@\tikzumlState@fitname\endcsname{}%
   %
@@ -2669,7 +2683,7 @@
       \pgfkeys{/tikzuml/actorobj/.cd, .unknown/.code={%
         \let\keyname=\pgfkeyscurrentname%
         \ifthenelse{\equal{\keyname}{stereo}}{%
-          \errmessage{TIKZUML ERROR : forbidden option stereo}%
+          \errmessage{TIKZUML ERROR : in umlactor, forbidden option stereo}%
           }{}%
         }%
       }%
@@ -2682,7 +2696,7 @@
       \pgfkeys{/tikzuml/actorobj/.cd, .unknown/.code={%
         \let\keyname=\pgfkeyscurrentname%
         \ifthenelse{\equal{\keyname}{stereo}}{%
-          \errmessage{TIKZUML ERROR : forbidden option stereo}%
+          \errmessage{TIKZUML ERROR : in umlactor, forbidden option stereo}%
           }{}%
         }%
       }%
@@ -2782,7 +2796,7 @@
                              draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillobjectcolor, text/.initial=\tikzumltextcolor,%
                              .unknown/.code={%
                                  \let\keyname=\pgfkeyscurrentname%
-                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlobj}%
+                                 \errmessage{TIKZUML ERROR : in umlobj, invalid option \keyname}%
                              }}%
   \pgfkeys{/tikzuml/obj/.cd, #1}%
   \pgfkeys{/tikzuml/obj/.cd, x/.get=\tikzumlobjectX, y/.get=\tikzumlobjectY, stereo/.get=\tikzumlobjectstereo, class/.get=\tikzumlobjectclass,%
@@ -2843,7 +2857,7 @@
   \pgfkeys{/tikzuml/databaseobj/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umldatabase, forbidden option stereo}%
       }{}%
     }%
   }%
@@ -2854,7 +2868,7 @@
   \pgfkeys{/tikzuml/entityobj/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlentity, forbidden option stereo}%
       }{}%
     }%
   }%
@@ -2865,7 +2879,7 @@
   \pgfkeys{/tikzuml/controlobj/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlcontrol, forbidden option stereo}%
       }{}%
     }%
   }%
@@ -2876,7 +2890,7 @@
   \pgfkeys{/tikzuml/boundaryobj/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlboundary, forbidden option stereo}%
       }{}%
     }%
   }%
@@ -2887,7 +2901,7 @@
   \pgfkeys{/tikzuml/multiobj/.cd, .unknown/.code={%
       \let\keyname=\pgfkeyscurrentname%
       \ifthenelse{\equal{\keyname}{stereo}}{%
-        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+        \errmessage{TIKZUML ERROR : in umlmulti, forbidden option stereo}%
       }{}%
     }%
   }%
@@ -2915,7 +2929,7 @@
                              padding/.initial=2,%
                              .unknown/.code={%
                                  \let\keyname=\pgfkeyscurrentname%
-                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlcall}%
+                                 \errmessage{TIKZUML ERROR : in umlcall,  invalid option \keyname}%
                              }}%
   \pgfkeys{/tikzuml/call/.cd, #1}%
   \pgfkeys{/tikzuml/call/.cd, dt/.get=\tikzumlcallDT, name/.get=\tikzumlcallname, op/.get=\tikzumlcallop, return/.get=\tikzumlcallreturn, type/.get=\tikzumlcalltype,%
@@ -3177,7 +3191,7 @@
                              draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillfragmentcolor, text/.initial=\tikzumltextcolor,%
                              .unknown/.code={%
                                  \let\keyname=\pgfkeyscurrentname%
-                                 \errmessage{TIKZUML ERROR : invalid option \keyname in umlfragment}%
+                                 \errmessage{TIKZUML ERROR : in umlfragment, invalid option \keyname}%
                              }}%
   \pgfkeys{/tikzuml/fragment/.cd, #1}%
   \pgfkeys{/tikzuml/fragment/.cd, name/.get=\tikzumlfragmentname, type/.get=\tikzumlfragmenttype, label/.get=\tikzumlfragmentlabel,%
@@ -3276,7 +3290,7 @@
                                     draw obj/.initial=\tikzumldrawcolor, fill obj/.initial=\tikzumlfillobjectcolor, text obj/.initial=\tikzumltextcolor,%
                                     .unknown/.code={%
                                       \let\keyname=\pgfkeyscurrentname%
-                                      \errmessage{TIKZUML ERROR : invalid option \keyname in umlcreatecall}%
+                                      \errmessage{TIKZUML ERROR : in umlcreatecall, invalid option \keyname}%
                                     }}%
   \pgfkeys{/tikzuml/createcall/.cd, #1}%
   \pgfkeys{/tikzuml/createcall/.cd, x/.get=\tikzumlcallX, stereo/.get=\tikzumlcallstereo, class/.get=\tikzumlcallclass,%
@@ -3353,5 +3367,584 @@
   \fi%
 }
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                     component diagrams                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tikzstyle{tikzuml connector style}=[color=\tikzumldrawcolor, -]%
+
+\newcounter{tikzumlComponentLevel}%
+\newcounter{tikzumlComponentSubComponentNum}%
+\newcounter{tikzumlConnectorNum}%
+\setcounter{tikzumlConnectorNum}{1}%
+
+\newcommand{\picturedcomponent}[1]{
+  \pgfkeys{/tikzuml/component/picture/.cd, scale/.initial=1, .unknown/.code={}}%
+  \pgfkeys{/tikzuml/component/picture/.cd,#1}%
+  \pgfkeys{/tikzuml/component/picture/.cd, scale/.get=\tikzumlcomponentscale}%
+  \begin{tikzpicture}[#1]
+  \filldraw (0,0) rectangle (1ex,1.5ex);
+  \filldraw (-0.2ex,0.4ex) rectangle (0.2ex,0.6ex);
+  \filldraw (-0.2ex,0.9ex) rectangle (0.2ex,1.1ex);
+  \end{tikzpicture}
+}
+
+% define a uml component
+% args : name of the component
+%         content of the component
+% optional args : x,y coordinates of the component
+%                 width of the component node
+\newenvironment{umlcomponent}[2][]{%
+  \ifnum\thetikzumlComponentLevel>0%
+    \let\tikzumlComponent@nameold\tikzumlComponent@fitname%
+    \let\tikzumlComponent@parentold\tikzumlComponent@parent%
+    \edef\tikzumlComponent@parent{\tikzumlComponent@parentold @@\tikzumlComponent@nameold}%
+  \else%
+    \def\tikzumlComponent@parent{}%
+  \fi%
+  
+  \stepcounter{tikzumlComponentLevel}%
+  
+  \pgfkeys{/tikzuml/component/.cd, x/.initial=0, y/.initial=0, width/.initial=10ex, type/.initial=class, name/.initial={},%
+                                 draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillcomponentcolor, text/.initial=\tikzumltextcolor,%
+                                 .unknown/.code={%
+                                   \let\keyname=\pgfkeyscurrentname%
+                                   \errmessage{TIKZUML ERROR : in umlcomponent, invalid option \keyname}%
+                                 }}%
+  \pgfkeys{/tikzuml/component/.cd, #1}%
+  \pgfkeys{/tikzuml/component/.cd, x/.get=\tikzumlcomponentX, y/.get=\tikzumlcomponentY, width/.get=\umlcomponentMinimumWidth, type/.get=\umlcomponentType, name/.get=\umlcomponentName,%
+                               draw/.get=\tikzumlcomponentdraw, fill/.get=\tikzumlcomponentfill, text/.get=\tikzumlcomponenttext}%
+  %
+  \ifthenelse{\equal{\umlcomponentName}{}}{%
+    \edef\tikzumlComponent@name{#2}%
+  }{%
+    \edef\tikzumlComponent@name{\umlcomponentName}%
+  }%
+  %
+  \begingroup%
+    \def\_{@}\edef\x{\endgroup%
+      \def\noexpand\tikzumlComponent@fitname{\tikzumlComponent@name}}\x%
+  %
+  \let\tikzumlComponent@nodeNameold\tikzumlComponent@nodeName%
+  \def\tikzumlComponent@caption{#2}%
+  %  
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlComponent@nodeName{\tikzumlComponent@name}}\x%
+  %
+  \expandafter\gdef\csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname{}%
+  %
+  \setcounter{tikzumlComponentSubComponentNum}{0}%
+  
+  \begin{scope}[xshift=\tikzumlcomponentX cm, yshift=\tikzumlcomponentY cm]%
+}{%
+  \addtocounter{tikzumlComponentLevel}{-1}%
+  \begin{pgfonlayer}{component\thetikzumlComponentLevel}%
+  %
+  % if contains nothing, one define a fictive node to enable the fit option
+  \ifnum\c@tikzumlComponentSubComponentNum=0%
+    \node[inner ysep=0.5ex] (\tikzumlComponent@nodeName-root) at (0,0) {\phantom{\tikzumlComponent@nodeName}};%
+    \expandafter\xdef\csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname{(\tikzumlComponent@nodeName-root)}%
+  \fi%
+  %
+  \ifnum\c@tikzumlComponentLevel>0%
+    \def\tikzumlComponentFitTmp{\csname tikzumlComponentFit\tikzumlComponent@parent\endcsname}%
+    \expandafter\xdef\csname tikzumlComponentFit\tikzumlComponent@parent\endcsname{\tikzumlComponentFitTmp (\tikzumlComponent@nodeName-body) (\tikzumlComponent@nodeName-caption)}%
+    \stepcounter{tikzumlComponentSubComponentNum}%
+  \fi%
+  %
+  \node[inner sep=2ex, fit = \csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname] (\tikzumlComponent@nodeName-body) {};%
+  \node[above] (\tikzumlComponent@nodeName-captiontmp) at (\tikzumlComponent@nodeName-body.north) {\tikzumlComponent@caption};%
+  \node (\tikzumlComponent@nodeName-logotmp) at (\tikzumlComponent@nodeName-captiontmp.north -| \tikzumlComponent@nodeName-body.east) {\picturedcomponent{draw=\tikzumlcomponentdraw, fill=\tikzumlcomponentfill} };%
+  \node[draw=\tikzumlcomponentdraw, fill=\tikzumlcomponentfill, name=\tikzumlComponent@nodeName, fit=(\tikzumlComponent@nodeName-body) (\tikzumlComponent@nodeName-captiontmp)] {};%
+  \node (\tikzumlComponent@nodeName-caption) at (\tikzumlComponent@nodeName-captiontmp) {\tikzumlComponent@caption};%
+  \draw (\tikzumlComponent@nodeName-caption.north -| \tikzumlComponent@nodeName-body.east) node[below=-0.8ex, name=\tikzumlComponent@nodeName-logo] {\picturedcomponent{draw=\tikzumlcomponentdraw, fill=\tikzumlcomponentfill} };%
+  \draw (\tikzumlComponent@nodeName-caption.south -| \tikzumlComponent@nodeName.north west) -- (\tikzumlComponent@nodeName-caption.south -| \tikzumlComponent@nodeName.north east);%
+  \end{pgfonlayer}%
+  \end{scope}%
+}%
+
+% shortcut for empty state
+\newcommand{\umlbasiccomponent}[2][]{\begin{umlcomponent}[#1]{#2} \end{umlcomponent}}%
+
+\newcommand{\umlprovidedinterface}[2][]{%
+  %\xdef\tikzumlprovidedinterfaceunknownoptions{}
+  \def\tikzumlInterfaceWithPort{tikzumlFalse}%
+  \pgfkeys{/tikzuml/providedinterfacerelation/.cd, interface/.initial={}, distance/.initial=2cm,%
+			     width/.initial=1em, padding/.initial=1cm,%
+                            draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillcomponentcolor}%
+  %\pgfkeys{/tikzuml/providedinterfacerelation/group/.is family}%
+  %\pgfkeys{/tikzuml/providedinterfacerelation/interface/.belongs to family=/tikzuml/providedinterfacerelation/group}%
+  %\pgfkeys{/pgf/key filters/active families/.install key filter}%
+  %\pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
+  \pgfkeys{/tikzuml/providedinterfacerelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{with port}}{%
+        \def\tikzumlInterfaceWithPort{tikzumlTrue}%
+      }{%
+%        \ifthenelse{\equal{\keyname}{geometry}}{%
+          %\errmessage{TIKZUML ERROR : forbidden option \keyname}%
+%        }{}%
+      }%
+    }%
+  }%
+  %
+  %\pgfkeys{/tikzuml/providedinterfacerelation/group/.activate family}%
+  %\def\remainingoptions{}%
+  %\pgfkeysfiltered{/tikzuml/providedinterfacerelation/.cd, #1}%
+  \pgfkeys{/tikzuml/providedinterfacerelation/.cd, #1}%
+  %\message{@@ toto @@}%
+  %\pgfkeysalsofrom{\remainingoptions}%
+  %\message{toto \remainingoptions tata}%
+  \pgfkeys{/tikzuml/providedinterfacerelation/.cd, interface/.get=\tikzumlProvidedInterfaceLabel,%
+			distance/.get=\tikzumlProvidedInterfaceDistance,%
+			width/.get=\tikzumlProvidedInterfaceWidth,%
+			padding/.get=\tikzumlProvidedInterfacePadding,%
+                       	draw/.get=\tikzumlprovidedinterfacedraw, fill/.get=\tikzumlprovidedinterfacefill,}%
+  \edef\tikzumlProvidedInterface@name{#2}%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlProvidedInterface@nodeName{\tikzumlProvidedInterface@name}}\x%
+  %
+  %\message{toto \tikzumlProvidedInterfaceWithPort tata}
+  \ifthenelse{\equal{\tikzumlInterfaceWithPort}{tikzumlTrue}}{%
+    \node[inner sep=0.5*\tikzumlProvidedInterfaceWidth, rectangle, draw=\tikzumlprovidedinterfacedraw, fill=\tikzumlprovidedinterfacefill] (\tikzumlProvidedInterface@nodeName-east-port) at (\tikzumlProvidedInterface@nodeName.east) {};%
+  }{%
+    \node[inner sep=0] (\tikzumlProvidedInterface@nodeName-east-port) at (\tikzumlProvidedInterface@nodeName.east) {};%
+  }%
+  \begin{scope}
+  \draw (\tikzumlProvidedInterface@nodeName)+(\tikzumlProvidedInterfaceDistance,0) node[inner sep=0, text width=\tikzumlProvidedInterfaceWidth, circle, name=\tikzumlProvidedInterface@nodeName-east-interface-tmp] {};%
+  \clip (\tikzumlProvidedInterface@nodeName-east-interface-tmp.north) rectangle (\tikzumlProvidedInterface@nodeName-east-interface-tmp.south -| \tikzumlProvidedInterface@nodeName-east-interface-tmp.west);
+  \node[inner sep=0, text width=\tikzumlProvidedInterfaceWidth, circle, draw=\tikzumlprovidedinterfacedraw] (\tikzumlProvidedInterface@nodeName-east-interface) at (\tikzumlProvidedInterface@nodeName-east-interface-tmp)
+ {};%
+  \end{scope}
+  \node[above] at (\tikzumlProvidedInterface@nodeName-east-interface.north) {\tikzumlProvidedInterfaceLabel};%
+  %\message{toto \remainingoptions tata}%
+  \umlrelation[style={tikzuml connector style}, #1]{\tikzumlProvidedInterface@nodeName-east-port}{\tikzumlProvidedInterface@nodeName-east-interface}%
+
+  % add to fit
+  \draw (\tikzumlProvidedInterface@nodeName-east-interface)+(\tikzumlProvidedInterfacePadding,0) node[name=\tikzumlProvidedInterface@nodeName-east-padding] {};%
+  \ifnum\thetikzumlComponentLevel>0%
+        \def\tikzumlComponentFitTmp{\csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname}%
+        \expandafter\xdef\csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname{\tikzumlComponentFitTmp (\tikzumlProvidedInterface@nodeName-east-padding) (\tikzumlProvidedInterface@nodeName-east-port) }%
+      \fi%
+}%
+
+\newcommand{\umlrequiredinterface}[2][]{%
+  %\xdef\tikzumlrequiredinterfaceunknownoptions{}
+  \def\tikzumlInterfaceWithPort{tikzumlFalse}%
+  \pgfkeys{/tikzuml/requiredinterfacerelation/.cd, interface/.initial={}, distance/.initial=3cm,%
+                            width/.initial=1em, padding/.initial=1cm,%
+                            draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillcomponentcolor}%
+  %\pgfkeys{/tikzuml/requiredinterfacerelation/group/.is family}%
+  %\pgfkeys{/tikzuml/requiredinterfacerelation/interface/.belongs to family=/tikzuml/requiredinterfacerelation/group}%
+  %\pgfkeys{/pgf/key filters/active families/.install key filter}%
+  %\pgfkeys{/pgf/key filter handlers/append filtered to/.install key filter handler=\remainingoptions}%
+  \pgfkeys{/tikzuml/requiredinterfacerelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{with port}}{%
+        \def\tikzumlInterfaceWithPort{tikzumlTrue}%
+      }{%
+%        \ifthenelse{\equal{\keyname}{geometry}}{%
+          %\errmessage{TIKZUML ERROR : forbidden option \keyname}%
+%        }{}%
+      }%
+    }%
+  }%
+  %
+  %\pgfkeys{/tikzuml/requiredinterfacerelation/group/.activate family}%
+  %\def\remainingoptions{}%
+  %\pgfkeysfiltered{/tikzuml/requiredinterfacerelation/.cd, #1}%
+  \pgfkeys{/tikzuml/requiredinterfacerelation/.cd, #1}%
+  %\message{@@ toto @@}%
+  %\pgfkeysalsofrom{\remainingoptions}%
+  %\message{toto \remainingoptions tata}%
+  \pgfkeys{/tikzuml/requiredinterfacerelation/.cd, interface/.get=\tikzumlRequiredInterfaceLabel,%
+ 			distance/.get=\tikzumlRequiredInterfaceDistance,%
+ 			padding/.get=\tikzumlRequiredInterfacePadding,%
+ 			width/.get=\tikzumlRequiredInterfaceWidth,%
+                       	draw/.get=\tikzumlrequiredinterfacedraw, fill/.get=\tikzumlrequiredinterfacefill,}%
+  \edef\tikzumlRequiredInterface@name{#2}%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlRequiredInterface@nodeName{\tikzumlRequiredInterface@name}}\x%
+  %
+  %\message{toto \tikzumlRequiredInterfaceWithPort tata}
+  \ifthenelse{\equal{\tikzumlInterfaceWithPort}{tikzumlTrue}}{%
+    \node[inner sep=0.5*\tikzumlRequiredInterfaceWidth, rectangle, draw=\tikzumlrequiredinterfacedraw, fill=\tikzumlrequiredinterfacefill] (\tikzumlRequiredInterface@nodeName-west-port) at (\tikzumlRequiredInterface@nodeName.west) {};%
+  }{%
+    \node[inner sep=0] (\tikzumlRequiredInterface@nodeName-west-port) at (\tikzumlRequiredInterface@nodeName.west) {};%
+  }%
+  \draw (\tikzumlRequiredInterface@nodeName)+(-\tikzumlRequiredInterfaceDistance,0) node[inner sep=0, text width=\tikzumlRequiredInterfaceWidth, circle, draw=\tikzumlrequiredinterfacedraw, fill=\tikzumlrequiredinterfacefill, name=\tikzumlRequiredInterface@nodeName-west-interface] {};%
+  \node[above] at (\tikzumlRequiredInterface@nodeName-west-interface.north)
+ {\tikzumlRequiredInterfaceLabel};%
+  %\message{toto \remainingoptions tata}%
+  \umlrelation[style={tikzuml connector style}, #1]{\tikzumlRequiredInterface@nodeName-west-port}{\tikzumlRequiredInterface@nodeName-west-interface}%
+
+   % add to fit
+  \draw (\tikzumlRequiredInterface@nodeName-west-interface)+(-\tikzumlRequiredInterfacePadding,0) node[name=\tikzumlRequiredInterface@nodeName-west-padding] {};%
+  \ifnum\thetikzumlComponentLevel>0%
+        \def\tikzumlComponentFitTmp{\csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname}%
+        \expandafter\xdef\csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname{\tikzumlComponentFitTmp (\tikzumlRequiredInterface@nodeName-west-padding) (\tikzumlRequiredInterface@nodeName-west-port) }%
+      \fi%
+}%
+
+\newlength{\tikzuml@AC@xa}%
+\newlength{\tikzuml@AC@ya}%
+\newlength{\tikzuml@AC@xb}%
+\newlength{\tikzuml@AC@yb}%
+\newlength{\tikzuml@AC@xi}%
+\newlength{\tikzuml@AC@yi}%
+\newlength{\tikzuml@AC@xic}%
+\newlength{\tikzuml@AC@yic}%
+\newlength{\tikzuml@AC@xio}%
+\newlength{\tikzuml@AC@yio}%
+\newlength{\tikzuml@AC@AB}%
+\newlength{\tikzuml@AC@lambda}%
+\newlength{\tikzuml@AC@xtrc}%
+\newlength{\tikzuml@AC@ytrc}%
+\newlength{\tikzuml@AC@xtlc}%
+\newlength{\tikzuml@AC@ytlc}%
+\newlength{\tikzuml@AC@xblc}%
+\newlength{\tikzuml@AC@yblc}%
+\newlength{\tikzuml@AC@xbrc}%
+\newlength{\tikzuml@AC@ybrc}%
+
+\newcommand{\umlassemblyconnectorsymbol}[2]{%
+  \edef\tikzuml@ACStart@name{#1}%
+  \edef\tikzuml@ACEnd@name{#2}%
+  \edef\tikzuml@AC@width{\tikzumlAssemblyConnectorWidth}%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzuml@ACStart@nodeName{\tikzuml@ACStart@name}}\x%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzuml@ACEnd@nodeName{\tikzuml@ACEnd@name}}\x%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzuml@ACInterface@nodeName{\tikzumlAssemblyConnectorSymbolName}}\x%
+  %
+  \pgfextractx{\tikzuml@AC@xa}{\pgfpointanchor{\tikzuml@ACStart@nodeName}{\tikzumlAssemblyConnectorStartAnchor}}%
+  \pgfextracty{\tikzuml@AC@ya}{\pgfpointanchor{\tikzuml@ACStart@nodeName}{\tikzumlAssemblyConnectorStartAnchor}}%
+  \pgfextractx{\tikzuml@AC@xb}{\pgfpointanchor{\tikzuml@ACEnd@nodeName}{\tikzumlAssemblyConnectorEndAnchor}}%
+  \pgfextracty{\tikzuml@AC@yb}{\pgfpointanchor{\tikzuml@ACEnd@nodeName}{\tikzumlAssemblyConnectorEndAnchor}}%
+  \pgfmathsetlength{\tikzuml@AC@xi}{0.5*\tikzuml@AC@xa+0.5*\tikzuml@AC@xb}%
+  \pgfmathsetlength{\tikzuml@AC@yi}{0.5*\tikzuml@AC@ya+0.5*\tikzuml@AC@yb}%
+  \pgfmathsetlength{\tikzuml@AC@AB}{veclen(\tikzuml@AC@xa-\tikzuml@AC@xb,\tikzuml@AC@ya-\tikzuml@AC@yb)}%
+  \pgfmathsetlength{\tikzuml@AC@lambda}{0.25*\tikzuml@AC@width/\tikzuml@AC@AB}%
+  \pgfmathsetlength{\tikzuml@AC@xic}{\tikzuml@AC@xi-\tikzuml@AC@lambda*(\tikzuml@AC@xb-\tikzuml@AC@xa)}%
+  \pgfmathsetlength{\tikzuml@AC@yic}{\tikzuml@AC@yi-\tikzuml@AC@lambda*(\tikzuml@AC@yb-\tikzuml@AC@ya)}%
+  \pgfmathsetlength{\tikzuml@AC@xio}{\tikzuml@AC@xi+\tikzuml@AC@lambda*(\tikzuml@AC@xb-\tikzuml@AC@xa)}%
+  \pgfmathsetlength{\tikzuml@AC@yio}{\tikzuml@AC@yi+\tikzuml@AC@lambda*(\tikzuml@AC@yb-\tikzuml@AC@ya)}%
+  \node[inner sep=0.5*\tikzuml@AC@width] (\tikzuml@ACInterface@nodeName-interface) at (\tikzuml@AC@xi,\tikzuml@AC@yi) {};%
+  \node[inner sep=0, text width=\tikzuml@AC@width, circle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorfill] (\tikzuml@ACInterface@nodeName-io) at (\tikzuml@AC@xio,\tikzuml@AC@yio) {};%
+  \begin{scope}%
+  \pgfmathsetlength{\tikzuml@AC@xtrc}{\tikzuml@AC@xic-2*\tikzuml@AC@lambda*(\tikzuml@AC@yb-\tikzuml@AC@ya)}%
+  \pgfmathsetlength{\tikzuml@AC@ytrc}{\tikzuml@AC@yic+2*\tikzuml@AC@lambda*(\tikzuml@AC@xb-\tikzuml@AC@xa)}%
+  \pgfmathsetlength{\tikzuml@AC@xbrc}{\tikzuml@AC@xic+2*\tikzuml@AC@lambda*(\tikzuml@AC@yb-\tikzuml@AC@ya)}%
+  \pgfmathsetlength{\tikzuml@AC@ybrc}{\tikzuml@AC@yic-2*\tikzuml@AC@lambda*(\tikzuml@AC@xb-\tikzuml@AC@xa)}%
+  \pgfmathsetlength{\tikzuml@AC@xtlc}{\tikzuml@AC@xic-3*\tikzuml@AC@lambda*(\tikzuml@AC@yb-\tikzuml@AC@ya+\tikzuml@AC@xb-\tikzuml@AC@xa)}%
+  \pgfmathsetlength{\tikzuml@AC@ytlc}{\tikzuml@AC@yic+3*\tikzuml@AC@lambda*(\tikzuml@AC@xb-\tikzuml@AC@xa+\tikzuml@AC@ya-\tikzuml@AC@yb)}%
+  \pgfmathsetlength{\tikzuml@AC@xblc}{\tikzuml@AC@xic+3*\tikzuml@AC@lambda*(\tikzuml@AC@yb-\tikzuml@AC@ya+\tikzuml@AC@xa-\tikzuml@AC@xb)}%
+  \pgfmathsetlength{\tikzuml@AC@yblc}{\tikzuml@AC@yic-3*\tikzuml@AC@lambda*(\tikzuml@AC@xb-\tikzuml@AC@xa+\tikzuml@AC@yb-\tikzuml@AC@ya)}%
+  \coordinate (\tikzuml@ACInterface@nodeName-trc) at (\tikzuml@AC@xtrc,\tikzuml@AC@ytrc);%
+  \coordinate (\tikzuml@ACInterface@nodeName-brc) at (\tikzuml@AC@xbrc,\tikzuml@AC@ybrc);%
+  \coordinate (\tikzuml@ACInterface@nodeName-tlc) at (\tikzuml@AC@xtlc,\tikzuml@AC@ytlc);%
+  \coordinate (\tikzuml@ACInterface@nodeName-blc) at (\tikzuml@AC@xblc,\tikzuml@AC@yblc);%
+  \clip (\tikzuml@ACInterface@nodeName-trc) --  (\tikzuml@ACInterface@nodeName-tlc) -- (\tikzuml@ACInterface@nodeName-blc) -- (\tikzuml@ACInterface@nodeName-brc) -- cycle;%
+  \node[inner sep=0, text width=\tikzuml@AC@width, circle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorfill] (\tikzuml@ACInterface@nodeName-ic) at (\tikzuml@AC@xic,\tikzuml@AC@yic) {};%
+  \end{scope}%
+  \node[above] at (\tikzuml@ACInterface@nodeName-interface.north)
+ {\tikzumlAssemblyConnectorLabel};%
+}%
+
+\newcommand{\umlassemblyconnector}[3][]{%
+  \def\tikzumlAssemblyConnectorWithPort{tikzumlFalse}%
+  \def\tikzumlAssemblyConnectorFirstArm{tikzumlFalse}%
+  \def\tikzumlAssemblyConnectorSecondArm{tikzumlFalse}%
+  \def\tikzumlAssemblyConnectorMiddleArm{tikzumlFalse}%
+  \def\tikzumlAssemblyConnectorLastArm{tikzumlFalse}%
+  \pgfkeys{/tikzuml/assemblyconnectorrelation/.cd, geometry/.initial=--, interface/.initial={},%
+				arm1/.initial={auto}, arm2/.initial={auto},% 
+				name/.initial=connector-\thetikzumlConnectorNum, width/.initial=1em,%
+				anchor1/.initial=east, anchor2/.initial=west,%
+				draw/.initial=\tikzumldrawcolor,%
+				fill assembly connector/.initial=\tikzumlfillassemblyconnectorcolor,%
+				fill port/.initial=\tikzumlfillcomponentcolor}%
+  \pgfkeys{/tikzuml/assemblyconnectorrelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{with port}}{%
+        \def\tikzumlAssemblyConnectorWithPort{tikzumlTrue}%
+      }{%
+        \ifthenelse{\equal{\keyname}{first arm}}{%
+          \def\tikzumlAssemblyConnectorFirstArm{tikzumlTrue}%
+        }{%
+          \ifthenelse{\equal{\keyname}{second arm}}{%
+            \def\tikzumlAssemblyConnectorSecondArm{tikzumlTrue}%
+          }{%
+            \ifthenelse{\equal{\keyname}{middle arm}}{%
+              \def\tikzumlAssemblyConnectorMiddleArm{tikzumlTrue}%
+            }{%
+              \ifthenelse{\equal{\keyname}{last arm}}{%
+                \def\tikzumlAssemblyConnectorLastArm{tikzumlTrue}%
+              }{%
+              }%
+            }%
+          }%
+        }%
+      }%
+    }%
+  }%
+  %
+  \pgfkeys{/tikzuml/assemblyconnectorrelation/.cd, #1}%
+  \pgfkeys{/tikzuml/assemblyconnectorrelation/.cd,%
+			geometry/.get=\tikzumlAssemblyConnectorGeometry,%
+			name/.get=\tikzumlAssemblyConnectorName,%
+ 			interface/.get=\tikzumlAssemblyConnectorLabel,%
+			width/.get=\tikzumlAssemblyConnectorWidth,%
+			arm1/.get=\tikzumlAssemblyConnectorStartArm,%
+			arm2/.get=\tikzumlAssemblyConnectorEndArm,%
+			anchor1/.get=\umlAssemblyConnectorStartAnchor,%
+			anchor2/.get=\umlAssemblyConnectorEndAnchor,%
+                       draw/.get=\tikzumlassemblyconnectordraw,%
+			fill assembly connector/.get=\tikzumlassemblyconnectorfill,%
+			fill port/.get=\tikzumlassemblyconnectorportfill}%
+  %
+  \edef\tikzumlAssemblyConnectorStart@name{#2}%
+  \edef\tikzumlAssemblyConnectorEnd@name{#3}%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlAssemblyConnectorStart@nodeName{\tikzumlAssemblyConnectorStart@name}}\x%
+  %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlAssemblyConnectorEnd@nodeName{\tikzumlAssemblyConnectorEnd@name}}\x%
+  %
+
+  \pgfextractx{\tikzuml@AC@xa}{\pgfpointanchor{\tikzumlAssemblyConnectorStart@nodeName}{center}}%
+  \pgfextracty{\tikzuml@AC@ya}{\pgfpointanchor{\tikzumlAssemblyConnectorStart@nodeName}{center}}%
+  \pgfextractx{\tikzuml@AC@xb}{\pgfpointanchor{\tikzumlAssemblyConnectorEnd@nodeName}{center}}%
+  \pgfextracty{\tikzuml@AC@yb}{\pgfpointanchor{\tikzumlAssemblyConnectorEnd@nodeName}{center}}%
+  %
+  \def\tikzumlAssemblyConnectorStartAnchor{\umlAssemblyConnectorStartAnchor}%
+  \def\tikzumlAssemblyConnectorEndAnchor{\umlAssemblyConnectorEndAnchor}%
+  %
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-|}%
+              \OR\equal{\tikzumlAssemblyConnectorGeometry}{|-}}{%
+    \ifthenelse{\tikzuml@AC@ya<\tikzuml@AC@yb}{%
+      \def\tikzumlAssemblyConnectorStartAnchor{north}
+    }{%
+      \def\tikzumlAssemblyConnectorStartAnchor{south}
+    }%
+  }{}%
+  %
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|-}%
+              \OR\equal{\tikzumlAssemblyConnectorGeometry}{-|}}{%
+    \ifthenelse{\tikzuml@AC@xa<\tikzuml@AC@xb}{%
+      \def\tikzumlAssemblyConnectorStartAnchor{east}
+    }{%
+      \def\tikzumlAssemblyConnectorStartAnchor{west}
+    }%
+  }{}%
+  %
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|-}%
+              \OR\equal{\tikzumlAssemblyConnectorGeometry}{|-}}{%
+    \ifthenelse{\tikzuml@AC@xa<\tikzuml@AC@xb}{%
+      \def\tikzumlAssemblyConnectorEndAnchor{west}
+    }{%
+      \def\tikzumlAssemblyConnectorEndAnchor{east}
+    }%
+  }{}%
+  %
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-|}%
+              \OR\equal{\tikzumlAssemblyConnectorGeometry}{-|}}{%
+    \ifthenelse{\tikzuml@AC@ya<\tikzuml@AC@yb}{%
+      \def\tikzumlAssemblyConnectorEndAnchor{south}
+    }{%
+      \def\tikzumlAssemblyConnectorEndAnchor{north}
+    }%
+  }{}%
+  %
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorWithPort}{tikzumlTrue}}{%
+    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorStartAnchor-port) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
+    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorEndAnchor-port) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
+  }{%
+    \node[inner sep=0] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorStartAnchor-port) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
+    \node[inner sep=0] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorEndAnchor-port) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
+  }%
+  \umlrelation[style={tikzuml connector style}, #1]{\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorStartAnchor-port}{\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorEndAnchor-port}%
+  %
+  \addtocounter{tikzumlRelationNum}{-1}%
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorName}{connector-\thetikzumlConnectorNum}}{%
+    \edef\tikzumlAssemblyConnectorName{relation-\thetikzumlRelationNum}%
+    \edef\tikzumlAssemblyConnectorSymbolName{\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorEnd@nodeName}%
+  }{%
+    \edef\tikzumlAssemblyConnectorSymbolName{\tikzumlAssemblyConnectorName}%
+  }%
+  %
+  \stepcounter{tikzumlRelationNum}%
+
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{--}}{%
+    \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorStart@nodeName}{\tikzumlAssemblyConnectorEnd@nodeName}%
+  }{%
+    \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|}}{%
+      \ifthenelse{\equal{\tikzumlAssemblyConnectorFirstArm}{tikzumlTrue}}{%
+        \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorStart@nodeName}{\tikzumlAssemblyConnectorName-2}%
+      }{%
+        \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorName-2}{\tikzumlAssemblyConnectorEnd@nodeName}%
+      }%
+    }{%
+      \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-}}{%
+        \ifthenelse{\equal{\tikzumlAssemblyConnectorFirstArm}{tikzumlTrue}}{%
+          \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorStart@nodeName}{\tikzumlAssemblyConnectorName-2}%
+        }{%
+          \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorName-2}{\tikzumlAssemblyConnectorEnd@nodeName}%
+        }%
+      }{%
+        \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|-}}{%
+          \ifthenelse{\equal{\tikzumlAssemblyConnectorFirstArm}{tikzumlTrue}}{%
+            \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorStart@nodeName}{\tikzumlAssemblyConnectorName-2}%
+          }{%
+            \ifthenelse{\equal{\tikzumlAssemblyConnectorLastArm}{tikzumlTrue}}{%
+              \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorName-4}{\tikzumlAssemblyConnectorEnd@nodeName}%
+            }{%
+              \umlassemblyconnectorsymbol[\tikzumlAssemblyConnectorSymbolName]{\tikzumlAssemblyConnectorName-2}{\tikzumlAssemblyConnectorName-4}%
+            }%
+          }%
+        }{%
+          \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-|}}{%
+            \ifthenelse{\equal{\tikzumlAssemblyConnectorFirstArm}{tikzumlTrue}}{%
+              \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorStart@nodeName}{\tikzumlAssemblyConnectorName-2}%
+            }{%
+              \ifthenelse{\equal{\tikzumlAssemblyConnectorLastArm}{tikzumlTrue}}{%
+                \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorName-4}{\tikzumlAssemblyConnectorEnd@nodeName}%
+              }{%
+                \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorName-2}{\tikzumlAssemblyConnectorName-4}%
+              }%
+            }%
+          }{}%
+        }%
+      }%
+    }%
+  }%
+  \stepcounter{tikzumlConnectorNum}%
+}%
+
+% shortcuts of \umlassemblyconnector
+\newcommand{\umlHVassemblyconnector}[3][]{%
+  \pgfkeys{/tikzuml/HVassemblyconnector/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}}{%
+        \errmessage{TIKZUML ERROR : in umlHVassemblyconnector, forbidden option geometry}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/HVassemblyconnector/.cd, #1}%
+  \umlassemblyconnector[geometry=-|, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlVHassemblyconnector}[3][]{%
+  \pgfkeys{/tikzuml/VHassemblyconnector/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}}{%
+        \errmessage{TIKZUML ERROR : in umlVHassemblyconnector, forbidden option geometry}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/VHassemblyconnector/.cd, #1}%
+  \umlassemblyconnector[geometry=|-, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlHVHassemblyconnector}[3][]{%
+  \pgfkeys{/tikzuml/HVHassemblyconnector/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}}{%
+        \errmessage{TIKZUML ERROR : in umlHVHassemblyconnector, forbidden option geometry}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/HVHassemblyconnector/.cd, #1}%
+  \umlassemblyconnector[geometry=-|-, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlVHVassemblyconnector}[3][]{%
+  \pgfkeys{/tikzuml/VHVassemblyconnector/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}}{%
+        \errmessage{TIKZUML ERROR : in umlVHVassemblyconnector, forbidden option geometry}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/VHVassemblyconnector/.cd, #1}%
+  \umlassemblyconnector[geometry=|-|, #1]{#2}{#3}%
+}%
+
+\newcommand{\umldelegateconnector}[3][]{%
+  \pgfkeys{/tikzuml/delegateconnector/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : in umldelegateconnector, forbidden option stereo}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/delegateconnector/.cd, #1}%
+  \umlrelation[style={tikzuml connector style}, stereo=delegate, #1]{#2}{#3}%
+}%
+
+
+% shortcuts of \umldelegateconnector
+\newcommand{\umlHVdelegateconnector}[3][]{%
+  \pgfkeys{/tikzuml/HVdelegateconnector/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}\OR\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : in umlHVdelegateconnector, forbidden option \keyname}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/HVdelegateconnector/.cd, #1}%
+  \umlrelation[style={tikzuml connector style}, stereo=delegate, geometry=-|, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlVHdelegateconnector}[3][]{%
+  \pgfkeys{/tikzuml/VHdelegateconnector/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}\OR\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : in umlVHdelegateconnector, forbidden option \keyname}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/VHdelegateconnector/.cd, #1}%
+  \umlrelation[style={tikzuml connector style}, stereo=delegate, geometry=|-, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlHVHdelegateconnector}[3][]{%
+  \pgfkeys{/tikzuml/HVHdelegateconnector/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}\OR\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : in umlHVHdelegateconnector, forbidden option \keyname}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/HVHdelegateconnector/.cd, #1}%
+  \umlrelation[style={tikzuml connector style}, stereo=delegate, geometry=-|-, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlVHVdelegateconnector}[3][]{%
+  \pgfkeys{/tikzuml/VHVdelegateconnector/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{geometry}\OR\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : in umlVHVdelegateconnector, forbidden option \keyname}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/VHVdelegateconnector/.cd, #1}%
+  \umlrelation[style={tikzuml connector style}, stereo=delegate, geometry=|-|, #1]{#2}{#3}%
+}%
 %%% End of tikz-uml.sty
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

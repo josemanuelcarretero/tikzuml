@@ -18,7 +18,7 @@
 \usepackage{../tikz-uml} % pour les diagrammes de classe
 
 \newif\iffinal % definit un switch entre brouillon et version final
-%\finaltrue % a utiliser pour compiler le document en version finale
+\finaltrue % a utiliser pour compiler le document en version finale
 
 \iffinal
   \newcommand{\inputTikZ}[1]{%
@@ -819,7 +819,7 @@ On peut toutefois corriger partiellement ce problème en reliant la flèche dire
 
 \medskip
 
-\item Si l'on définit une classe dont le nom comporte le caractère : -- typiquement lorsqu'on précise le namespace -- il peut y avoir un conflit avec l'option french (ou frenchb ou francais) du package babel. En effet, par défaut, ces options ajoutent systématiquement un espace devant le caractère : si le radacteur du document l'a oublié, ce qui rentre en conflit avec la définition de l'opérateur d'accès ::. Si l'on reprend l'exemple de définition d'une classe, on obtiendrait :
+\item Si l'on définit une classe dont le nom comporte le caractère : -- typiquement lorsqu'on précise le namespace -- il peut y avoir un conflit avec l'option french (ou frenchb ou francais) du package babel. En effet, par défaut, ces options ajoutent systématiquement un espace devant le caractère : si le rédacteur du document l'a oublié, ce qui rentre en conflit avec la définition de l'opérateur d'accès ::. Si l'on reprend l'exemple de définition d'une classe, on obtiendrait :
 
 \medskip
 
