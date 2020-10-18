@@ -1365,5 +1365,124 @@
   \stepcounter{tikzumlNoteNum}%
 }%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                     use case diagrams                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tikzstyle{tikzuml usecase style}=[ellipse, minimum height=2em, minimum width=10ex, node distance=2em]%
+\tikzstyle{tikzuml actor style}=[ellipse, inner sep=0, outer sep=0]%
+
+\newcounter{tikzumlSystemUseCaseNum}
+\setcounter{tikzumlSystemUseCaseNum}{0}
+
+% define a system
+% arg : name
+% optional : x, y coordinates of the system
+%          : draw, fill, text colors
+\newenvironment{umlsystem}[2][]{%
+  \def\tikzumlSystemFit{}%
+  \def\tikzumlSystemName{#2}%
+  \xdef\tikzumlInSystem{1}%
+  %
+  \pgfkeys{/tikzuml/system/.cd, x/.initial=0, y/.initial=0, x/.default=0, y/.default=0,%
+                                 draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillsystemcolor, text/.initial=\tikzumltextcolor,%
+                                 .unknown/.code={%
+                                   \let\keyname=\pgfkeyscurrentname%
+                                   \errmessage{TIKZUML ERROR : invalid option \keyname in umlsystem}%
+                                 }}%
+  %
+  \pgfkeys{/tikzuml/system/.cd, #1}%
+  \pgfkeys{/tikzuml/system/.cd, x/.get=\xshift, y/.get=\yshift, draw/.get=\tikzumlsystemdraw, fill/.get=\tikzumlsystemfill, text/.get=\tikzumlsystemtext}%
+  %
+  \begin{scope}[xshift=\xshift, yshift=\yshift]%
+}{%
+  % if contains no usecase, one define a fictive node to enable the fit option
+  \ifnum\c@tikzumlSystemUseCaseNum=0%
+    \node[inner xsep=10ex, inner ysep=1em] (\tikzumlSystemName-root) at (0,0) {};%
+    \def\tikzumlSystemFit{(\tikzumlSystemName-root)}%
+  \fi%
+  %
+  \begin{pgfonlayer}{background}%
+  \node[draw=\tikzumlsystemdraw, fill=\tikzumlsystemfill, text=\tikzumlsystemtext, font=\tikzumlfont, inner ysep=0.7cm, inner xsep=0.5cm, fit = \tikzumlSystemFit] (\tikzumlSystemName) {};%
+  \node[text=\tikzumlsystemtext, font=\tikzumlfont, below=0.05cm] (\tikzumlSystemName-caption) at (\tikzumlSystemName.north) {\tikzumlSystemName};%
+  \end{pgfonlayer}%
+  \end{scope}%
+  %
+  \xdef\tikzumlInSystem{0}%
+}%
+
+% define a use case
+% arg : label of the use case
+% optional : x, y coordinates of the use case
+%          : name of the node
+%          : draw, fill, text colors
+\newcommand{\umlusecase}[2][]{%
+  \pgfkeys{/tikzuml/usecase/.cd, x/.initial=0, y/.initial=0, name/.initial=usecase-\thetikzumlUseCaseNum,%
+                              draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillusecasecolor, text/.initial=\tikzumltextcolor,%
+                              .unknown/.code={%
+                                \let\keyname=\pgfkeyscurrentname%
+                                \errmessage{TIKZUML ERROR : invalid option \keyname in umlusecase}%
+                              }}%
+  \pgfkeys{/tikzuml/usecase/.cd, #1}%
+  \pgfkeys{/tikzuml/usecase/.cd, x/.get=\posx, y/.get=\posy, width/.get=\tikzumlusecasetextwidth, name/.get=\usecaseName,%
+                                 draw/.get=\tikzumlusecasedraw, fill/.get=\tikzumlusecasefill, text/.get=\tikzumlusecasetext}%
+  %
+  \def\tikzumlUseCaseText{#2}%
+  
+  \def\tikzumlUseCasePos{\posx,\posy}%
+  %
+  \node[tikzuml usecase style, draw=\tikzumlusecasedraw, fill=\tikzumlusecasefill, text=\tikzumlusecasetext, font=\tikzumlfont] (\usecaseName) at (\tikzumlUseCasePos) {\tikzumlUseCaseText};%
+  %
+  
+  % add to fit
+  \ifnum\tikzumlInSystem=1%
+    \let\tikzumlSystemFitOld\tikzumlSystemFit%
+    \xdef\tikzumlSystemFit{\tikzumlSystemFitOld (\usecaseName)}%
+    \stepcounter{tikzumlSystemUseCaseNum}
+  \fi%
+}%
+
+% define the actor symbol
+% optional : global tikzpicture styles
+\newcommand{\picturedman}[1]{
+  \begin{tikzpicture}[#1]
+  \coordinate (head) at (0,0.6) {};
+  \coordinate (left-hand) at (-0.3,0.3);
+  \coordinate (right-hand) at (0.3,0.3);
+  \coordinate (left-foot) at (-0.3,-0.3);
+  \coordinate (right-foot) at (0.3,-0.3);
+  \coordinate (empty) at (0,-0.5);
+  \draw (empty) (0,0) -- (head);
+  \draw (left-hand) -- (right-hand);
+  \draw (0,0) -- (left-foot) (0,0) -- (right-foot);
+  \node[fill=white, draw, circle, inner sep=0.3333em, minimum size=4pt] at (head) {};
+  \end{tikzpicture}
+}%
+
+% define an actor
+% arg : var name
+% optional : x, y coordinates of the actor
+%          : name of the node
+%          : draw, text colors
+\newcommand{\umlactor}[2][]{%
+  \pgfkeys{/tikzuml/actor/.cd, x/.initial=0, y/.initial=0, scale/.initial=1, name/.initial=actor-\thetikzumlactorNum,%
+                              draw/.initial=\tikzumldrawcolor, text/.initial=\tikzumltextcolor,%
+                              .unknown/.code={%
+                                \let\keyname=\pgfkeyscurrentname%
+                                \errmessage{TIKZUML ERROR : invalid option \keyname in umlactor}%
+                              }}%
+  \pgfkeys{/tikzuml/actor/.cd, #1}%
+  \pgfkeys{/tikzuml/actor/.cd, x/.get=\posx, y/.get=\posy, scale/.get=\tikzumlactorscale, name/.get=\actorName,%
+                               draw/.get=\tikzumlactordraw, text/.get=\tikzumlactortext}%
+  %
+  \def\tikzumlActorText{#2}%
+  
+  \def\tikzumlActorPos{\posx,\posy}%
+  %
+  \node[tikzuml actor style, text=\tikzumlactortext, font=\tikzumlfont] (\actorName) at (\tikzumlActorPos) {\picturedman{scale=\tikzumlactorscale, draw=\tikzumlactordraw, thick}};%
+  \node[text=\tikzumlactortext, font=\tikzumlfont, below=0.45cm] at (\actorName) {\actorName};%
+  %
+}%
+
 %%% End of tikz-uml.sty
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
