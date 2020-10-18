@@ -3446,7 +3446,7 @@
   %
   % if contains nothing, one define a fictive node to enable the fit option
   \ifnum\c@tikzumlComponentSubComponentNum=0%
-    \node[inner ysep=0.5ex] (\tikzumlComponent@nodeName-root) at (0,0) {\phantom{\tikzumlComponent@nodeName}};%
+    \node[inner ysep=0.5ex, font=\tikzumlfont] (\tikzumlComponent@nodeName-root) at (0,0) {\phantom{\tikzumlComponent@nodeName}};%
     \expandafter\xdef\csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname{(\tikzumlComponent@nodeName-root)}%
   \fi%
   %
@@ -3456,12 +3456,12 @@
     \stepcounter{tikzumlComponentSubComponentNum}%
   \fi%
   %
-  \node[inner sep=2ex, fit = \csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname] (\tikzumlComponent@nodeName-body) {};%
-  \node[above] (\tikzumlComponent@nodeName-captiontmp) at (\tikzumlComponent@nodeName-body.north) {\tikzumlComponent@caption};%
-  \node (\tikzumlComponent@nodeName-logotmp) at (\tikzumlComponent@nodeName-captiontmp.north -| \tikzumlComponent@nodeName-body.east) {\picturedcomponent{draw=\tikzumlcomponentdraw, fill=\tikzumlcomponentfill} };%
+  \node[inner sep=2ex, font=\tikzumlfont, fit = \csname tikzumlComponentFit\tikzumlComponent@parent @@\tikzumlComponent@fitname\endcsname] (\tikzumlComponent@nodeName-body) {};%
+  \node[above, font=\tikzumlfont] (\tikzumlComponent@nodeName-captiontmp) at (\tikzumlComponent@nodeName-body.north) {\tikzumlComponent@caption};%
+  \node (\tikzumlComponent@nodeName-logotmp) at (\tikzumlComponent@nodeName-captiontmp.north -| \tikzumlComponent@nodeName-body.east) {\picturedcomponent{draw=\tikzumlcomponentdraw, fill=\tikzumlcomponentfill, font=\tikzumlfont} };%
   \node[draw=\tikzumlcomponentdraw, fill=\tikzumlcomponentfill, name=\tikzumlComponent@nodeName, fit=(\tikzumlComponent@nodeName-body) (\tikzumlComponent@nodeName-captiontmp)] {};%
-  \node (\tikzumlComponent@nodeName-caption) at (\tikzumlComponent@nodeName-captiontmp) {\tikzumlComponent@caption};%
-  \draw (\tikzumlComponent@nodeName-caption.north -| \tikzumlComponent@nodeName-body.east) node[below=-0.8ex, name=\tikzumlComponent@nodeName-logo] {\picturedcomponent{draw=\tikzumlcomponentdraw, fill=\tikzumlcomponentfill} };%
+  \node[font=\tikzumlfont] (\tikzumlComponent@nodeName-caption) at (\tikzumlComponent@nodeName-captiontmp) {\tikzumlComponent@caption};%
+  \draw (\tikzumlComponent@nodeName-caption.north -| \tikzumlComponent@nodeName-body.east) node[below=-0.8ex, name=\tikzumlComponent@nodeName-logo] {\picturedcomponent{draw=\tikzumlcomponentdraw, fill=\tikzumlcomponentfill, font=\tikzumlfont} };%
   \draw (\tikzumlComponent@nodeName-caption.south -| \tikzumlComponent@nodeName.north west) -- (\tikzumlComponent@nodeName-caption.south -| \tikzumlComponent@nodeName.north east);%
   \end{pgfonlayer}%
   \end{scope}%
@@ -3583,6 +3583,7 @@
 \newlength{\tikzuml@AC@ybrc}%
 
 \newcommand{\umlassemblyconnectorsymbol}[2]{%
+  \ifthenelse{\NOT\equal{\tikzumlAssemblyConnectorLabel}{}}{%
   \edef\tikzuml@ACStart@name{#1}%
   \edef\tikzuml@ACEnd@name{#2}%
   \edef\tikzuml@AC@width{\tikzumlAssemblyConnectorWidth}%
@@ -3629,8 +3630,9 @@
   \clip (\tikzuml@ACInterface@nodeName-trc) --  (\tikzuml@ACInterface@nodeName-tlc) -- (\tikzuml@ACInterface@nodeName-blc) -- (\tikzuml@ACInterface@nodeName-brc) -- cycle;%
   \node[inner sep=0, text width=\tikzuml@AC@width, circle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorfill] (\tikzuml@ACInterface@nodeName-ic) at (\tikzuml@AC@xic,\tikzuml@AC@yic) {};%
   \end{scope}%
-  \node[above] at (\tikzuml@ACInterface@nodeName-interface.north)
+  \node[above, font=\tikzumlfont] at (\tikzuml@ACInterface@nodeName-interface.north)
  {\tikzumlAssemblyConnectorLabel};%
+  }{}%
 }%
 
 \newcommand{\umlassemblyconnector}[3][]{%
@@ -3642,7 +3644,7 @@
   \pgfkeys{/tikzuml/assemblyconnectorrelation/.cd, geometry/.initial=--, interface/.initial={},%
 				arm1/.initial={auto}, arm2/.initial={auto},% 
 				name/.initial=connector-\thetikzumlConnectorNum, width/.initial=1em,%
-				anchor1/.initial=east, anchor2/.initial=west,%
+				anchor1/.initial={}, anchor2/.initial={},%
 				draw/.initial=\tikzumldrawcolor,%
 				fill assembly connector/.initial=\tikzumlfillassemblyconnectorcolor,%
 				fill port/.initial=\tikzumlfillcomponentcolor}%
@@ -3696,64 +3698,79 @@
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlAssemblyConnectorEnd@nodeName{\tikzumlAssemblyConnectorEnd@name}}\x%
   %
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlAssemblyConnectorLabel@nodeName{\tikzumlAssemblyConnectorLabel}}\x%
+  %
   \pgfextractx{\tikzuml@AC@xa}{\pgfpointanchor{\tikzumlAssemblyConnectorStart@nodeName}{center}}%
   \pgfextracty{\tikzuml@AC@ya}{\pgfpointanchor{\tikzumlAssemblyConnectorStart@nodeName}{center}}%
   \pgfextractx{\tikzuml@AC@xb}{\pgfpointanchor{\tikzumlAssemblyConnectorEnd@nodeName}{center}}%
   \pgfextracty{\tikzuml@AC@yb}{\pgfpointanchor{\tikzumlAssemblyConnectorEnd@nodeName}{center}}%
   %
+%  \def\tikzumlAssemblyConnectorStartAnchor{east}%
+%  \def\tikzumlAssemblyConnectorEndAnchor{west}%
+
   \def\tikzumlAssemblyConnectorStartAnchor{\umlAssemblyConnectorStartAnchor}%
   \def\tikzumlAssemblyConnectorEndAnchor{\umlAssemblyConnectorEndAnchor}%
   %
-  \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-|}%
-              \OR\equal{\tikzumlAssemblyConnectorGeometry}{|-}}{%
-    \ifthenelse{\tikzuml@AC@ya<\tikzuml@AC@yb}{%
-      \def\tikzumlAssemblyConnectorStartAnchor{north}%
-    }{%
-      \def\tikzumlAssemblyConnectorStartAnchor{south}%
-    }%
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorStartAnchor}{}}{%
+    \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-|}%
+                \OR\equal{\tikzumlAssemblyConnectorGeometry}{|-}}{%
+      \ifthenelse{\tikzuml@AC@ya<\tikzuml@AC@yb}{%
+        \def\tikzumlAssemblyConnectorStartAnchor{north}%
+      }{%
+        \def\tikzumlAssemblyConnectorStartAnchor{south}%
+      }%
+    }{}%
   }{}%
   %
-  \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|-}%
-              \OR\equal{\tikzumlAssemblyConnectorGeometry}{-|}}{%
-    \ifthenelse{\tikzuml@AC@xa<\tikzuml@AC@xb}{%
-      \def\tikzumlAssemblyConnectorStartAnchor{east}%
-    }{%
-      \def\tikzumlAssemblyConnectorStartAnchor{west}%
-    }%
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorStartAnchor}{}}{%
+    \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|-}%
+                \OR\equal{\tikzumlAssemblyConnectorGeometry}{-|}}{%
+      \ifthenelse{\tikzuml@AC@xa<\tikzuml@AC@xb}{%
+        \def\tikzumlAssemblyConnectorStartAnchor{east}%
+      }{%
+        \def\tikzumlAssemblyConnectorStartAnchor{west}%
+      }%
+    }{}%
   }{}%
   %
-  \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|-}%
-              \OR\equal{\tikzumlAssemblyConnectorGeometry}{|-}}{%
-    \ifthenelse{\tikzuml@AC@xa<\tikzuml@AC@xb}{%
-      \def\tikzumlAssemblyConnectorEndAnchor{west}%
-    }{%
-      \def\tikzumlAssemblyConnectorEndAnchor{east}%
-    }%
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorEndAnchor}{}}{%
+    \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{-|-}%
+                \OR\equal{\tikzumlAssemblyConnectorGeometry}{|-}}{%
+      \ifthenelse{\tikzuml@AC@xa<\tikzuml@AC@xb}{%
+        \def\tikzumlAssemblyConnectorEndAnchor{west}%
+      }{%
+        \def\tikzumlAssemblyConnectorEndAnchor{east}%
+      }%
+    }{}%
   }{}%
   %
-  \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-|}%
-              \OR\equal{\tikzumlAssemblyConnectorGeometry}{-|}}{%
-    \ifthenelse{\tikzuml@AC@ya<\tikzuml@AC@yb}{%
-      \def\tikzumlAssemblyConnectorEndAnchor{south}%
-    }{%
-      \def\tikzumlAssemblyConnectorEndAnchor{north}%
-    }%
+  \ifthenelse{\equal{\tikzumlAssemblyConnectorEndAnchor}{}}{%
+    \ifthenelse{\equal{\tikzumlAssemblyConnectorGeometry}{|-|}%
+                \OR\equal{\tikzumlAssemblyConnectorGeometry}{-|}}{%
+      \ifthenelse{\tikzuml@AC@ya<\tikzuml@AC@yb}{%
+        \def\tikzumlAssemblyConnectorEndAnchor{south}%
+      }{%
+        \def\tikzumlAssemblyConnectorEndAnchor{north}%
+      }%
+    }{}%
   }{}%
   %
   \ifthenelse{\equal{\tikzumlAssemblyConnectorWithPort}{tikzumlTrue}}{%
-    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorStartAnchor-port) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
-    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorEndAnchor-port) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
+    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
+    \node[inner sep=0.5*\tikzumlAssemblyConnectorWidth, rectangle, draw=\tikzumlassemblyconnectordraw, fill=\tikzumlassemblyconnectorportfill] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
   }{%
-    \node[inner sep=0] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorStartAnchor-port) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
-    \node[inner sep=0] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorEndAnchor-port) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
+    \node[inner sep=0] (\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorStart@nodeName.\tikzumlAssemblyConnectorStartAnchor) {};%
+    \node[inner sep=0] (\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorLabel@nodeName-port) at (\tikzumlAssemblyConnectorEnd@nodeName.\tikzumlAssemblyConnectorEndAnchor) {};%
   }%
   %
-  \umlrelation[style={tikzuml connector style}, #1]{\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorStartAnchor-port}{\tikzumlAssemblyConnectorEnd@nodeName-\tikzumlAssemblyConnectorEndAnchor-port}%
+  \umlrelation[style={tikzuml connector style}, #1]{\tikzumlAssemblyConnectorStart@nodeName}{\tikzumlAssemblyConnectorEnd@nodeName}%
   %
   \addtocounter{tikzumlRelationNum}{-1}%
   \ifthenelse{\equal{\tikzumlAssemblyConnectorName}{connector-\thetikzumlConnectorNum}}{%
     \edef\tikzumlAssemblyConnectorName{relation-\thetikzumlRelationNum}%
-    \edef\tikzumlAssemblyConnectorSymbolName{\tikzumlAssemblyConnectorStart@nodeName-\tikzumlAssemblyConnectorEnd@nodeName}%
+    \edef\tikzumlAssemblyConnectorSymbolName{\tikzumlAssemblyConnectorLabel@nodeName}%
   }{%
     \edef\tikzumlAssemblyConnectorSymbolName{\tikzumlAssemblyConnectorName}%
   }%
@@ -3784,7 +3801,7 @@
             \ifthenelse{\equal{\tikzumlAssemblyConnectorLastArm}{tikzumlTrue}}{%
               \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorName-4}{\tikzumlAssemblyConnectorEnd@nodeName}%
             }{%
-              \umlassemblyconnectorsymbol[\tikzumlAssemblyConnectorSymbolName]{\tikzumlAssemblyConnectorName-2}{\tikzumlAssemblyConnectorName-4}%
+              \umlassemblyconnectorsymbol{\tikzumlAssemblyConnectorName-2}{\tikzumlAssemblyConnectorName-4}%
             }%
           }%
         }{%
