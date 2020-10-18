@@ -1345,6 +1345,8 @@
 \tikzstyle{tikzuml actor style}=[ellipse, inner sep=0, outer sep=0]%
 
 \newcounter{tikzumlSystemUseCaseNum}%
+\newcounter{tikzumlUseCaseNum}%
+\newcounter{tikzumlActorNum}%
 
 % define a system
 % arg : name
@@ -1365,7 +1367,7 @@
   \pgfkeys{/tikzuml/system/.cd, #1}%
   \pgfkeys{/tikzuml/system/.cd, x/.get=\xshift, y/.get=\yshift, draw/.get=\tikzumlsystemdraw, fill/.get=\tikzumlsystemfill, text/.get=\tikzumlsystemtext}%
   %
-  \begin{scope}[xshift=\xshift, yshift=\yshift]%
+  \begin{scope}[xshift=\xshift cm, yshift=\yshift cm]%
 }{%
   % if contains no usecase, one define a fictive node to enable the fit option
   \ifnum\c@tikzumlSystemUseCaseNum=0%
@@ -1388,6 +1390,7 @@
 %            name of the node
 %            draw, fill, text colors
 \newcommand{\umlusecase}[2][]{%
+  \stepcounter{tikzumlUseCaseNum}%
   \pgfkeys{/tikzuml/usecase/.cd, x/.initial=0, y/.initial=0, name/.initial=usecase-\thetikzumlUseCaseNum,%
                                  draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillusecasecolor, text/.initial=\tikzumltextcolor,%
                                  .unknown/.code={%
@@ -1435,7 +1438,8 @@
 %            name of the node
 %            draw, text colors
 \newcommand{\umlactor}[2][]{%
-  \pgfkeys{/tikzuml/actor/.cd, x/.initial=0, y/.initial=0, scale/.initial=1, name/.initial=actor-\thetikzumlactorNum,%
+  \stepcounter{tikzumlActorNum}%
+  \pgfkeys{/tikzuml/actor/.cd, x/.initial=0, y/.initial=0, scale/.initial=1, name/.initial=actor-\thetikzumlActorNum,%
                               draw/.initial=\tikzumldrawcolor, text/.initial=\tikzumltextcolor,%
                               .unknown/.code={%
                                 \let\keyname=\pgfkeyscurrentname%
@@ -1448,9 +1452,189 @@
   \def\tikzumlActorText{#2}%
   \def\tikzumlActorPos{\posx,\posy}%
   %
-  \node[tikzuml actor style, text=\tikzumlactortext, font=\tikzumlfont] (\actorName) at (\tikzumlActorPos) {\picturedactor{scale=\tikzumlactorscale, draw=\tikzumlactordraw, thick}};%
+  \node[tikzuml actor style, text=\tikzumlactortext, font=\tikzumlfont] (\actorName) at (\tikzumlActorPos) {\picturedactor{scale=\tikzumlactorscale, fill=white, draw=\tikzumlactordraw, thick}};%
   \node[text=\tikzumlactortext, font=\tikzumlfont, below=0.45cm] at (\actorName) {\actorName};%
   %
+}%
+
+% shortcuts for include and extend relation
+\newcommand{\umlinclude}[3][]{%
+  \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/includerelation/.cd, #1}%
+  \umlrelation[stereo=include, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+\newcommand{\umlextend}[3][]{%
+  \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/extendrelation/.cd, #1}%
+  \umlrelation[stereo=extend, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlHVinclude}[3][]{%
+  \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/includerelation/.cd, #1}%
+  \umlrelation[geometry=-|, stereo=include, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+\newcommand{\umlHVextend}[3][]{%
+  \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/extendrelation/.cd, #1}%
+  \umlrelation[geometry=-|, stereo=extend, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlVHinclude}[3][]{%
+  \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/includerelation/.cd, #1}%
+  \umlrelation[geometry=|-, stereo=include, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+\newcommand{\umlVHextend}[3][]{%
+  \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/extendrelation/.cd, #1}%
+  \umlrelation[geometry=|-, stereo=extend, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlHVHinclude}[3][]{%
+  \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/includerelation/.cd, #1}%
+  \umlrelation[geometry=-|-, stereo=include, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+\newcommand{\umlHVHextend}[3][]{%
+  \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/extendrelation/.cd, #1}%
+  \umlrelation[geometry=-|-, stereo=extend, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlVHVinclude}[3][]{%
+  \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/includerelation/.cd, #1}%
+  \umlrelation[geometry=|-|, stereo=include, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+\newcommand{\umlVHVextend}[3][]{%
+  \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{%
+        \ifthenelse{\equal{\keyname}{geometry}}{%
+          \errmessage{TIKZUML ERROR : forbidden option geometry}%
+        }{}%
+      }%
+    }%
+  }%
+  \pgfkeys{/tikzuml/extendrelation/.cd, #1}%
+  \umlrelation[geometry=|-|, stereo=extend, style={tikzuml dependency style}, #1]{#2}{#3}%
+}%
+
+\newcommand{\umlCNinclude}[4][]{%
+  \pgfkeys{/tikzuml/includerelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/includerelation/.cd, #1}%
+  \umlCNrelation[stereo=include, style={tikzuml dependency style}, #1]{#2}{#3}{#4}%
+}%
+
+\newcommand{\umlCNextend}[4][]{%
+  \pgfkeys{/tikzuml/extendrelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/extendrelation/.cd, #1}%
+  \umlCNrelation[stereo=extend, style={tikzuml dependency style}, #1]{#2}{#3}{#4}%
 }%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1459,7 +1643,7 @@
 
 
 \tikzstyle{tikzuml state style}=[rectangle split, rectangle split parts=2, rounded corners, inner xsep=1.5ex]%
-\tikzstyle{tikzuml state transition style}=[color=\tikzumldrawcolor, rounded corners, -angle 45]%
+\tikzstyle{tikzuml transition style}=[color=\tikzumldrawcolor, rounded corners, -angle 45]%
 
 \newcounter{tikzumlStateJoinNum}%
 \newcounter{tikzumlStateDecisionNum}%
@@ -1790,6 +1974,7 @@
 \newcommand{\umlVHtrans}[3][]{\umlVHrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
 \newcommand{\umlVHVtrans}[3][]{\umlVHVrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
 \newcommand{\umlHVHtrans}[3][]{\umlHVHrelation[style={tikzuml transition style}, #1]{#2}{#3}}%
+\newcommand{\umlCNtrans}[4][]{\umlCNrelation[style={tikzuml transition style}, #1]{#2}{#3}{#4}}%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                     sequence diagrams                   %
