@@ -1104,5 +1104,266 @@
   \umlrelation[geometry=|-|, stereo=friend, style={tikzuml dependency style}, #1]{#2}{#3}%
 }%
 
+% define a node
+\newcommand{\umlnode}[2]{%
+  \node (#2) at (#1) {};%
+}%
+
+% main command to define a relation between two classes through a control node
+% args : src class
+%        control node
+%        dest class
+% optional args : geometry of the line
+%               : barycentric weight
+%               : name of the src class type attribute defined by the relation
+%               : multiplicity of the src class type attribute defined by the relation
+%               : position on the relation
+%               : text justification on the relation
+%               : name of the dest class type attribute defined by the relation
+%               : multiplicity of the dest class type attribute defined by the relation
+%               : position on the relation
+%               : border anchors 
+%               : text justification on the relation
+%               : start angle, end angle and size of the relation (only if recursive)
+%               : stereotype of the relation
+%               : style of the relation (association, aggregation, composition, inherit, ...)
+\newcommand{\umlCNrelation}[4][]%
+{%
+  \pgfkeys{/tikzuml/relation/.cd, arg1/.initial={}, arg2/.initial={}, arg/.initial={},%
+           mult1/.initial={}, mult2/.initial={}, mult/.initial={},%
+           pos1/.initial=0.2, pos2/.initial=0.8, pos/.initial={tikzumlEmpty},%
+           align1/.initial={}, align2/.initial={}, align/.initial={},%
+           anchor1/.initial={tikzumlempty}, anchor2/.initial={tikzumlempty},%
+           stereo/.initial={}, pos stereo/.initial=1,%
+           style/.initial=->, name/.initial=relation-\thetikzumlRelationNum,%
+           .unknown/.code={%
+             \let\keyname=\pgfkeyscurrentname%
+             \errmessage{TIKZUML ERROR : invalid option \keyname}%
+           }}%
+  \pgfkeys{/tikzuml/relation/.cd,#1}%
+  \pgfkeys{/tikzuml/relation/.cd, arg1/.get=\attrName, arg2/.get=\attrNameTO, arg/.get=\attrNameTT,%
+           mult1/.get=\multiplicity, mult2/.get=\multiplicityTO, mult/.get=\multiplicityTT,%
+           pos1/.get=\position, pos2/.get=\positionTO, pos/.get=\positionTT,%
+           align1/.get=\align, align2/.get=\alignTO, align/.get=\alignTT,%
+           anchor1/.get=\tikzumlSrcAnchor, anchor2/.get=\tikzumlDestAnchor,%
+           stereo/.get=\stereo, pos stereo/.get=\positionStereotype,%
+           style/.get=\style, name/.get=\relationName}%
+  %
+  % managing \_ in class names for node names
+  \def\tikzumlSrcClassName{#2}%
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlSrcClassNodeName{\tikzumlSrcClassName}}\x%
+  %
+  \def\tikzumlDestClassName{#4}%
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlDestClassNodeName{\tikzumlDestClassName}}\x%
+  %
+  % managing alias keys
+  \def\attrNameT{\attrNameTO\attrNameTT}%
+  \def\multiplicityT{\multiplicityTO\multiplicityTT}%
+  \def\alignT{\alignTO\alignTT}%
+  \def\orientationT{\orientationTO\orientationTT}%
+  %
+  \ifthenelse{\equal{\positionTT}{tikzumlEmpty}}%
+  {%
+    \def\positionT{\positionTO}%
+  }{%
+    \def\positionT{\positionTT}%
+  }%
+  %
+  \def\attrAlign{}%
+  \def\multAlign{}%
+  \def\attrAlignT{}%
+  \def\multAlignT{}%
+  %
+  \ifthenelse{\equal{\align}{left}}%
+  {%
+    \def\attrAlign{above right}%
+    \def\multAlign{below right}%
+  }{%
+    \ifthenelse{\equal{\align}{right}}%
+    {%
+      \def\attrAlign{above left}%
+      \def\multAlign{below left}%
+    }{}%
+  }%
+  %
+  \ifthenelse{\equal{\alignT}{left}}%
+  {%
+    \def\attrAlignT{above right}%
+    \def\multAlignT{below right}%
+  }{%
+    \ifthenelse{\equal{\alignT}{right}}%
+    {%
+      \def\attrAlignT{above left}%
+      \def\multAlignT{below left}%
+    }{}%
+  }%
+  %
+  % def stereotype
+  \ifthenelse{\equal{\stereo}{}}%
+  {%
+    \def\stereotype{}%
+  }{%
+    \def\stereotype{$<<$\stereo$>>$}%
+  }%
+  %
+  % def anchors macros
+  \ifthenelse{\equal{\tikzumlSrcAnchor}{tikzumlempty}}%
+  {%
+    \def\tikzumlSrcAnchor{}%
+  }{%
+    \let\tikzumlSrcAnchorold\tikzumlSrcAnchor%
+    \def\tikzumlSrcAnchor{.\tikzumlSrcAnchorold}%
+  }%
+  %
+  \ifthenelse{\equal{\tikzumlDestAnchor}{tikzumlempty}}%
+  {%
+    \def\tikzumlDestAnchor{}%
+  }{%
+    \let\tikzumlDestAnchorold\tikzumlDestAnchor%
+    \def\tikzumlDestAnchor{.\tikzumlDestAnchorold}%
+  }%
+  %
+  \setcounter{pos}{100*\real{\position}}%
+  \setcounter{posT}{100*\real{\positionT}}%
+  \setcounter{posStereo}{100*\real{\positionStereotype}}%
+  %
+  \def\pos{\position}%
+  \def\posT{\positionT}%
+  \def\posStereo{\positionStereotype}%
+  %
+  % straight line
+  \def\tikzumlControlNodesNum{1}%
+  %
+  \def\tikzumlFirstArc{node[midway, name=\relationName-1, anchor=center] {} }%
+  \def\tikzumlLastArc{node[midway, name=\relationName-3, anchor=center]{} }%
+  \def\posAttrName{}%
+  \def\posMultiplicity{}%
+  \def\posAttrNameT{}%
+  \def\posMultiplicityT{}%
+  %
+  \begin{pgfonlayer}{connections}%
+  \node (\relationName-2) at (#3) {};%
+  \end{pgfonlayer}%
+  %
+  \ifnum\theposStereo>100%
+    \pgfmathsetmacro{\posStereo}{(\theposStereo-100)/100}%
+    \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\posStereo, anchor=center] {\stereotype} }%
+  \else%
+    \xdef\tikzumlFirstArc{\tikzumlFirstArc node[pos=\posStereo, anchor=center] {\stereotype} }%
+  \fi%
+  %
+  \ifnum\thepos>100%
+    \pgfmathsetmacro{\pos}{(\thepos-100)/100}%
+    \def\arcNum{2}%
+  \else%
+    \def\arcNum{1}%
+    \ifnum\thepos=100%
+      \def\posAttrName{above left}%
+      \def\posMultiplicity{below right}%
+    \fi%
+  \fi%
+  %
+  \ifnum\arcNum=1%
+    \xdef\tikzumlFirstArc{\tikzumlFirstArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                                           node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity} }%
+  \fi%
+  \ifnum\arcNum=2%
+    \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\pos, \posAttrName, \attrAlign] {\attrName}%
+                                         node[pos=\pos, swap, \posMultiplicity, \multAlign] {\multiplicity} }%
+  \fi%
+  %
+  \ifnum\theposT>100%
+    \pgfmathsetmacro{\posT}{(\theposT-100)/100}%
+    \def\arcNumT{2}%
+  \else%
+    \def\arcNumT{1}%
+    \ifnum\theposT=100%
+      \def\posAttrNameT{above left}%
+      \def\posMultiplicityT{below right}%
+    \fi%
+  \fi%
+  %
+  \ifnum\arcNumT=1%
+    \xdef\tikzumlFirstArc{\tikzumlFirstArc node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                                           node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT} }%
+  \fi%
+  \ifnum\arcNumT=2%
+    \xdef\tikzumlLastArc{\tikzumlLastArc node[pos=\posT, \posAttrNameT, \attrAlignT] {\attrNameT}%
+                                         node[pos=\posT, swap, \posMultiplicityT, \multAlignT] {\multiplicityT} }%
+  \fi%
+  %
+  \xdef\tikzumlPath{(\tikzumlSrcClassNodeName\tikzumlSrcAnchor) -- \tikzumlFirstArc (\relationName-2.base) -- \tikzumlLastArc (\tikzumlDestClassNodeName\tikzumlDestAnchor) }%
+  
+  \begin{pgfonlayer}{connections}%
+  \draw[auto, \style, font=\tikzumlfont] \tikzumlPath ;%
+  \end{pgfonlayer}%
+  %
+  \stepcounter{tikzumlRelationNum}%
+}%
+
+% define cnrelations' aliases
+\newcommand{\umlCNinherit}[4][]{\umlCNrelation[style={tikzuml inherit style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNimpl}[4][]{\umlCNrelation[style={tikzuml implements style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNreal}[4][]{\umlCNrelation[style={tikzuml implements style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNassoc}[4][]{\umlCNrelation[style={tikzuml association style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNuniassoc}[4][]{\umlCNrelation[style={tikzuml unidirectional association style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNaggreg}[4][]{\umlCNrelation[style={tikzuml aggregation style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNuniaggreg}[4][]{\umlCNrelation[style={tikzuml unidirectional aggregation style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNcompo}[4][]{\umlCNrelation[style={tikzuml composition style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNunicompo}[4][]{\umlCNrelation[style={tikzuml unidirectional composition style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNimport}[4][]{\umlCNrelation[style={tikzuml import style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNdep}[4][]{\umlCNrelation[style={tikzuml dependency style}, #1]{#2}{#3}{#4}}%
+\newcommand{\umlCNfriend}[4][]{%
+  \pgfkeys{/tikzuml/friendrelation/.cd, .unknown/.code={%
+      \let\keyname=\pgfkeyscurrentname%
+      \ifthenelse{\equal{\keyname}{stereo}}{%
+        \errmessage{TIKZUML ERROR : forbidden option stereo}%
+      }{}%
+    }%
+  }%
+  \pgfkeys{/tikzuml/friendrelation/.cd, #1}%
+  \umlCNrelation[stereo=friend, style={tikzuml dependency style}, #1]{#2}{#3}{#4}%
+}%
+
+% define a note
+% arg : attached class
+%     : label of the note
+% optional : x,y coordinates of the note
+%          : width of the note
+%          : draw, fill, text colors
+\newcommand{\umlnote}[3][]{%
+  \pgfkeys{/tikzuml/note/.cd, x/.initial=0, y/.initial=0, width/.initial=3cm,%
+                              draw/.initial=\tikzumldrawcolor, fill/.initial=\tikzumlfillnotecolor, text/.initial=\tikzumltextcolor,%
+                              .unknown/.code={%
+                                \let\keyname=\pgfkeyscurrentname%
+                                \errmessage{TIKZUML ERROR : invalid option \keyname in umlnote}%
+                              }}%
+  \pgfkeys{/tikzuml/note/.cd, #1}%
+  \pgfkeys{/tikzuml/note/.cd, x/.get=\posx, y/.get=\posy, width/.get=\notetextwidth, draw/.get=\tikzumlnotedraw, fill/.get=\tikzumlnotefill, text/.get=\tikzumlnotetext}%
+  %
+  \def\tikzumlClassName{#2}%
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlClassNodeName{\tikzumlClassName}}\x%
+  %
+  \node[text width=\notetextwidth, outer sep=0, inner ysep=0.6cm, font=\tikzumlfont] (note-\thetikzumlNoteNum-coord) at (\posx, \posy) {#3};%
+  \draw (note-\thetikzumlNoteNum-coord.north east) node[name=note-\thetikzumlNoteNum-right-top, below=0.5cm, inner sep=0] {};%
+  \draw (note-\thetikzumlNoteNum-coord.north east) node[name=note-\thetikzumlNoteNum-top-right, left=0.5cm, inner sep=0] {};%
+  \draw[draw=\tikzumlnotedraw, fill=\tikzumlnotefill] (note-\thetikzumlNoteNum-coord.south west) -- (note-\thetikzumlNoteNum-coord.south east) -- (note-\thetikzumlNoteNum-right-top.base) -- (note-\thetikzumlNoteNum-top-right.base) -- (note-\thetikzumlNoteNum-coord.north west) -- cycle;%
+  \node[text=\tikzumlnotetext, text width=\notetextwidth, font=\tikzumlfont, outer sep=0, inner ysep=0.6cm] (note-\thetikzumlNoteNum) at (note-\thetikzumlNoteNum-coord) {#3};%
+  \begin{scope}[shift=(note-\thetikzumlNoteNum.north east)]%
+  \draw[draw=\tikzumlnotedraw, fill=\tikzumlnotefill] (-0.5,-0.5) -- ++(0.5,0) -- ++(-0.5,0.5) -- cycle;%
+  \begin{pgfonlayer}{connections}
+  \draw[dashed] (note-\thetikzumlNoteNum-coord.center) -- (\tikzumlClassNodeName.center);%
+  \end{pgfonlayer}%
+  \end{scope}%
+  %
+  \stepcounter{tikzumlNoteNum}%
+}%
+
 %%% End of tikz-uml.sty
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
