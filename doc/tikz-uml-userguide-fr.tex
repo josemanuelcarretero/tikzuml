@@ -43,8 +43,11 @@
     pdfauthor={N. Kielbasiewicz},%
     pdfpagemode=UseOutlines,%
     linkbordercolor=0 0 0,%
-    linkcolor=red,%
-    citecolor=blue,%
+%    linkcolor=red,%
+%    citecolor=blue,%
+%    colorlinks=true%
+    linkcolor=black,%
+    citecolor=black,%
     colorlinks=true%
   }%
 \fi
@@ -95,7 +98,7 @@
 \newcommand{\tuml}{{\sc TikZ-uml}}
 \newcommand{\TikZ}{{\sc TikZ}}
 
-\lstset{language=[LaTeX]tex, basicstyle=\small, breaklines=true}
+\lstset{language=[LaTeX]tex, basicstyle=\small, breaklines=true, columns=fullflexible}
 
 %\date{} % date %
 \title{Le package \tuml} % titre %
@@ -188,7 +191,11 @@ Pour définir une classe, on utilise l'environnement {\tt umlclass}, de la même
 \end{center}
 \end{minipage}
 
-Les options {\tt x} et {\tt y} définissent la position de la classe. 2 possibilités : si la classe est définie dans un package, il s'agit de la position relative de la classe dans le package; dans le cas contraire, il s'agit de la position dans la figure. Elles valent toutes deux 0 par défaut. Comme pour le package, il existe un raccourci pour définir une classe vide (dont on ne définira pas les attributs et les opérations) : la commande {\tt umlemptyclass}, qui prend les mêmes arguments que l'environnement {\tt umlclass}.
+Les options {\tt x} et {\tt y} définissent la position de la classe. 2 possibilités : si la classe est définie dans un package, il s'agit de la position relative de la classe dans le package; dans le cas contraire, il s'agit de la position dans la figure. Elles valent toutes deux 0 par défaut. 
+
+Comme pour le package, il existe un raccourci pour définir une classe vide (dont on ne définira pas les attributs et les opérations) : la commande {\tt umlemptyclass}, qui prend les mêmes arguments que l'environnement {\tt umlclass}.
+
+Il est également possible de définir une classe vide non pas avec un rectangle en 3 parties, mais avec un simple rectangle. Dans ce cas, vous pouvez utiliser l'option {\tt simple} ou la commande {\tt umlsimpleclass} associée, qui prend également les mêmes arguments que l'environnement {\tt umlclass}.
 
 \subsubsection{Définir la largeur d'une classe}
 
@@ -716,6 +723,72 @@ Dessiner une classe d'association est très facile avec \tuml. Il s'agit juste d
 
 Comme la commande se comporte comme une classe et une relation, vous pouvez utiliser les options suivantes : {\tt x}, {\tt y}, {\tt width} (10ex par défaut), {\tt type} (class par défaut), {\tt template} venant de la commande {\tt umlclass}, et {\tt name}, {\tt geometry} (- - par défaut), {\tt weight}, {\tt arm}, {\tt anchor1}, {\tt anchor2}, et {\tt anchors} venant de la commande {\tt umlrelation}.
 
+\section{Fonctionnalités avancées pour le positionnement}\label{s.advfeat}
+
+{\tt umlpackage}, {\tt umlclass} et leurs alias, {\tt umlnote} et {\tt umlassocclass} peuvent accepter n'importe quelle option définie pour les n\oe{}uds dans \TikZ.
+Dans cette section, vous allez voir comment utiliser certaines d'entre elles pour des fonctionnalités avancées.
+
+\subsection{Alignement horizontal et vertical}\label{ss.hvalign}
+
+Dans un diagramme de classes, les classes peuvent avoir des hauteurs et largeurs différentes. D'un point de vue esthétique, vous pouvez souhaiter les aligner horizontalement ou verticalement. Prenons l'exemple suivant :
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/valign.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{valign}
+\end{center}
+\end{minipage}
+
+\medskip
+
+L'ordonnée {\tt y} définit le centre du n\oe{}ud de la classe. Il serait mieux dans cet exemple d'avoir les classes B et C alignées en haut. Une solution est de définir manuellement l'ordonnée {\tt y } de C, mais cela n'est pas très pratique. Vous allez préférer utiliser l'option {\tt anchor}. En spécifiant {\tt anchor=north}, l'ordonnée {\tt y} définira le milieu haut du n\oe{}ud et non le centre. Regardez les différences entre les 2 codes.
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/valign2.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{valign2}
+\end{center}
+\end{minipage}
+
+\medskip
+
+De la même manière, vous utiliserez {\tt anchor=east} pour aligner vos classes à droite, {\tt anchor=west} pour les aligner à gauche ou {\tt anchor=south} pour les aligner en bas.
+
+\medskip
+
+Pour les packages vides, les classes d'association et les notes, le mécanisme fonctionne également.
+
+\subsection{Positionnement relatif}\label{ss.relpos}
+
+Utiliser le système de coordonnées x-y peut s'avérer très lourd dans des gros diagrammes, dès lors que vous souhaiter ajuster la position des éléments pour que ça tienne dans la page. Le positionnement relatif peut être utile dans ce cas, à savoir les syntaxes avancées des options {\tt above}, {\tt left}, {\tt below}, {\tt right}, {\tt above left}, {\tt below left}, {\tt below right} et {\tt above right} fournies par la librairie \TikZ {\tt positioning}.
+
+\medskip
+
+Prenons l'exemple précédent. Vous pouvez définir B par ses coordonnées (-2,2) ou dire que B est à 2cm en dessous et 2cm à gauche de A. Vous pouvez aussi définir C comme étant à 4cm à droite de B. \`{A} noter qu'en raison de l'alignement vertical entre B et C, cette dernière est définie à 4cm à droite de B.north.
+
+\medskip
+
+\begin{minipage}{0.5\textwidth}
+\lstinputlisting{fig/relativepos.tikz}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\inputTikZ{relativepos}
+\end{center}
+\end{minipage}
+
+\medskip
+
+Pour les packages vides, les classes d'association et les notes, le mécanisme fonctionne également.
+
 \section{Personnalisation}\label{s.classset}
 
 Grâce à la commande {\tt tikzumlset}, il est possible de modifier l'apparence par défaut des packages, des classes et des notes. Les options que l'on peut personnaliser sont :
@@ -994,6 +1067,8 @@ Le symbole de l'acteur est défini en unités relatives de la taille de fonte (u
 \end{center}
 \end{minipage}
 
+Toutes les options de \TikZ{} dédiées aux n\oe{}uds peuvent être utilisées ici, voir la \autoref{s.advfeat} pour plus de détails.
+
 \section{Définir un cas d'utilisation}\label{s.usecase}
 
 Un cas d'utilisation est défini avec la commande {\tt umlusecase} :
@@ -1014,6 +1089,8 @@ Un cas d'utilisation est défini avec la commande {\tt umlusecase} :
 Les options {\tt x} et {\tt y} permettent de positionner le cas d'utilisation dans la figure ou dans le système le contenant. Elles valent toutes deux 0 par défaut. Le texte passé en argument obligatoire est l'intitulé du cas d'utilisation. Le n\oe{}ud le représentant possède un nom par défaut, basé sur un compteur global, de la forme usecase-17. Pour des raisons pratiques, on peut renommer un cas d'utilisation à l'aide de l'option {\tt name}.
 
 Par ailleurs, on peut fixer la taille du n\oe{}ud avec l'option {\tt width}.
+
+Toutes les options de \TikZ{} dédiées aux n\oe{}uds peuvent être utilisées ici, voir la \autoref{s.advfeat} pour plus de détails.
 
 \medskip
 
@@ -1233,6 +1310,10 @@ Vous pouvez également définir des actions sur un état, à travers les options
 \inputTikZ{stateactions}
 \end{center}
 \end{minipage}
+
+\medskip
+
+Toutes les options de \TikZ{} dédiées aux n\oe{}uds peuvent être utilisées ici, voir la \autoref{s.advfeat} pour plus de détails.
 
 \section{Définir une transition}\label{s.trans}
 
@@ -1469,6 +1550,10 @@ L'option {\tt stereo} permet de spécifier le type d'objet. Elle accepte les val
 \inputTikZ{objectstereo}
 \end{center}
 \end{minipage}
+
+\medskip
+
+Les objets UML peuvent être utilisés dans d'autres contextes que les instances de classes. Alors, le symbole "deux points" affiché dans un objet n'est pas nécessaire. Dans ce but, vous pouvez utiliser la commande {\tt umlbasicobject}.
 
 \subsection{Positionnement automatique d'un objet}\label{ss.objpos}
 
@@ -1956,6 +2041,10 @@ A noter que l'on peut définir une classe dans un composant.
 \medskip
 
 Si vous souhaitez définir un composant sans le détailler, vous pouvez utiliser la commande {\tt umlbasic component} , qui est un alias de l'environnnement {\tt umlcomponent}.
+
+\medskip
+
+Toutes les options de \TikZ{} dédiées aux n\oe{}uds peuvent être utilisées ici, voir la \autoref{s.advfeat} pour plus de détails.
 
 \section{Définir une interface requise/offerte}
 

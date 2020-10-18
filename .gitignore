@@ -3,7 +3,6 @@ doc/*.aux
 doc/*.out
 doc/*.synctex.gz
 doc/*.toc
-doc/*.tikz
 doc/*.4ct
 doc/*.4tc
 doc/*.css
@@ -13,7 +12,6 @@ doc/*.idv
 doc/*.lg
 doc/*.tmp
 doc/*.xref
-doc/fig
 src
 pgf-umlsd.sty
 test
