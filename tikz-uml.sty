@@ -2742,6 +2742,7 @@
   \stepcounter{tikzumlActorNum}%
   \pgfkeys{/tikzuml/actor/.cd, x/.initial=\tikzumlDefaultX, y/.initial=\tikzumlDefaultX, scale/.initial=1, below/.initial=\tikzumlActorDefaultBelow,%
                                draw/.initial=\tikzumlDefaultDrawColor, text/.initial=\tikzumlDefaultTextColor,%
+                               name/.initial=actor-\thetikzumlActorNum,%
                                style/.style={},%
                                no coords/.is if=tikzumlactorWithoutCoords,%
                                no coords=false,%
@@ -2772,9 +2773,10 @@
   \pgfkeys{/tikzuml/actor/.cd,%
            x/.get=\tikzumlActorX, y/.get=\tikzumlActorY, scale/.get=\tikzumlActorScale,%
            below/.get=\tikzumlActorBelow,%
+           name/.get=\tikzumlActorName,%
            draw/.get=\tikzumlActorDrawColor, text/.get=\tikzumlActorTextColor}%
   %
-  \def\tikzumlActorName{#2}%
+  \def\tikzumlActorText{#2}%
   \begingroup%
     \def\_{_}\edef\x{\endgroup%
       \def\noexpand\tikzumlActorNodeName{\tikzumlActorName}}\x%
@@ -2786,7 +2788,7 @@
   \else%
     \node[tikzuml actor style, text=\tikzumlActorTextColor, font=\tikzumlDefaultFont, /tikzuml/actor/style] (\tikzumlActorNodeName) at (\tikzumlActorPos) {\picturedactor{scale=\tikzumlActorScale, fill=white, draw=\tikzumlActorDrawColor, thick}};%
   \fi%
-  \node[text=\tikzumlActorTextColor, font=\tikzumlDefaultFont, below=\tikzumlActorScale*\tikzumlActorBelow] at (\tikzumlActorNodeName) {\tikzumlActorName};%
+  \node[text=\tikzumlActorTextColor, font=\tikzumlDefaultFont, below=\tikzumlActorScale*\tikzumlActorBelow] at (\tikzumlActorNodeName) {\tikzumlActorText};%
   %
 }%
 
