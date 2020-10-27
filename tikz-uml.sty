@@ -2740,7 +2740,7 @@
 %                       to another node (automatically used with TikZ options above, below, left, right, below left, ...)
 \newcommand{\umlactor}[2][]{%
   \stepcounter{tikzumlActorNum}%
-  \pgfkeys{/tikzuml/actor/.cd, x/.initial=\tikzumlDefaultX, y/.initial=\tikzumlDefaultX, scale/.initial=1, below/.initial=\tikzumlActorDefaultBelow,%
+  \pgfkeys{/tikzuml/actor/.cd, x/.initial=\tikzumlDefaultX, y/.initial=\tikzumlDefaultX, width/.initial=auto, align/.initial=center, scale/.initial=1, below/.initial=\tikzumlActorDefaultBelow,%
                                draw/.initial=\tikzumlDefaultDrawColor, text/.initial=\tikzumlDefaultTextColor,%
                                name/.initial=actor-\thetikzumlActorNum,%
                                style/.style={},%
@@ -2772,6 +2772,8 @@
   \pgfkeys{/tikzuml/actor/.cd, #1}%
   \pgfkeys{/tikzuml/actor/.cd,%
            x/.get=\tikzumlActorX, y/.get=\tikzumlActorY, scale/.get=\tikzumlActorScale,%
+           width/.get=\tikzumlActorTextWidth,%
+           align/.get=\tikzumlActorTextAlign,%
            below/.get=\tikzumlActorBelow,%
            name/.get=\tikzumlActorName,%
            draw/.get=\tikzumlActorDrawColor, text/.get=\tikzumlActorTextColor}%
@@ -2788,7 +2790,12 @@
   \else%
     \node[tikzuml actor style, text=\tikzumlActorTextColor, font=\tikzumlDefaultFont, /tikzuml/actor/style] (\tikzumlActorNodeName) at (\tikzumlActorPos) {\picturedactor{scale=\tikzumlActorScale, fill=white, draw=\tikzumlActorDrawColor, thick}};%
   \fi%
-  \node[text=\tikzumlActorTextColor, font=\tikzumlDefaultFont, below=\tikzumlActorScale*\tikzumlActorBelow] at (\tikzumlActorNodeName) {\tikzumlActorText};%
+  \ifthenelse{\equal{\tikzumlActorTextWidth}{auto}}{%
+    \node[text=\tikzumlActorTextColor, align=\tikzumlActorTextAlign, font=\tikzumlDefaultFont, below=\tikzumlActorScale*\tikzumlActorBelow] at (\tikzumlActorNodeName) {\tikzumlActorText};%
+  }{%
+    \node[text=\tikzumlActorTextColor, align=\tikzumlActorTextAlign, font=\tikzumlDefaultFont, below=\tikzumlActorScale*\tikzumlActorBelow, text width=\tikzumlActorTextWidth] at (\tikzumlActorNodeName) {\tikzumlActorText};%
+  }%
+
   %
 }%
 
